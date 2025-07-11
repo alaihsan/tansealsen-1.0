@@ -192,23 +192,31 @@ h1 {
 .card-view .violation-item {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    /* align-items diubah agar item bisa diatur perataannya */
+    align-items: stretch; 
     padding: 15px;
     padding-top: 40px;
-    text-align: center;
+    /* text-align diubah menjadi rata kiri */
+    text-align: left;
     flex-basis: calc(50% - 10px);
     box-sizing: border-box;
 }
 
 .card-view .violation-item img,
-.card-view .image-thumbnail img {
+.card-view .image-thumbnail {
+    /* align-self ditambahkan agar gambar tetap di tengah */
+    align-self: center;
     width: 150px;
     height: 150px;
     margin-right: 0;
     margin-bottom: 15px;
-    object-fit: cover;
     border-radius: 8px;
 }
+
+.card-view .violation-item img {
+    object-fit: cover;
+}
+
 
 /* == Tampilan Mode Daftar (LIST VIEW) == */
 .violation-list.list-view {
@@ -406,4 +414,53 @@ body.login-body { padding: 0; background: linear-gradient(135deg, #667eea 0%, #7
     .modal-btn {
         width: 100%;
     }
+}
+
+/* ================================================== */
+/* ---         GAYA CUSTOM DATE PICKER            --- */
+/* ================================================== */
+.flatpickr-calendar {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border: 1px solid #ddd;
+    z-index: 9999; /* Pastikan di atas elemen lain */
+}
+.flatpickr-months .flatpickr-month {
+    background: #667eea;
+    color: white;
+    fill: white;
+}
+.flatpickr-months .flatpickr-prev-month,
+.flatpickr-months .flatpickr-next-month {
+    color: white;
+    fill: white;
+}
+.flatpickr-weekdays {
+    background: #764ba2;
+}
+span.flatpickr-weekday {
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: bold;
+}
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: #667eea;
+    border-color: #667eea;
+}
+.flatpickr-day.today {
+    border-color: #764ba2;
+}
+.flatpickr-day:hover,
+.flatpickr-day:focus {
+    background: #e9ecef;
+    border-color: #e9ecef;
+}
+.flatpickr-time input:hover,
+.flatpickr-time .flatpickr-am-pm:hover,
+.flatpickr-time input:focus,
+.flatpickr-time .flatpickr-am-pm:focus {
+    background: #f1f1f1;
 }
