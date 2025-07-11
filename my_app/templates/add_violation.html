@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tambah Pelanggaran Baru</title>
-    <!-- Menghubungkan ke file CSS eksternal -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <h1>Tambah Pelanggaran Baru</h1>
-        
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 <ul class="flash-messages">
@@ -27,8 +26,20 @@
                 <input type="text" id="nama_murid" name="nama_murid" required>
             </div>
             <div class="form-group">
-                <label for="jenis_pelanggaran">Jenis Pelanggaran:</label>
-                <input type="text" id="jenis_pelanggaran" name="jenis_pelanggaran" required>
+                <label for="kelas">Kelas:</label>
+                <input type="text" id="kelas" name="kelas" required>
+            </div>
+            <div class="form-group">
+                <label for="pasal">Pasal:</label>
+                <input type="text" id="pasal" name="pasal" required>
+            </div>
+            <div class="form-group">
+                <label for="kategori_pelanggaran">Kategori Pelanggaran:</label>
+                <select id="kategori_pelanggaran" name="kategori_pelanggaran" required>
+                    <option value="Ringan">Ringan</option>
+                    <option value="Sedang">Sedang</option>
+                    <option value="Berat">Berat</option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="deskripsi">Deskripsi (Opsional):</label>

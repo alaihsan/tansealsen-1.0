@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar Pelanggaran Murid</title>
-    <!-- Menghubungkan ke file CSS eksternal -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <div class="container">
         <h1>Daftar Pelanggaran Murid</h1>
-        
+
         <div class="action-links">
             <a href="{{ url_for('add_violation') }}" class="link-button add">Tambah Pelanggaran Baru</a>
             <a href="{{ url_for('logout') }}" class="link-button logout">Logout</a>
@@ -31,7 +30,6 @@
                 {% for p in pelanggaran %}
                     <li class="violation-item">
                         {% if p.bukti_file %}
-                            <!-- Gambar kini bisa diklik untuk tampilan fullscreen -->
                             <a href="#" class="image-thumbnail" data-full-image="{{ url_for('static', filename='uploads/' + p.bukti_file) }}">
                                 <img src="{{ url_for('static', filename='uploads/' + p.bukti_file) }}" alt="Bukti Pelanggaran">
                             </a>
@@ -40,7 +38,9 @@
                         {% endif %}
                         <div class="violation-details">
                             <p><strong>Nama Murid:</strong> {{ p.nama_murid }}</p>
-                            <p><strong>Jenis Pelanggaran:</strong> {{ p.jenis_pelanggaran }}</p>
+                            <p><strong>Kelas:</strong> {{ p.kelas }}</p>
+                            <p><strong>Pasal:</strong> {{ p.pasal }}</p>
+                            <p><strong>Kategori Pelanggaran:</strong> {{ p.kategori_pelanggaran }}</p>
                             <p><strong>Tanggal:</strong> {{ p.tanggal.strftime('%d-%m-%Y %H:%M') }}</p>
                             <p><strong>Deskripsi:</strong> {{ p.deskripsi if p.deskripsi else '-' }}</p>
                         </div>
@@ -52,7 +52,6 @@
         {% endif %}
     </div>
 
-    <!-- Struktur Modal Fullscreen -->
     <div id="fullscreenModal" class="modal">
         <span class="close-button">&times;</span>
         <img class="modal-content" id="fullImage">

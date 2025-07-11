@@ -11,7 +11,7 @@ app = Flask(__name__)
 # --- Konfigurasi Aplikasi ---
 # SECRET_KEY sangat penting untuk keamanan sesi Flask
 # Ubah ini dengan string acak yang kuat di aplikasi produksi!
-app.config['SECRET_KEY'] = 'kunci_rahasia_yang_sangat_sulit_ditebak_ini_harus_panjang' 
+app.config['SECRET_KEY'] = 'kunci_rahasia_yang_sangat_sulit_ditebak_ini_harus_panjang'
 
 # Konfigurasi database SQLite. Database akan disimpan dalam file 'site.db' di folder instance.
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
@@ -22,7 +22,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Batasi ukuran file yang diizinkan (misal: 16 MB)
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # Tipe file yang diizinkan untuk diunggah
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -34,14 +34,16 @@ db = SQLAlchemy(app)
 class Pelanggaran(db.Model):
     id = db.Column(db.Integer, primary_key=True) # Kolom ID utama
     nama_murid = db.Column(db.String(100), nullable=False) # Nama murid, tidak boleh kosong
-    jenis_pelanggaran = db.Column(db.String(100), nullable=False) # Jenis pelanggaran, tidak boleh kosong
+    kelas = db.Column(db.String(50), nullable=False) # Kolom kelas
+    pasal = db.Column(db.String(100), nullable=False) # Diubah dari jenis_pelanggaran menjadi pasal
+    kategori_pelanggaran = db.Column(db.String(50), nullable=False) # Kolom kategori pelanggaran
     tanggal = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) # Tanggal dan waktu pelanggaran, default waktu sekarang
     deskripsi = db.Column(db.Text, nullable=True) # Deskripsi pelanggaran, boleh kosong
     bukti_file = db.Column(db.String(255), nullable=True) # Nama file bukti, boleh kosong
 
     # Representasi string dari objek Pelanggaran (untuk debugging)
     def __repr__(self):
-        return f"Pelanggaran('{self.nama_murid}', '{self.jenis_pelanggaran}', '{self.tanggal}')"
+        return f"Pelanggaran('{self.nama_murid}', '{self.kelas}', '{self.pasal}', '{self.kategori_pelanggaran}', '{self.tanggal}')"
 
 # --- Fungsi Pembantu untuk Upload File ---
 # Memeriksa apakah ekstensi file diizinkan
@@ -69,7 +71,7 @@ def login():
             return redirect(url_for('index'))
         else:
             flash('Username atau password salah.', 'danger')
-    
+
     return render_template('login.html')
 
 # Rute logout
@@ -103,11 +105,13 @@ def add_violation():
     if request.method == 'POST':
         # Mengambil data dari form
         nama_murid = request.form['nama_murid']
-        jenis_pelanggaran = request.form['jenis_pelanggaran']
+        kelas = request.form['kelas']
+        pasal = request.form['pasal'] # Diubah dari jenis_pelanggaran
+        kategori_pelanggaran = request.form['kategori_pelanggaran']
         deskripsi = request.form['deskripsi']
-        
+
         bukti_file_nama = None # Inisialisasi nama file bukti
-        
+
         # Memeriksa apakah ada file yang diunggah
         if 'bukti_file' in request.files:
             file = request.files['bukti_file']
@@ -129,7 +133,9 @@ def add_violation():
         # Membuat objek Pelanggaran baru
         new_pelanggaran = Pelanggaran(
             nama_murid=nama_murid,
-            jenis_pelanggaran=jenis_pelanggaran,
+            kelas=kelas,
+            pasal=pasal, # Diubah dari jenis_pelanggaran
+            kategori_pelanggaran=kategori_pelanggaran,
             deskripsi=deskripsi,
             bukti_file=bukti_file_nama
         )
@@ -177,7 +183,7 @@ def delete_violation(violation_id):
     except Exception as e:
         db.session.rollback()
         flash(f'Terjadi kesalahan saat menghapus pelanggaran: {e}', 'danger')
-    
+
     return redirect(url_for('index'))
 
 # --- Inisialisasi Database ---
