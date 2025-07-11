@@ -62,8 +62,9 @@
                             <p><strong>Kelas:</strong> {{ p.kelas }}</p>
                             <p><strong>Pasal:</strong> {{ p.pasal }}</p>
                             <p><strong>Kategori Pelanggaran:</strong> {{ p.kategori_pelanggaran }}</p>
-                            <p><strong>Tanggal:</strong> {{ p.tanggal.strftime('%d-%m-%Y %H:%M') }}</p>
+                            <p><strong>Tanggal Kejadian:</strong> {{ p.tanggal_kejadian }}</p>
                             <p><strong>Deskripsi:</strong> {{ p.deskripsi if p.deskripsi else '-' }}</p>
+                            <p><strong>Di Input Oleh:</strong> {{ p.di_input_oleh }}</p>
                         </div>
                     </li>
                 {% endfor %}

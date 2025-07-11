@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tambah Pelanggaran Baru</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <div class="container">
@@ -55,8 +56,22 @@
                 </select>
             </div>
             <div class="form-group">
+                <label for="tanggal_kejadian">Tanggal Kejadian:</label>
+                <input type="text" id="tanggal_kejadian" name="tanggal_kejadian" placeholder="Contoh: 12-07-2025" required>
+            </div>
+            <div class="form-group">
                 <label for="deskripsi">Deskripsi (Opsional):</label>
                 <textarea id="deskripsi" name="deskripsi"></textarea>
+            </div>
+             <div class="form-group">
+                <label for="di_input_oleh">Di Input Oleh:</label>
+                <select id="di_input_oleh" name="di_input_oleh" required>
+                    <option value="Maylinda Puspita Sari">Maylinda Puspita Sari</option>
+                    <option value="Desi Artika">Desi Artika</option>
+                    <option value="Heni Ermawati">Heni Ermawati</option>
+                    <option value="Muhamad Ichsan">Muhamad Ichsan</option>
+                    <option value="Suftiyano">Suftiyano</option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="bukti_file">Bukti Pelanggaran (Gambar, Opsional):</label>
