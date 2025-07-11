@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Pelanggaran Murid</title>
+    <!-- Menghubungkan ke file CSS eksternal -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Daftar Pelanggaran Murid</h1>
+        
+        <div class="action-links">
+            <a href="{{ url_for('add_violation') }}" class="link-button add">Tambah Pelanggaran Baru</a>
+            <a href="{{ url_for('logout') }}" class="link-button logout">Logout</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                    {% for category, message in messages %}
+                        <li class="flash-message {{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        {% if pelanggaran %}
+            <ul class="violation-list">
+                {% for p in pelanggaran %}
+                    <li class="violation-item">
+                        {% if p.bukti_file %}
+                            <!-- Gambar kini bisa diklik untuk tampilan fullscreen -->
+                            <a href="#" class="image-thumbnail" data-full-image="{{ url_for('static', filename='uploads/' + p.bukti_file) }}">
+                                <img src="{{ url_for('static', filename='uploads/' + p.bukti_file) }}" alt="Bukti Pelanggaran">
+                            </a>
+                        {% else %}
+                            <img src="https://placehold.co/150x150/cccccc/333333?text=No+Image" alt="Tidak Ada Bukti">
+                        {% endif %}
+                        <div class="violation-details">
+                            <p><strong>Nama Murid:</strong> {{ p.nama_murid }}</p>
+                            <p><strong>Jenis Pelanggaran:</strong> {{ p.jenis_pelanggaran }}</p>
+                            <p><strong>Tanggal:</strong> {{ p.tanggal.strftime('%d-%m-%Y %H:%M') }}</p>
+                            <p><strong>Deskripsi:</strong> {{ p.deskripsi if p.deskripsi else '-' }}</p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="no-violations">Belum ada pelanggaran yang tercatat.</p>
+        {% endif %}
+    </div>
+
+    <!-- Struktur Modal Fullscreen -->
+    <div id="fullscreenModal" class="modal">
+        <span class="close-button">&times;</span>
+        <img class="modal-content" id="fullImage">
+        <div class="modal-caption" id="caption"></div>
+        <a id="downloadButton" class="download-button" download>Unduh Gambar</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('fullscreenModal');
+            const modalImage = document.getElementById('fullImage');
+            const closeButton = document.querySelector('.close-button');
+            const downloadButton = document.getElementById('downloadButton');
+            const imageThumbnails = document.querySelectorAll('.image-thumbnail');
+
+            // Fungsi untuk membuka modal
+            imageThumbnails.forEach(thumbnail => {
+                thumbnail.addEventListener('click', function(event) {
+                    event.preventDefault(); // Mencegah perilaku default tautan
+                    const fullImageUrl = this.getAttribute('data-full-image');
+                    modal.style.display = 'block';
+                    modalImage.src = fullImageUrl;
+                    downloadButton.href = fullImageUrl; // Set link download
+                    
+                    // Opsional: Set caption dari alt text gambar thumbnail
+                    const altText = this.querySelector('img').alt;
+                    document.getElementById('caption').innerText = altText;
+                });
+            });
+
+            // Fungsi untuk menutup modal
+            closeButton.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+
+            // Menutup modal jika mengklik di luar gambar
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
