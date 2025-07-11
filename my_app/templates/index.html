@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar Pelanggaran Murid</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <div class="container">
@@ -15,11 +16,14 @@
                 <a href="{{ url_for('add_violation') }}" class="link-button add">Tambah Pelanggaran</a>
                 <a href="https://tanse-rules.netlify.app/" class="link-button rules" target="_blank" rel="noopener noreferrer">Tata Tertib</a>
             </div>
-
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Cari nama atau kelas...">
+            </div>
             <div class="toolbar-options">
                 <div class="view-switcher">
-                    <button id="view-card-btn" class="view-btn active">Kartu</button>
-                    <button id="view-list-btn" class="view-btn">Daftar</button>
+                    <button id="view-card-btn" class="view-btn active" title="Tampilan Kartu"><i class="fas fa-th-large"></i></button>
+                    <button id="view-list-btn" class="view-btn" title="Tampilan Daftar"><i class="fas fa-list"></i></button>
                 </div>
                 <a href="{{ url_for('logout') }}" class="link-button logout">Logout</a>
             </div>
@@ -35,10 +39,17 @@
             {% endif %}
         {% endwith %}
 
+        <div id="no-results-message" style="display: none; text-align: center; color: #777; padding: 20px;">
+            <p>Tidak ada hasil yang cocok dengan pencarian Anda.</p>
+        </div>
+
         {% if pelanggaran %}
             <ul class="violation-list card-view">
                 {% for p in pelanggaran %}
-                    <li class="violation-item">
+                    <li class="violation-item" data-id="{{ p.id }}">
+                        <button class="delete-icon-btn" title="Hapus Data">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                         {% if p.bukti_file %}
                             <a href="#" class="image-thumbnail" data-full-image="{{ url_for('static', filename='uploads/' + p.bukti_file) }}">
                                 <img src="{{ url_for('static', filename='uploads/' + p.bukti_file) }}" alt="Bukti Pelanggaran">
@@ -47,7 +58,7 @@
                             <img src="https://placehold.co/150x150/cccccc/333333?text=No+Image" alt="Tidak Ada Bukti">
                         {% endif %}
                         <div class="violation-details">
-                            <p><strong>Nama Murid:</strong> {{ p.nama_murid }}</p>
+                            <p><strong>Nama Murid:</strong> <span class="student-name">{{ p.nama_murid }}</span></p>
                             <p><strong>Kelas:</strong> {{ p.kelas }}</p>
                             <p><strong>Pasal:</strong> {{ p.pasal }}</p>
                             <p><strong>Kategori Pelanggaran:</strong> {{ p.kategori_pelanggaran }}</p>
@@ -68,6 +79,20 @@
         <div class="modal-caption" id="caption"></div>
         <a id="downloadButton" class="download-button" download>Unduh Gambar</a>
     </div>
+
+    <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content-dialog">
+            <h2>Konfirmasi Hapus</h2>
+            <p>Anda yakin ingin menghapus data pelanggaran oleh <strong id="studentNameToDelete"></strong>? Tindakan ini tidak dapat diurungkan.</p>
+            <p>Untuk konfirmasi, ketik <strong class="confirm-text">SETUJU</strong> di bawah ini:</p>
+            <input type="text" id="deleteConfirmInput" autocomplete="off">
+            <div class="modal-buttons">
+                <button id="cancelDeleteBtn" class="modal-btn btn-secondary">Batal</button>
+                <button id="confirmDeleteBtn" class="modal-btn btn-danger" disabled>Hapus Data</button>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
