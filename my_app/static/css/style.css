@@ -1,417 +1,185 @@
 /* General Body Styles */
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #f4f4f4;
+    background-color: #f4f4f9;
     color: #333;
-}
-
-/* Container for main content */
-.container {
-    max-width: 900px; /* Max width for index.html and general content */
-    margin: auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Adjust container width for add_violation.html and login.html */
-/* Using :has() pseudo-class for more specific targeting if supported,
-   otherwise, apply max-width directly to .login-container and .container for forms */
-.login-container,
-.container:has(form) { /* Selects .container if it contains a <form> element */
-    max-width: 600px;
-}
-
-/* Specific styling for the login page container */
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh; /* Full viewport height */
+    line-height: 1.6;
     margin: 0;
-    flex-direction: column; /* Ensure content stacks vertically */
-    /* The box-shadow, padding, border-radius will be inherited from .container */
+    padding: 20px;
 }
 
-/* Heading styles */
+.container {
+    max-width: 900px;
+    margin: auto;
+    overflow: auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
 h1 {
-    color: #0056b3;
+    color: #444;
     text-align: center;
-    margin-bottom: 30px;
-}
-
-/* Action links/buttons group (for index.html) */
-.action-links {
-    display: flex;
-    justify-content: center;
-    gap: 15px; /* Space between buttons */
     margin-bottom: 20px;
 }
 
-.action-links .link-button {
-    display: block;
-    padding: 10px 20px;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    text-align: center;
-    min-width: 150px; /* Minimum width for buttons */
-    transition: background-color 0.3s ease; /* Smooth transition on hover */
-}
-
-.action-links .link-button.add {
-    background-color: #28a745;
-}
-
-.action-links .link-button.add:hover {
-    background-color: #218838;
-}
-
-.action-links .link-button.logout {
-    background-color: #dc3545;
-}
-
-.action-links .link-button.logout:hover {
-    background-color: #c82333;
-}
-
-/* Form group styles (for add_violation.html and login.html) */
-.form-group {
-    margin-bottom: 15px;
-    text-align: left; /* Ensures labels align left */
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-group input[type="text"],
-.form-group input[type="password"],
-.form-group textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box; /* Ensures padding does not increase total width */
-}
-
-.form-group textarea {
-    resize: vertical; /* Allow vertical resizing */
-    min-height: 80px;
-}
-
-.form-group input[type="file"] {
-    padding: 5px 0; /* Adjust padding for file input */
-}
-
-/* Button group for forms (for add_violation.html) */
-.button-group {
+/* --- Gaya Toolbar --- */
+.toolbar {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
-    margin-top: 20px;
+    align-items: center; 
+    margin-bottom: 25px;
+    flex-wrap: wrap; 
+    gap: 15px; 
 }
 
-.button-group button,
-.button-group .back-link {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+.toolbar-actions,
+.toolbar-options {
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+}
+
+.link-button {
+    display: inline-block;
+    padding: 10px 15px;
+    color: #fff;
     text-decoration: none;
-    text-align: center;
-    flex-grow: 1; /* Allow buttons to grow and fill space */
-    transition: background-color 0.3s ease; /* Smooth transition on hover */
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap; 
 }
 
-.button-group button[type="submit"] {
+.link-button:hover {
+    transform: translateY(-2px);
+}
+
+.link-button.add { background-color: #28a745; }
+.link-button.add:hover { background-color: #218838; }
+.link-button.rules { background-color: #007bff; }
+.link-button.rules:hover { background-color: #0056b3; }
+.link-button.logout { background-color: #dc3545; }
+.link-button.logout:hover { background-color: #c82333; }
+
+/* View Switcher Styles */
+.view-switcher {
+    display: flex;
+    border: 1px solid #007bff;
+    border-radius: 5px;
+    overflow: hidden; 
+}
+
+.view-btn {
+    padding: 8px 12px; /* Disesuaikan untuk ikon */
+    font-size: 16px;   /* Ukuran ikon */
+    line-height: 1;    /* Membantu alignment vertikal */
+    border: none;
+    background-color: #fff;
+    color: #007bff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.view-btn:first-of-type {
+    border-right: 1px solid #007bff; 
+}
+
+.view-btn.active {
     background-color: #007bff;
-    color: white;
+    color: #fff;
 }
 
-.button-group button[type="submit"]:hover {
-    background-color: #0056b3;
-}
+/* Flash Messages */
+.flash-messages { list-style-type: none; padding: 0; margin-bottom: 20px; }
+.flash-message { padding: 15px; margin-bottom: 10px; border-radius: 5px; color: #fff; }
+.flash-message.success { background-color: #28a745; }
+.flash-message.danger { background-color: #dc3545; }
+.flash-message.info { background-color: #17a2b8; }
+.flash-message.warning { background-color: #ffc107; color: #333; }
 
-.button-group .back-link {
-    background-color: #6c757d;
-    color: white;
-}
-
-.button-group .back-link:hover {
-    background-color: #5a6268;
-}
-
-/* Violation list styles (for index.html) */
+/* Violation List Container */
 .violation-list {
     list-style: none;
     padding: 0;
-}
-
-.violation-item {
-    background: #e9ecef;
-    margin-bottom: 15px;
-    padding: 15px;
-    border-radius: 5px;
     display: flex;
-    align-items: flex-start;
     gap: 20px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-/* Make the thumbnail clickable and styled */
-.image-thumbnail {
-    cursor: pointer;
-    display: block; /* Ensure the link takes up the image space */
-    border-radius: 4px; /* Match image border-radius */
-    overflow: hidden; /* Hide overflow if image is slightly larger */
-    line-height: 0; /* Remove extra space below image */
-}
-
-.violation-item img {
-    max-width: 150px;
-    max-height: 150px;
-    border-radius: 4px;
-    object-fit: cover; /* Crop image to fit, maintaining aspect ratio */
-    flex-shrink: 0; /* Prevent image from shrinking when space is limited */
-    display: block; /* Remove extra space below image */
-}
-
-.violation-details {
-    flex-grow: 1; /* Allow details section to take remaining space */
-}
-
-.violation-details p {
-    margin: 5px 0;
-}
-
-.violation-details strong {
-    color: #0056b3;
-}
-
-.no-violations {
-    text-align: center;
-    color: #666;
-    padding: 20px;
-    border: 1px dashed #ccc;
-    border-radius: 5px;
-}
-
-/* Flash message styles */
-.flash-message {
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    text-align: center;
-    list-style: none; /* Remove bullet points for flash messages */
-}
-
-.flash-message.success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.flash-message.danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.flash-message.warning {
-    background-color: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeeba;
-}
-
-.flash-message.info {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-}
-
-/* --- Modal Styles for Fullscreen Image --- */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top of everything */
-    padding-top: 60px; /* Location of the box (from top) */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if content is larger than screen */
-    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
-    box-sizing: border-box; /* Include padding in width/height */
-}
-
-.modal-content {
-    margin: auto;
-    display: block;
-    max-width: 90%; /* Max width of the image inside modal */
-    max-height: 80%; /* Max height of the image inside modal */
-    object-fit: contain; /* Ensure the entire image is visible within its bounds */
-}
-
-.modal-caption {
-    margin: auto;
-    display: block;
-    width: 80%;
-    max-width: 700px;
-    text-align: center;
-    color: #ccc;
-    padding: 10px 0;
-    min-height: 20px; /* Give some space for caption */
-}
-
-.close-button {
-    position: absolute;
-    top: 15px;
-    right: 35px;
-    color: #f1f1f1;
-    font-size: 40px;
-    font-weight: bold;
-    transition: 0.3s;
-    cursor: pointer;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: #bbb;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.download-button {
-    display: block; /* Make it a block element */
-    width: fit-content; /* Adjust width to content */
-    margin: 20px auto; /* Center horizontally with margin */
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    text-align: center;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-
-.download-button:hover {
-    background-color: #0056b3;
-}
-
-/* Animations for modal content */
-.modal-content, #caption {  
-    -webkit-animation-name: zoom;
-    -webkit-animation-duration: 0.6s;
-    animation-name: zoom;
-    animation-duration: 0.6s;
-}
-
-@-webkit-keyframes zoom {
-    from {-webkit-transform:scale(0)} 
-    to {-webkit-transform:scale(1)}
-}
-
-@keyframes zoom {
-    from {transform:scale(0)} 
-    to {transform:scale(1)}
-}
-
-/* --- Konfirmasi Hapus Modal Styles --- */
-.confirm-modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1001; /* Higher than image modal */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.6); /* Black w/ more transparency */
-    display: flex; /* Use flexbox for centering */
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-}
-
-.confirm-modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; /* Lebar modal */
-    max-width: 400px; /* Batas lebar */
+/* Base style untuk setiap item pelanggaran */
+.violation-item {
+    background: #ffffff;
+    border-left: 5px solid #007bff;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    text-align: center;
-    animation-name: animatetop;
-    animation-duration: 0.4s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.4s ease-in-out, transform 0.3s ease-in-out, flex-basis 0.4s ease;
 }
 
-/* Animation for confirm modal */
-@-webkit-keyframes animatetop {
-    from {top: -300px; opacity: 0} 
-    to {top: 0; opacity: 1}
+.violation-item:hover {
+    transform: translateY(-5px);
 }
 
-@keyframes animatetop {
-    from {top: -300px; opacity: 0}
-    to {top: 0; opacity: 1}
+/* Class untuk efek Fading */
+.fading .violation-item {
+    opacity: 0;
 }
 
-.confirm-modal-content h2 {
-    margin-top: 0;
-    color: #333;
+/* == Tampilan Mode Kartu (CARD VIEW) == */
+.violation-list.card-view {
+    flex-wrap: wrap; 
 }
 
-.confirm-modal-content p {
-    margin-bottom: 20px;
-    color: #666;
-}
-
-.confirm-buttons {
+.card-view .violation-item {
     display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-.confirm-buttons button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-
-.confirm-buttons .confirm-yes {
-    background-color: #dc3545; /* Red for delete */
-    color: white;
-}
-
-.confirm-buttons .confirm-yes:hover {
-    background-color: #c82333;
-}
-
-.confirm-buttons .confirm-no {
-    background-color: #6c757d; /* Grey for cancel */
-    color: white;
-}
-
-.confirm-buttons .confirm-no:hover {
-    background-color: #5a6268;
-}
-
-footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    color: rgb(147, 144, 144);
+    flex-direction: column; 
+    align-items: center;
+    padding: 15px;
     text-align: center;
-    margin-bottom: 2%;
+    flex-basis: calc(50% - 10px);
+    box-sizing: border-box; 
 }
+
+.card-view .violation-item img,
+.card-view .image-thumbnail img {
+    width: 150px;
+    height: 150px;
+    margin-right: 0;
+    margin-bottom: 15px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* == Tampilan Mode Daftar (LIST VIEW) == */
+.violation-list.list-view {
+    flex-direction: column; 
+}
+
+.list-view .violation-item {
+    display: flex;
+    flex-direction: row; 
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.list-view .violation-item img,
+.list-view .image-thumbnail img {
+    width: 120px;
+    height: 120px;
+    margin-right: 20px;
+    margin-bottom: 0;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Common Styles */
+.violation-details p { margin: 5px 0; }
+.violation-details p strong { color: #555; }
+.no-violations { text-align: center; color: #777; font-size: 1.1em; padding: 20px; }
+.image-thumbnail { cursor: pointer; }
+
+/* Form & Modal Styles (tidak berubah) */
+.form-group{margin-bottom:15px}.form-group label{display:block;margin-bottom:5px;font-weight:700}.form-group input[type=text],.form-group textarea,.form-group select{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box}.form-group textarea{height:100px;resize:vertical}.button-group{margin-top:20px}button[type=submit]{background:#007bff;color:#fff;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;font-size:16px}button[type=submit]:hover{background:#0056b3}.back-link{display:inline-block;margin-left:10px;color:#555;text-decoration:none}.back-link:hover{text-decoration:underline}.modal{display:none;position:fixed;z-index:1000;padding-top:60px;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,.9)}.modal-content{margin:auto;display:block;max-width:80%;max-height:80vh}.modal-caption{margin:auto;display:block;width:80%;max-width:700px;text-align:center;color:#ccc;padding:10px 0;height:150px}.close-button{position:absolute;top:15px;right:35px;color:#f1f1f1;font-size:40px;font-weight:700;transition:.3s;cursor:pointer}.download-button{position:absolute;bottom:15px;right:35px;color:#f1f1f1;background-color:#007bff;padding:10px 15px;border-radius:5px;text-decoration:none;font-size:16px}.download-button:hover{background-color:#0056b3}.login-container{max-width:400px;margin:100px auto;padding:30px;background:#fff;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,.1)}

@@ -8,12 +8,21 @@
 </head>
 <body>
     <div class="container">
-        <h1>TANSE ALSEN 22</h1>
-        <h1>Pencatatan Pelanggaran Murid</h1>
+        <h1>Daftar Pelanggaran Murid</h1>
 
-        <div class="action-links">
-            <a href="{{ url_for('add_violation') }}" class="link-button add">Tambah Pelanggaran Baru</a>
-            <a href="{{ url_for('logout') }}" class="link-button logout">Logout</a>
+        <div class="toolbar">
+            <div class="toolbar-actions">
+                <a href="{{ url_for('add_violation') }}" class="link-button add">Tambah Pelanggaran</a>
+                <a href="https://tanse-rules.netlify.app/" class="link-button rules" target="_blank" rel="noopener noreferrer">Tata Tertib</a>
+            </div>
+
+            <div class="toolbar-options">
+                <div class="view-switcher">
+                    <button id="view-card-btn" class="view-btn active">Kartu</button>
+                    <button id="view-list-btn" class="view-btn">Daftar</button>
+                </div>
+                <a href="{{ url_for('logout') }}" class="link-button logout">Logout</a>
+            </div>
         </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -27,7 +36,7 @@
         {% endwith %}
 
         {% if pelanggaran %}
-            <ul class="violation-list">
+            <ul class="violation-list card-view">
                 {% for p in pelanggaran %}
                     <li class="violation-item">
                         {% if p.bukti_file %}
@@ -60,6 +69,5 @@
         <a id="downloadButton" class="download-button" download>Unduh Gambar</a>
     </div>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <footer>2025 - Web Tanse Versi 1.0 <br/>Di Rancang oleh Tim IT Alsen 22</footer>
 </body>
 </html>
