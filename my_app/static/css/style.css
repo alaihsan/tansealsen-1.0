@@ -405,3 +405,13 @@ h1 {
 .confirm-buttons .confirm-no:hover {
     background-color: #5a6268;
 }
+
+footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    color: rgb(147, 144, 144);
+    text-align: center;
+    margin-bottom: 2%;
+}
