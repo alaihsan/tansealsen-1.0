@@ -16,6 +16,7 @@ UPLOAD_FOLDER = os.path.join(app.root_path, 'static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+PER_PAGE = 10 # Menentukan jumlah item per halaman
 
 # Inisialisasi objek database SQLAlchemy
 db = SQLAlchemy(app)
@@ -27,15 +28,11 @@ class Pelanggaran(db.Model):
     kelas = db.Column(db.String(50), nullable=False)
     pasal = db.Column(db.String(100), nullable=False)
     kategori_pelanggaran = db.Column(db.String(50), nullable=False)
-    # Kolom tanggal diubah menjadi input manual
     tanggal_kejadian = db.Column(db.String(50), nullable=False)
     deskripsi = db.Column(db.Text, nullable=True)
     bukti_file = db.Column(db.String(255), nullable=True)
-    # Kolom baru untuk nama penginput
     di_input_oleh = db.Column(db.String(100), nullable=False)
-    # Menambahkan tanggal pencatatan otomatis
     tanggal_dicatat = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
 
     def __repr__(self):
         return f"Pelanggaran('{self.nama_murid}', '{self.pasal}', '{self.tanggal_kejadian}')"
@@ -71,9 +68,13 @@ def index():
     if not session.get('logged_in'):
         flash('Anda harus login untuk mengakses halaman ini.', 'danger')
         return redirect(url_for('login'))
-    # Mengurutkan berdasarkan tanggal kejadian yang dicatat
-    pelanggaran = Pelanggaran.query.order_by(Pelanggaran.tanggal_dicatat.desc()).all()
-    return render_template('index.html', pelanggaran=pelanggaran)
+
+    # Logika Paging
+    page = request.args.get('page', 1, type=int)
+    pelanggaran_pagination = Pelanggaran.query.order_by(Pelanggaran.tanggal_dicatat.desc()).paginate(
+        page=page, per_page=PER_PAGE
+    )
+    return render_template('index.html', pelanggaran_pagination=pelanggaran_pagination)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_violation():

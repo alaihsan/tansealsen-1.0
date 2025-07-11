@@ -6,6 +6,8 @@
     <title>Tambah Pelanggaran Baru</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
     <div class="container">
@@ -57,7 +59,7 @@
             </div>
             <div class="form-group">
                 <label for="tanggal_kejadian">Tanggal Kejadian:</label>
-                <input type="text" id="tanggal_kejadian" name="tanggal_kejadian" placeholder="Contoh: 12-07-2025" required>
+                <input type="text" id="tanggal_kejadian" name="tanggal_kejadian" placeholder="Pilih tanggal..." required>
             </div>
             <div class="form-group">
                 <label for="deskripsi">Deskripsi (Opsional):</label>
@@ -83,5 +85,9 @@
             </div>
         </form>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

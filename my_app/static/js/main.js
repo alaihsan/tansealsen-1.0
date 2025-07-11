@@ -1,4 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Terapkan efek fade-in pada daftar pelanggaran saat halaman dimuat
+    const violationList = document.querySelector('.violation-list');
+    if (violationList) {
+        violationList.classList.add('fade-in');
+    }
+
+    // --- Inisialisasi Date Picker BARU ---
+    const datePickerInput = document.getElementById('tanggal_kejadian');
+    if (datePickerInput) {
+        flatpickr(datePickerInput, {
+            // Menggunakan lokalisasi Bahasa Indonesia
+            "locale": "id",
+            // Format tanggal yang diinginkan: 20 Mei 1992
+            dateFormat: "d F Y",
+            // Set tanggal default ke hari ini
+            defaultDate: "today",
+            // Menonaktifkan tanggal di masa depan
+            maxDate: "today"
+        });
+    }
+
+
     // --- Logika untuk Modal Gambar Fullscreen ---
     const imageThumbnails = document.querySelectorAll('.image-thumbnail');
     const fullscreenModal = document.getElementById('fullscreenModal');
@@ -13,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fullscreenModal.style.display = 'block';
             const fullImageUrl = this.getAttribute('data-full-image');
             modalImg.src = fullImageUrl;
-            const details = this.nextElementSibling.innerHTML;
+            const details = this.closest('.violation-item').querySelector('.violation-details').innerHTML;
             captionText.innerHTML = details;
             downloadButton.href = fullImageUrl;
             downloadButton.download = fullImageUrl.split('/').pop();
@@ -27,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (fullscreenModal) {
-        // Menutup modal jika klik di luar gambar
         fullscreenModal.addEventListener('click', function(e) {
             if (e.target === fullscreenModal) {
                 fullscreenModal.style.display = 'none';
@@ -36,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Logika untuk Pengalih Tampilan (View Switcher) ---
-    const violationList = document.querySelector('.violation-list');
     const viewCardBtn = document.getElementById('view-card-btn');
     const viewListBtn = document.getElementById('view-list-btn');
     const transitionTime = 400;
@@ -59,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Logika untuk Filter Pencarian ---
     const searchInput = document.getElementById('searchInput');
     const noResultsMessage = document.getElementById('no-results-message');
+    const paginationNav = document.querySelector('.pagination-nav');
 
     if (searchInput) {
         searchInput.addEventListener('input', function() {
@@ -72,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const studentName = studentNameElement ? studentNameElement.textContent.toLowerCase() : '';
                 const studentClass = studentClassElement ? studentClassElement.textContent.toLowerCase() : '';
                 const isMatch = studentName.includes(searchTerm) || studentClass.includes(searchTerm);
-                
+
                 item.style.display = isMatch ? '' : 'none';
                 if (isMatch) visibleCount++;
             });
@@ -80,10 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (noResultsMessage) {
                 noResultsMessage.style.display = (visibleCount === 0 && items.length > 0) ? 'block' : 'none';
             }
+            if(paginationNav){
+                paginationNav.style.display = searchTerm ? 'none' : '';
+            }
         });
     }
 
-    // --- Logika BARU untuk Konfirmasi Hapus ---
+    // --- Logika untuk Konfirmasi Hapus ---
     const deleteModal = document.getElementById('deleteConfirmModal');
     const studentNameToDelete = document.getElementById('studentNameToDelete');
     const confirmInput = document.getElementById('deleteConfirmInput');
@@ -91,22 +115,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelBtn = document.getElementById('cancelDeleteBtn');
     let violationIdToDelete = null;
 
-    // Fungsi untuk membuka modal
     function openDeleteModal(id, studentName) {
         violationIdToDelete = id;
         studentNameToDelete.textContent = studentName;
-        confirmInput.value = ''; // Kosongkan input
-        confirmBtn.disabled = true; // Pastikan tombol hapus nonaktif
+        confirmInput.value = '';
+        confirmBtn.disabled = true;
         deleteModal.style.display = 'block';
         confirmInput.focus();
     }
 
-    // Fungsi untuk menutup modal
     function closeDeleteModal() {
         deleteModal.style.display = 'none';
     }
 
-    // Event listener untuk semua tombol hapus di kartu
     document.querySelectorAll('.delete-icon-btn').forEach(button => {
         button.addEventListener('click', function() {
             const violationItem = this.closest('.violation-item');
@@ -116,45 +137,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Cek input konfirmasi
     if (confirmInput) {
         confirmInput.addEventListener('input', function() {
-            // Aktifkan tombol jika input sesuai (case-insensitive)
             confirmBtn.disabled = this.value.toUpperCase() !== 'SETUJU';
         });
     }
 
-    // Event listener untuk tombol Batal
     if (cancelBtn) cancelBtn.addEventListener('click', closeDeleteModal);
 
-    // Event listener untuk tombol Konfirmasi Hapus
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function() {
             if (!violationIdToDelete) return;
 
-            // Kirim request DELETE ke server menggunakan Fetch API
             fetch(`/delete/${violationIdToDelete}`, {
-                method: 'POST', // Form di Flask biasanya menggunakan POST untuk delete
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Jika berhasil, refresh halaman untuk melihat perubahan
-                    window.location.reload();
-                } else {
-                    // Jika gagal, tampilkan pesan error
-                    alert('Gagal menghapus data. Silakan coba lagi.');
+                    method: 'POST',
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        alert('Gagal menghapus data. Silakan coba lagi.');
+                        closeDeleteModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan koneksi.');
                     closeDeleteModal();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan koneksi.');
-                closeDeleteModal();
-            });
+                });
         });
     }
     
-    // Menutup modal jika klik di luar dialog
     if (deleteModal) {
         deleteModal.addEventListener('click', function(e) {
             if (e.target === deleteModal) {

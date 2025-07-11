@@ -43,9 +43,9 @@
             <p>Tidak ada hasil yang cocok dengan pencarian Anda.</p>
         </div>
 
-        {% if pelanggaran %}
+        {% if pelanggaran_pagination.items %}
             <ul class="violation-list card-view">
-                {% for p in pelanggaran %}
+                {% for p in pelanggaran_pagination.items %}
                     <li class="violation-item" data-id="{{ p.id }}">
                         <button class="delete-icon-btn" title="Hapus Data">
                             <i class="fas fa-trash-alt"></i>
@@ -72,6 +72,29 @@
         {% else %}
             <p class="no-violations">Belum ada pelanggaran yang tercatat.</p>
         {% endif %}
+
+        {% if pelanggaran_pagination.pages > 1 %}
+        <nav class="pagination-nav">
+            <ul class="pagination">
+                <li class="page-item {{ 'disabled' if not pelanggaran_pagination.has_prev }}">
+                    <a class="page-link" href="{{ url_for('index', page=pelanggaran_pagination.prev_num) if pelanggaran_pagination.has_prev else '#' }}">&laquo;</a>
+                </li>
+                {% for page_num in pelanggaran_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {{ 'active' if page_num == pelanggaran_pagination.page }}">
+                            <a class="page-link" href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {{ 'disabled' if not pelanggaran_pagination.has_next }}">
+                    <a class="page-link" href="{{ url_for('index', page=pelanggaran_pagination.next_num) if pelanggaran_pagination.has_next else '#' }}">&raquo;</a>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+
     </div>
 
     <div id="fullscreenModal" class="modal">
