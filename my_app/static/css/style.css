@@ -5,8 +5,7 @@ body {
     color: #333;
     line-height: 1.6;
     margin: 0;
-    /* Padding bawah untuk memberi ruang pada footer */
-    padding: 20px 20px 80px 20px; 
+    padding: 20px 20px 80px 20px;
     transition: padding 0.3s ease;
 }
 
@@ -21,13 +20,13 @@ body {
     transition: padding 0.3s ease;
 }
 
-/* Judul Utama Baru yang Estetik */
+/* Judul Utama Estetik */
 .main-title {
     font-size: 2.5rem;
     font-weight: bold;
     text-align: center;
     margin-bottom: 25px;
-    background: linear-gradient(135deg, #2444d4 0%, #8d6bb0 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -137,26 +136,44 @@ body.login-body { padding: 0; background: linear-gradient(135deg, #667eea 0%, #7
 @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 .violation-list.fade-in { animation: fadeIn 0.5s ease-out forwards; }
 
-/* --- GAYA UNTUK MEDIA CETAK --- */
-@media print { body * { visibility: hidden; } .print-area, .print-area * { visibility: visible; } .print-area { position: absolute; left: 0; top: 0; width: 100%; } .print-header { text-align: center; margin-bottom: 20px; } .print-img { max-width: 200px; display: block; margin: 0 auto 15px; } }
+/* --- Gaya Footer --- */
+footer { text-align: center; padding: 20px; margin-top: 30px; color: #888; border-top: 1px solid #e9ecef; }
+footer p { margin: 5px 0; font-size: 14px; }
+footer .subtitle { font-size: 12px; color: #aaa; }
 
-/* --- GAYA FOOTER BARU --- */
-footer {
+/* ================================================== */
+/* ---        GAYA UNTUK MEDIA CETAK (DIPERBAIKI) --- */
+/* ================================================== */
+@media print {
+  body.printing * {
+    display: none; /* Sembunyikan semua elemen di dalam body saat mencetak */
+  }
+  body.printing .print-area, 
+  body.printing .print-area * {
+    display: block; /* Tampilkan hanya area cetak dan isinya */
+    visibility: visible;
+  }
+  body.printing {
+    margin: 0;
+    padding: 0;
+  }
+  .print-area {
+    position: absolute;
+    left: 20mm;
+    top: 20mm;
+    right: 20mm;
+    width: auto;
+  }
+  .print-header {
     text-align: center;
-    padding: 20px;
-    margin-top: 30px;
-    color: #888;
-    border-top: 1px solid #e9ecef;
+    margin-bottom: 20px;
+  }
+  .print-img {
+    max-width: 200px;
+    display: block;
+    margin: 0 auto 15px;
+  }
 }
-footer p {
-    margin: 5px 0;
-    font-size: 14px;
-}
-footer .subtitle {
-    font-size: 12px;
-    color: #aaa;
-}
-
 
 /* --- GAYA RESPONSIVE (MOBILE VIEW) --- */
 @media (max-width: 768px) {
