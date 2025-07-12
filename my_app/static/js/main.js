@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const header = document.createElement('div');
             header.classList.add('print-header');
-            header.innerHTML = '<h3>Detail Pelanggaran Siswa</h3>';
+            header.innerHTML = '<h3>Detail Laporan Pelanggaran Siswa</h3>';
             printContainer.appendChild(header);
             
             const image = card.querySelector('img');
@@ -185,13 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const detailsClone = card.querySelector('.violation-details').cloneNode(true);
             printContainer.appendChild(detailsClone);
             
-            document.body.classList.add('printing');
             document.body.appendChild(printContainer);
-
             window.print();
-            
             document.body.removeChild(printContainer);
-            document.body.classList.remove('printing');
         });
     });
 });

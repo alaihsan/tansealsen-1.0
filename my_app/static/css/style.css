@@ -27,7 +27,6 @@ body {
     text-align: center;
     margin-bottom: 25px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     padding-bottom: 5px;
@@ -142,36 +141,59 @@ footer p { margin: 5px 0; font-size: 14px; }
 footer .subtitle { font-size: 12px; color: #aaa; }
 
 /* ================================================== */
-/* ---        GAYA UNTUK MEDIA CETAK (DIPERBAIKI) --- */
+/* ---        GAYA UNTUK MEDIA CETAK (FINAL)      --- */
 /* ================================================== */
 @media print {
-  body.printing * {
-    display: none; /* Sembunyikan semua elemen di dalam body saat mencetak */
+  /* Pertama, sembunyikan semua elemen di halaman secara default */
+  body > * {
+    display: none !important;
   }
-  body.printing .print-area, 
-  body.printing .print-area * {
-    display: block; /* Tampilkan hanya area cetak dan isinya */
-    visibility: visible;
+
+  /* Lalu, tampilkan HANYA area cetak yang kita siapkan dan isinya */
+  .print-area,
+  .print-area * {
+    display: block !important;
+    visibility: visible !important;
   }
-  body.printing {
-    margin: 0;
-    padding: 0;
-  }
+
+  /* Atur tata letak halaman cetak agar rapi */
   .print-area {
     position: absolute;
-    left: 20mm;
-    top: 20mm;
-    right: 20mm;
-    width: auto;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20mm; /* Beri margin pada kertas */
+    box-sizing: border-box;
+    font-size: 12pt;
+    color: #000;
   }
+
   .print-header {
     text-align: center;
     margin-bottom: 20px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
   }
+
   .print-img {
     max-width: 200px;
     display: block;
-    margin: 0 auto 15px;
+    margin: 20px auto 15px;
+    border-radius: 8px;
+  }
+
+  /* INI BAGIAN KUNCI UNTUK MEMBUAT 2 KOLOM */
+  .print-area .violation-details {
+    display: grid !important; /* Gunakan CSS Grid */
+    grid-template-columns: 1fr 1fr; /* Buat 2 kolom dengan lebar yang sama */
+    grid-column-gap: 40px; /* Jarak antar kolom */
+    grid-row-gap: 10px;   /* Jarak antar baris */
+  }
+
+  .print-area .violation-details p {
+    margin: 0;
+    padding: 5px 0;
+    border-bottom: 1px dotted #eee;
   }
 }
 
