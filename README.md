@@ -1,6 +1,4 @@
 # tansealsen-1.0
-Tentu, berikut adalah draf untuk file `README.md` yang menjelaskan aplikasi Anda dan cara setup-nya.
-
 -----
 
 # Tanse App - Aplikasi Pencatatan Pelanggaran Murid
