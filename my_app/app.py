@@ -81,12 +81,37 @@ def index():
         flash('Anda harus login untuk mengakses halaman ini.', 'danger')
         return redirect(url_for('login'))
 
-    # Logika Paging
     page = request.args.get('page', 1, type=int)
-    pelanggaran_pagination = Pelanggaran.query.order_by(Pelanggaran.tanggal_dicatat.desc()).paginate(
+    date_range_str = request.args.get('date_range', None)  # Ambil string filter tanggal
+
+    # Query dasar
+    query = Pelanggaran.query
+
+    # Terapkan filter jika ada
+    if date_range_str:
+        try:
+            if ' to ' in date_range_str:
+                # Jika rentang tanggal (e.g., "2025-10-01 to 2025-10-10")
+                start_date_str, end_date_str = date_range_str.split(' to ')
+                # Validasi format sederhana (bisa ditambah strptime jika perlu)
+                if len(start_date_str) == 10 and len(end_date_str) == 10:
+                    query = query.filter(Pelanggaran.tanggal_kejadian.between(start_date_str, end_date_str))
+            elif len(date_range_str) == 10:
+                # Jika hanya satu tanggal dipilih
+                query = query.filter(Pelanggaran.tanggal_kejadian == date_range_str)
+        except ValueError:
+            flash('Format filter tanggal tidak valid.', 'danger')
+            # Abaikan filter jika format salah
+
+    # Terapkan urutan dan paginasi
+    pelanggaran_pagination = query.order_by(Pelanggaran.tanggal_dicatat.desc()).paginate(
         page=page, per_page=PER_PAGE
     )
-    return render_template('index.html', pelanggaran_pagination=pelanggaran_pagination)
+
+    # Kirim nilai filter kembali ke template agar input tetap terisi
+    return render_template('index.html',
+                           pelanggaran_pagination=pelanggaran_pagination,
+                           date_range_value=date_range_str)
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_violation():

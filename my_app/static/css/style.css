@@ -221,7 +221,6 @@ footer .subtitle { font-size: 12px; color: #aaa; }
 .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange { background: #667eea; border-color: #667eea; }
 .flatpickr-day.today { border-color: #764ba2; } .flatpickr-day:hover, .flatpickr-day:focus { background: #e9ecef; border-color: #e9ecef; }
 .flatpickr-time input:hover, .flatpickr-time .flatpickr-am-pm:hover, .flatpickr-time input:focus, .flatpickr-time .flatpickr-am-pm:focus { background: #f1f1f1; }
-
 .student-link {
     text-decoration: none;
     color: inherit;
@@ -236,4 +235,60 @@ footer .subtitle { font-size: 12px; color: #aaa; }
 .student-link:hover .student-name {
     color: #007bff; /* Warna biru saat di-hover */
     text-decoration: underline;
+}
+
+/* --- Gaya Filter Tanggal --- */
+.date-filter-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-grow: 1;
+}
+.input-group-calendar {
+    position: relative;
+    flex-grow: 1;
+}
+.input-group-calendar i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+}
+.input-group-calendar input {
+    width: 100%;
+    padding: 10px 10px 10px 35px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+.input-group-calendar input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0,123,255,.25);
+}
+.link-button.filter-btn {
+    background-color: #17a2b8; /* Biru Info */
+}
+.link-button.filter-btn:hover {
+    background-color: #117a8b;
+}
+.link-button.reset-btn {
+    background-color: #6c757d; /* Abu-abu */
+}
+.link-button.reset-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Sesuaikan di mobile */
+@media (max-width: 768px) {
+    .date-filter-form {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+    .input-group-calendar {
+        width: 100%;
+    }
 }

@@ -5,14 +5,19 @@ document.addEventListener('DOMContentLoaded', () => {
         violationList.classList.add('fade-in');
     }
 
-    // --- Inisialisasi Date Picker ---
-    const datePickerInput = document.getElementById('tanggal_kejadian');
-    if (datePickerInput) {
-        flatpickr(datePickerInput, {
-            "locale": "id", // Menggunakan lokalisasi Bahasa Indonesia
-            dateFormat: "d F Y", // Format tanggal: 20 Juli 2025
-            defaultDate: "today", // Set tanggal default ke hari ini
-            maxDate: "today" // Menonaktifkan tanggal di masa depan
+   // --- Inisialisasi Date Picker UNTUK FILTER ---
+    const dateFilterInput = document.getElementById('dateFilterInput');
+    if (dateFilterInput) {
+        flatpickr(dateFilterInput, {
+            "locale": "id",
+            mode: "range", // Ini akan mengaktifkan pemilihan rentang tanggal
+            dateFormat: "Y-m-d", // Format harus sama dengan yang disimpan
+            onChange: function(selectedDates, dateStr, instance) {
+                // Sembunyikan kalender saat rentang selesai dipilih
+                if (selectedDates.length === 2) {
+                    instance.close();
+                }
+            }
         });
     }
 
