@@ -63,6 +63,18 @@ def logout():
     flash('Anda telah logout.', 'info')
     return redirect(url_for('login'))
 
+
+@app.route('/history/<string:student_name>')
+def student_history(student_name):
+    if not session.get('logged_in'):
+        flash('Anda harus login untuk mengakses halaman ini.', 'danger')
+        return redirect(url_for('login'))
+
+    # Ambil semua pelanggaran HANYA untuk murid yang spesifik
+    violations = Pelanggaran.query.filter_by(nama_murid=student_name).order_by(Pelanggaran.tanggal_dicatat.desc()).all()
+
+    # Kirim data ke template baru yang akan kita buat
+    return render_template('student_history.html', violations=violations, student_name=student_name)
 @app.route('/')
 def index():
     if not session.get('logged_in'):

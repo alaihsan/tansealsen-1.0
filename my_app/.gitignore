@@ -1,0 +1,16 @@
+# Lingkungan Virtual (Virtual Environment)
+.venv/
+
+# Folder Konfigurasi PyCharm
+.idea/
+
+# Folder instance berisi database
+# Kita tidak ingin mem-push data, hanya kode
+my_app/instance/
+
+# Folder uploads berisi file-file yang di-upload pengguna
+my_app/static/uploads/
+
+# Python cache
+__pycache__/
+*.pyc

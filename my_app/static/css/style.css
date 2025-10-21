@@ -221,3 +221,19 @@ footer .subtitle { font-size: 12px; color: #aaa; }
 .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange { background: #667eea; border-color: #667eea; }
 .flatpickr-day.today { border-color: #764ba2; } .flatpickr-day:hover, .flatpickr-day:focus { background: #e9ecef; border-color: #e9ecef; }
 .flatpickr-time input:hover, .flatpickr-time .flatpickr-am-pm:hover, .flatpickr-time input:focus, .flatpickr-time .flatpickr-am-pm:focus { background: #f1f1f1; }
+
+.student-link {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+}
+
+.student-link .student-name {
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.student-link:hover .student-name {
+    color: #007bff; /* Warna biru saat di-hover */
+    text-decoration: underline;
+}
