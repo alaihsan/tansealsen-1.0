@@ -1,0 +1,26 @@
+# Lingkungan Virtual (Virtual Environment)
+.venv/
+
+# Folder Konfigurasi IDE
+.idea/
+
+# Folder instance berisi database
+instance/
+my_app/instance/
+
+# Folder uploads berisi file-file yang di-upload pengguna
+my_app/static/uploads/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Database files
+*.db
+.DS_Store
+.venv
+env/
+venv/
+ENV/
+
+
