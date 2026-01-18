@@ -4,98 +4,560 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tambah Pelanggaran Baru</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#667eea',
+                        secondary: '#764ba2',
+                        success: '#48bb78',
+                        danger: '#f56565',
+                        warning: '#ed8936'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-    <div class="container">
-        <h1>Tambah Pelanggaran Baru</h1>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+            <div class="px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                        <i class="fas fa-plus-circle mr-2"></i>
+                        Tambah Pelanggaran Baru
+                    </h1>
+                    <a href="{{ url_for('index') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Kembali
+                    </a>
+                </div>
+            </div>
+        </header>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class="flash-messages">
-                    {% for category, message in messages %}
-                        <li class="flash-message {{ category }}">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <div class="max-w-4xl mx-auto p-6">
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="mb-6 space-y-2">
+                            {% for category, message in messages %}
+                                <div class="alert 
+                                    {% if category == 'success' %}bg-green-100 border-green-400 text-green-700{% endif %}
+                                    {% if category == 'error' %}bg-red-100 border-red-400 text-red-700{% endif %}
+                                    {% if category == 'warning' %}bg-yellow-100 border-yellow-400 text-yellow-700{% endif %}
+                                    px-4 py-3 rounded-lg border flex items-center" role="alert">
+                                    <i class="fas 
+                                        {% if category == 'success' %}fa-check-circle text-green-500{% endif %}
+                                        {% if category == 'error' %}fa-exclamation-circle text-red-500{% endif %}
+                                        {% if category == 'warning' %}fa-exclamation-triangle text-yellow-500{% endif %}
+                                        mr-3"></i>
+                                    <span class="font-medium">{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
 
-        <form method="POST" action="{{ url_for('add_violation') }}" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="nama_murid">Nama Murid:</label>
-                <input type="text" id="nama_murid" name="nama_murid" required>
+                <!-- Form Container -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <form method="POST" action="{{ url_for('add_violation') }}" enctype="multipart/form-data" class="space-y-6 p-8" id="violationForm">
+                        <!-- Two Column Layout -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Left Column -->
+                            <div class="space-y-6">
+                                <!-- Student Info Section -->
+                                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                        <i class="fas fa-user-graduate mr-2 text-blue-600"></i>
+                                        Informasi Siswa
+                                    </h3>
+                                    
+                                    <div class="space-y-4">
+                                        <!-- Name Input with Autocomplete -->
+                                        <div>
+                                            <label for="nama_murid" class="block text-sm font-medium text-gray-700 mb-2">
+                                                <i class="fas fa-user mr-1"></i>
+                                                Nama Lengkap
+                                            </label>
+                                            <input type="text" id="nama_murid" name="nama_murid" required
+                                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                   placeholder="Masukkan nama murid...">
+                                            
+                                            <!-- Student List Suggestions -->
+                                            <div id="studentSuggestions" class="hidden absolute z-50 bg-white mt-1 rounded-lg shadow-lg border border-gray-200 max-h-48 overflow-y-auto w-80">
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Class and Date Input -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label for="kelas" class="block text-sm font-medium text-gray-700 mb-2">
+                                                        <i class="fas fa-school mr-1"></i>
+                                                        Kelas
+                                                    </label>
+                                                <select id="kelas" name="kelas" required
+                                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                                                    <option value="">Pilih Kelas</option>
+                                                    <option value="7A">7A</option>
+                                                    <option value="7B">7B</option>
+                                                    <option value="7C">7C</option>
+                                                    <option value="7D">7D</option>
+                                                    <option value="8A">8A</option>
+                                                    <option value="8B">8B</option>
+                                                    <option value="8C">8C</option>
+                                                    <option value="8D">8D</option>
+                                                    <option value="9A">9A</option>
+                                                    <option value="9B">9B</option>
+                                                    <option value="9C">9C</option>
+                                                    <option value="9D">9D</option>
+                                                </select>
+                                            </div>
+                                            
+                                            <div>
+                                                <label for="tanggal_kejadian" class="block text-sm font-medium text-gray-700 mb-2">
+                                                            <i class="fas fa-calendar-alt mr-1"></i>
+                                                            Tanggal Kejadian
+                                                        </label>
+                                                <input type="text" id="tanggal_kejadian" name="tanggal_kejadian" required
+                                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                                               placeholder="Pilih tanggal kejadian...">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column -->
+                            <div class="space-y-6">
+                                <!-- Violation Details Section -->
+                                <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-6 border border-orange-100">
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                        <i class="fas fa-exclamation-triangle mr-2 text-orange-600"></i>
+                                        Detail Pelanggaran
+                                    </h3>
+                                    
+                                    <div class="space-y-4">
+                                        <!-- Article Selection -->
+                                        <div>
+                                            <label for="pasal" class="block text-sm font-medium text-gray-700 mb-2">
+                                                        <i class="fas fa-book-open mr-1"></i>
+                                                        Pasal Pelanggaran
+                                                    </label>
+                                            <select id="pasal" name="pasal" required
+                                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                                                        <option value="">Pilih Pasal</option>
+                                                        <option value="Pasal 1 - Pakaian Seragam Sekolah">Pasal 1 - Pakaian Seragam Sekolah</option>
+                                                        <option value="Pasal 2 - Kegiatan Pembelajaran">Pasal 2 - Kegiatan Pembelajaran</option>
+                                                        <option value="Pasal 3 - Kebersihan dan Keindahan Lingkungan">Pasal 3 - Kebersihan dan Keindahan Lingkungan</option>
+                                                        <option value="Pasal 4 - Hubungan Murid dengan Guru, Karyawan/Pegawai, dan Pelatih Sekolah">Pasal 4 - Hubungan Murid dengan Guru, Karyawan/Pegawai, dan Pelatih Sekolah</option>
+                                                        <option value="Pasal 5 - Hubungan Murid dengan Murid">Pasal 5 - Hubungan Murid dengan Murid</option>
+                                                        <option value="Pasal 6 - Kegiatan Organisasi Murid dan Ekstrakurikuler">Pasal 6 - Kegiatan Organisasi Murid dan Ekstrakurikuler</option>
+                                                        <option value="Pasal 7 - Tindakan Kekerasan dan Amoral dan Asusila">Pasal 7 - Tindakan Kekerasan dan Amoral dan Asusila</option>
+                                                    </select>
+                                            
+                                        </div>
+                                        
+                                        <!-- Category Selection -->
+                                        <div>
+                                            <label for="kategori_pelanggaran" class="block text-sm font-medium text-gray-700 mb-2">
+                                                <i class="fas fa-tag mr-1"></i>
+                                                Kategori Pelanggaran
+                                            </label>
+                                            <select id="kategori_pelanggaran" name="kategori_pelanggaran" required
+                                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                                                <option value="">Pilih Kategori</option>
+                                                <option value="Ringan">Ringan</option>
+                                                <option value="Sedang">Sedang</option>
+                                                <option value="Berat">Berat</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Description -->
+                                        <div>
+                                            <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-2">
+                                                <i class="fas fa-align-left mr-1"></i>
+                                                Deskripsi Kejadian
+                                            </label>
+                                            <textarea id="deskripsi" name="deskripsi" rows="4"
+                                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none"
+                                                      placeholder="Jelaskan secara detail kejadian yang terjadi..."></textarea>
+                                        </div>
+                                        
+                                        <!-- Reporter Selection -->
+                                        <div>
+                                            <label for="di_input_oleh" class="block text-sm font-medium text-gray-700 mb-2">
+                                                <i class="fas fa-user-edit mr-1"></i>
+                                                Di Input Oleh
+                                            </label>
+                                            <select id="di_input_oleh" name="di_input_oleh" required
+                                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                                                <option value="">Pilih Reporter</option>
+                                                <option value="Maylinda Puspita Sari">Maylinda Puspita Sari</option>
+                                                <option value="Desi Artika">Desi Artika</option>
+                                                <option value="Heni Ermawati">Heni Ermawati</option>
+                                                <option value="Muhamad Ichsan">Muhamad Ichsan</option>
+                                                <option value="Suftiyano">Suftiyano</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- File Upload Section -->
+                        <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-100">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <i class="fas fa-camera mr-2 text-purple-600"></i>
+                                Bukti Pelanggaran (Opsional)
+                            </h3>
+                            
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                <div id="fileUploadArea" class="space-y-4">
+                                    <div class="flex justify-center">
+                                        <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-cloud-upload-alt text-purple-600 text-2xl"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-sm text-gray-600 mb-4">
+                                        Upload gambar bukti pelanggaran jika ada. Format yang didukung: JPG, PNG, GIF
+                                    </p>
+                                    
+                                    <input type="file" id="bukti_file" name="bukti_file" 
+                                           accept="image/png, image/jpeg, image/gif"
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4
+                                                   file:rounded-full file:border-0 file:text-sm file:font-semibold
+                                                   file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100
+                                                   bg-white text-gray-700
+                                                   focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200
+                                                   cursor-pointer">
+                                    
+                                    <div id="filePreview" class="hidden mt-4">
+                                        <div class="border-2 border-gray-300 rounded-lg p-4 text-center">
+                                            <img id="previewImage" class="max-w-full max-h-48 mx-auto rounded">
+                                            <p class="text-sm text-gray-600 mt-2">
+                                                <span id="fileName">Tidak ada file yang dipilih</span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="flex justify-between items-center space-x-4 pt-6">
+                            <div class="flex space-x-3">
+                                <button type="button" onclick="validateAndSubmit()" 
+                                        class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 hover:shadow-lg transition-all duration-200 flex items-center">
+                                    <i class="fas fa-save mr-2"></i>
+                                    Simpan Draf
+                                </button>
+                                <button type="button" onclick="clearForm()" 
+                                        class="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-medium rounded-lg hover:from-gray-600 hover:to-gray-700 hover:shadow-lg transition-all duration-200 flex items-center">
+                                    <i class="fas fa-eraser mr-2"></i>
+                                    Hapus Form
+                                </button>
+                            </div>
+                            
+                            <button type="submit" 
+                                    class="px-8 py-4 bg-gradient-to-r from-success to-green-600 text-white font-semibold rounded-lg hover:from-green-600 hover:to-green-700 hover:shadow-xl transition-all duration-200 flex items-center text-lg">
+                                <i class="fas fa-check-circle mr-3"></i>
+                                Catat Pelanggaran
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="mt-6 bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-chart-bar mr-2 text-primary"></i>
+                        Statistik Hari Ini
+                        <button onclick="refreshStats()" class="ml-auto text-sm bg-blue-100 text-blue-600 px-3 py-1 rounded-full hover:bg-blue-200 transition-colors">
+                            <i class="fas fa-sync-alt mr-1"></i> Refresh
+                        </button>
+                    </h3>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                            <i class="fas fa-smile-beam text-3xl text-green-600 mb-2"></i>
+                            <div class="text-2xl font-bold text-green-700" id="statRingan">0</div>
+                            <div class="text-sm text-green-600">Ringan</div>
+                        </div>
+                        <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                            <i class="fas fa-meh text-3xl text-yellow-600 mb-2"></i>
+                            <div class="text-2xl font-bold text-yellow-700" id="statSedang">0</div>
+                            <div class="text-sm text-yellow-600">Sedang</div>
+                        </div>
+                        <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+                            <i class="fas fa-frown text-3xl text-red-600 mb-2"></i>
+                            <div class="text-2xl font-bold text-red-700" id="statBerat">0</div>
+                            <div class="text-sm text-red-600">Berat</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <div class="text-sm text-gray-500">Total pelanggaran hari ini:</div>
+                        <div class="text-xl font-bold text-gray-800" id="statTotal">0</div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="kelas">Kelas:</label>
-                <select id="kelas" name="kelas" required>
-                    <option value="7A">7A</option>
-                    <option value="7B">7B</option>
-                    <option value="7C">7C</option>
-                    <option value="7D">7D</option>
-                    <option value="8A">8A</option>
-                    <option value="8B">8B</option>
-                    <option value="8C">8C</option>
-                    <option value="8D">8D</option>
-                    <option value="9A">9A</option>
-                    <option value="9B">9B</option>
-                    <option value="9C">9C</option>
-                    <option value="9D">9D</option>
-                </select>
+        </main>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all duration-300 scale-95 opacity-0">
+            <div class="flex items-center mb-4">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-check text-green-600 text-2xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">Berhasil!</h2>
             </div>
-            <div class="form-group">
-                <label for="pasal">Pasal:</label>
-                <select id="pasal" name="pasal" required>
-                    <option value="Pasal 1 - Pakaian Seragam Sekolah">Pasal 1 - Pakaian Seragam Sekolah</option>
-                    <option value="Pasal 2 - Kegiatan Pembelajaran">Pasal 2 - Kegiatan Pembelajaran</option>
-                    <option value="Pasal 3 - Kebersihan dan Keindahan Lingkungan">Pasal 3 - Kebersihan dan Keindahan Lingkungan</option>
-                    <option value="Pasal 4 - Hubungan Murid dengan Guru, Karyawan/Pegawai, dan Pelatih Sekolah">Pasal 4 - Hubungan Murid dengan Guru, Karyawan/Pegawai, dan Pelatih Sekolah</option>
-                    <option value="Pasal 5 - Hubungan Murid dengan Murid">Pasal 5 - Hubungan Murid dengan Murid</option>
-                    <option value="Pasal 6 - Kegiatan Organisasi Murid dan Ekstrakurikuler">Pasal 6 - Kegiatan Organisasi Murid dan Ekstrakurikuler</option>
-                    <option value="Pasal 7 - Tindakan Kekerasan dan Amoral dan Asusila">Pasal 7 - Tindakan Kekerasan dan Amoral dan Asusila</option>
-                </select>
+            <p class="text-gray-600 text-center">Pelanggaran berhasil dicatat dalam sistem.</p>
+            <div class="flex justify-center space-x-3 mt-6">
+                <button onclick="closeSuccessModal()" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium">
+                    Lanjut Input
+                </button>
+                <button onclick="window.location.href='{{ url_for('index') }}'" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
+                    Kembali ke Daftar
+                </button>
             </div>
-            <div class="form-group">
-                <label for="kategori_pelanggaran">Kategori Pelanggaran:</label>
-                <select id="kategori_pelanggaran" name="kategori_pelanggaran" required>
-                    <option value="Ringan">Ringan</option>
-                    <option value="Sedang">Sedang</option>
-                    <option value="Berat">Berat</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="tanggal_kejadian">Tanggal Kejadian:</label>
-                <input type="text" id="tanggal_kejadian" name="tanggal_kejadian" placeholder="Pilih tanggal..." required>
-            </div>
-            <div class="form-group">
-                <label for="deskripsi">Deskripsi (Opsional):</label>
-                <textarea id="deskripsi" name="deskripsi"></textarea>
-            </div>
-             <div class="form-group">
-                <label for="di_input_oleh">Di Input Oleh:</label>
-                <select id="di_input_oleh" name="di_input_oleh" required>
-                    <option value="Maylinda Puspita Sari">Maylinda Puspita Sari</option>
-                    <option value="Desi Artika">Desi Artika</option>
-                    <option value="Heni Ermawati">Heni Ermawati</option>
-                    <option value="Muhamad Ichsan">Muhamad Ichsan</option>
-                    <option value="Suftiyano">Suftiyano</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="bukti_file">Bukti Pelanggaran (Gambar, Opsional):</label>
-                <input type="file" id="bukti_file" name="bukti_file" accept="image/png, image/jpeg, image/gif">
-            </div>
-            <div class="button-group">
-                <button type="submit">Catat Pelanggaran</button>
-                <a href="{{ url_for('index') }}" class="back-link">Kembali ke Daftar</a>
-            </div>
-        </form>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Initialize Flatpickr
+        flatpickr("#tanggal_kejadian", {
+            locale: "id",
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d F Y",
+            theme: "light",
+            minDate: new Date(new Date().setFullYear(new Date().getFullYear() - 1))
+        });
+        
+        // File preview functionality
+        document.getElementById('bukti_file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('filePreview');
+                    const previewImage = document.getElementById('previewImage');
+                    const fileName = document.getElementById('fileName');
+                    
+                    preview.classList.remove('hidden');
+                    previewImage.src = e.target.result;
+                    fileName.textContent = file.name;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Student name autocomplete with dummy data (replace with actual data)
+        const studentNames = [
+            'Ahmad Rizki', 'Siti Nurhaliza', 'Budi Santoso', 'Dewi Lestari',
+            'Eko Prasetyo', 'Fitri Handayani', 'Ganjar Pranowo',
+            'Hadi Wijaya', 'Indira Gandhi', 'Joko Widodo',
+            'Megawati Sukarnoputro', 'Mohammad Hatta', 'Soekarno Kartosasmito',
+            'Soeharto', 'Sukarnopati', 'Suharto'
+        ];
+        
+        document.getElementById('nama_murid').addEventListener('input', function() {
+            const value = this.value.toLowerCase();
+            const suggestions = document.getElementById('studentSuggestions');
+            
+            if (value.length > 2) {
+                const filtered = studentNames.filter(name => 
+                    name.toLowerCase().includes(value)
+                ).slice(0, 5);
+                
+                if (filtered.length > 0) {
+                    suggestions.innerHTML = filtered.map(name => 
+                        `<div class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm" onclick="selectStudent('${name}')">
+                            ${name}
+                        </div>`
+                    ).join('');
+                    suggestions.classList.remove('hidden');
+                } else {
+                    suggestions.classList.add('hidden');
+                }
+            } else {
+                suggestions.classList.add('hidden');
+            }
+        });
+        
+        // Click outside to close suggestions
+        document.addEventListener('click', function(e) {
+            const suggestions = document.getElementById('studentSuggestions');
+            const input = document.getElementById('nama_murid');
+            
+            if (!suggestions.contains(e.target) && e.target !== input) {
+                suggestions.classList.add('hidden');
+            }
+        });
+        
+        function selectStudent(name) {
+            document.getElementById('nama_murid').value = name;
+            document.getElementById('studentSuggestions').classList.add('hidden');
+        }
+        
+        // Form validation
+        function validateAndSubmit() {
+            const form = document.getElementById('violationForm');
+            const required = ['nama_murid', 'kelas', 'pasal', 'kategori_pelanggaran', 'tanggal_kejadian', 'di_input_oleh'];
+            let isValid = true;
+            let firstErrorField = null;
+            
+            // Clear previous errors
+            required.forEach(field => {
+                const element = document.getElementById(field);
+                element.classList.remove('border-red-500', 'ring-red-100');
+            });
+            
+            required.forEach(field => {
+                const element = document.getElementById(field);
+                if (!element.value || element.value.trim() === '') {
+                    isValid = false;
+                    element.classList.add('border-red-500', 'ring-red-100');
+                    if (!firstErrorField) firstErrorField = element;
+                }
+            });
+            
+            // Validate description length if provided
+            const deskripsi = document.getElementById('deskripsi');
+            if (deskripsi.value && deskripsi.value.length > 500) {
+                isValid = false;
+                deskripsi.classList.add('border-red-500', 'ring-red-100');
+                showNotification('Deskripsi maksimal 500 karakter!', 'error');
+                if (!firstErrorField) firstErrorField = deskripsi;
+            }
+            
+            if (isValid) {
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...';
+                submitBtn.disabled = true;
+                
+                form.submit();
+            } else {
+                showNotification('Mohon lengkapi semua field yang wajib diisi!', 'error');
+                if (firstErrorField) {
+                    firstErrorField.focus();
+                    firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+        
+        // Show notification function
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existingToast = document.querySelector('.notification-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // Create notification element
+            const toast = document.createElement('div');
+            toast.className = `notification-toast ${type}`;
+            toast.style.cssText = `
+                position: fixed;
+                top: 1rem;
+                right: 1rem;
+                padding: 1rem 1.5rem;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                transform: translateX(200%);
+                transition: transform 0.4s ease-in-out;
+                display: flex;
+                align-items: center;
+                space-x: 0.75rem;
+            `;
+            
+            const colors = {
+                'success': 'bg-green-500 text-white',
+                'error': 'bg-red-500 text-white',
+                'warning': 'bg-yellow-500 text-white',
+                'info': 'bg-blue-500 text-white'
+            };
+            
+            toast.className += ` ${colors[type] || colors.info}`;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-3"></i>
+                <span class="font-medium">${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            // Show notification
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 10);
+
+            // Hide and remove after 4 seconds
+            setTimeout(() => {
+                toast.style.transform = 'translateX(200%)';
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+        
+        function clearForm() {
+            document.getElementById('violationForm').reset();
+            document.getElementById('studentSuggestions').classList.add('hidden');
+            document.getElementById('filePreview').classList.add('hidden');
+        }
+        
+        function closeSuccessModal() {
+            const modal = document.getElementById('successModal');
+            const modalContent = modal.querySelector('.bg-white');
+            
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+        
+        // Fetch and update real-time statistics
+        async function refreshStats() {
+            try {
+                const response = await fetch('/api/today_stats');
+                const data = await response.json();
+                
+                document.getElementById('statRingan').textContent = data.ringan || 0;
+                document.getElementById('statSedang').textContent = data.sedang || 0;
+                document.getElementById('statBerat').textContent = data.berat || 0;
+                document.getElementById('statTotal').textContent = (data.ringan || 0) + (data.sedang || 0) + (data.berat || 0);
+                
+                // Show refresh animation
+                const button = event.target.closest('button');
+                const icon = button.querySelector('i');
+                icon.classList.add('fa-spin');
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                }, 1000);
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        }
+        
+        // Load stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshStats();
+            
+            // Refresh stats every 30 seconds
+            setInterval(refreshStats, 30000);
+        });
+    </script>
 </body>
 </html>

@@ -190,7 +190,14 @@
                 {% if violations %}
                     <div class="violation-list space-y-4">
                         {% for p in violations %}
-                            <div class="violation-item bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100" data-id="{{ p.id }}">
+                            <div class="violation-item bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100" 
+                                 data-id="{{ p.id }}"
+                                 data-nama_murid="{{ p.nama_murid }}"
+                                 data-kelas="{{ p.kelas }}"
+                                 data-kategori="{{ p.kategori_pelanggaran }}"
+                                 data-pasal="{{ p.pasal }}"
+                                 data-di_input_oleh="{{ p.di_input_oleh }}"
+                                 data-tanggal="{{ p.tanggal_kejadian|replace('/', '-')|replace('/', '-') }}">
                                 <div class="p-6">
                                     <div class="flex items-start gap-6">
                                         <!-- Image Section -->
@@ -222,12 +229,16 @@
                                                     </div>
                                                 </div>
                                                 <div class="flex space-x-2">
-                                                    <button class="action-icon-btn print-btn w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full hover:shadow-lg transition-all duration-200 hover:scale-110" title="Cetak Data">
-                                                        <i class="fas fa-print text-sm"></i>
-                                                    </button>
-                                                    <button class="action-icon-btn delete-btn w-10 h-10 bg-gradient-to-r from-danger to-red-600 text-white rounded-full hover:shadow-lg transition-all duration-200 hover:scale-110" title="Hapus Data">
-                                                        <i class="fas fa-trash-alt text-sm"></i>
-                                                    </button>
+                                    <button class="action-icon-btn print-btn w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full hover:shadow-lg transition-all duration-200 hover:scale-110" 
+                                            title="Cetak Data"
+                                            onclick="printViolation('{{ p.id }}', '{{ p.nama_murid }}')">
+                                        <i class="fas fa-print text-sm"></i>
+                                    </button>
+                                    <button class="action-icon-btn delete-btn w-10 h-10 bg-gradient-to-r from-danger to-red-600 text-white rounded-full hover:shadow-lg transition-all duration-200 hover:scale-110" 
+                                            title="Hapus Data"
+                                            onclick="deleteViolation('{{ p.id }}', '{{ p.nama_murid }}')">
+                                        <i class="fas fa-trash-alt text-sm"></i>
+                                    </button>
                                                 </div>
                                             </div>
 
@@ -417,6 +428,69 @@
             }
         }
         
+        // Print functionality (same as index page)
+        function printViolation(violationId, studentName) {
+            console.log('Student History: Print function called with ID:', violationId, 'Student:', studentName);
+            
+            const violationItem = document.querySelector(`[data-id="${viationId}"]`);
+            
+            if (violationItem) {
+                // Get violation data
+                const kelas = violationItem.querySelector('[data-kelas]')?.dataset.kelas || '';
+                const kategori = violationItem.querySelector('.bg-green-100, .bg-orange-100, .bg-red-100')?.textContent.trim() || '';
+                const pasal = violationItem.querySelector('[data-pasal]')?.dataset.pasal || '';
+                const tanggal = violationItem.querySelector('[data-tanggal]')?.dataset.tanggal || '';
+                const deskripsi = violationItem.querySelectorAll('p')[3]?.textContent || '';
+                const inputOleh = violationItem.querySelector('[data-di_input_oleh]')?.dataset.di_input_oleh || '';
+                
+                // Create print content
+                const printContent = `
+                    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Data Pelanggaran - ${studentName}</h2>
+                        <div style="margin: 20px 0;">
+                            <p><strong>Nama Murid:</strong> ${studentName}</p>
+                            <p><strong>Kelas:</strong> ${kelas}</p>
+                            <p><strong>Kategori:</strong> ${kategori}</p>
+                            <p><strong>Pasal:</strong> ${pasal}</p>
+                            <p><strong>Tanggal Kejadian:</strong> ${tanggal}</p>
+                            <p><strong>Di Input Oleh:</strong> ${inputOleh}</p>
+                            ${deskripsi ? `<p><strong>Deskripsi:</strong> ${deskripsi}</p>` : ''}
+                        </div>
+                        <div style="margin-top: 30px; font-size: 12px; color: #666;">
+                            <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+                        </div>
+                    </div>
+                `;
+                
+                // Open print window
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                printWindow.print();
+            }
+        }
+        
+        // Delete functionality (same as index page)
+        function deleteViolation(violationId, studentName) {
+            console.log('Student History: Delete function called with ID:', violationId, 'Student:', studentName);
+            
+            // Set the student name in the modal
+            document.getElementById('studentNameToDelete').textContent = studentName;
+            
+            // Show the modal
+            const modal = document.getElementById('deleteConfirmModal');
+            const modalContent = modal.querySelector('#deleteModalContent');
+            
+            modal.classList.remove('hidden');
+            modalContent.classList.remove('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+            
+            // Store the violation ID for deletion
+            window.violationToDelete = violationId;
+        }
+        
         // Initialize statistics when page loads
         document.addEventListener('DOMContentLoaded', function() {
             // Statistics toggle functionality
@@ -442,8 +516,72 @@
                 updateStudentCategoryStatistics();
             });
             
+            // Cancel delete button
+            document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+                closeModal();
+            });
+            
+            // Confirm delete button
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                confirmDelete();
+            });
+            
+            // Delete confirmation input
+            document.getElementById('deleteConfirmInput').addEventListener('input', function() {
+                const input = this.value.trim();
+                const confirmBtn = document.getElementById('confirmDeleteBtn');
+                if (input === 'SETUJU') {
+                    confirmBtn.disabled = false;
+                    confirmBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed');
+                } else {
+                    confirmBtn.disabled = true;
+                    confirmBtn.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
+                }
+            });
+            
+            // Close modal when clicking outside
+            document.getElementById('deleteConfirmModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+            
             updateStudentCategoryStatistics();
         });
+        
+        // Modal helper functions
+        function closeModal() {
+            const modal = document.getElementById('deleteConfirmModal');
+            const modalContent = modal.querySelector('#deleteModalContent');
+            
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+        
+        function confirmDelete() {
+            if (window.violationToDelete) {
+                // Create and submit form
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/delete/${window.violationToDelete}`;
+                
+                // Add CSRF token (if needed)
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                if (csrfToken) {
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrf_token';
+                    csrfInput.value = csrfToken.getAttribute('content');
+                    form.appendChild(csrfInput);
+                }
+                
+                // Submit form
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
     </script>
 </body>
 </html>
