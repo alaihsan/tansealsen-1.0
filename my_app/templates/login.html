@@ -3,39 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Aplikasi Pelanggaran</title>
+    <title>Login - Sistem Manajemen Pelanggaran</title>
+    <!-- Menggunakan font Poppins untuk kesan modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Load GSAP dari CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
-<body class="login-body">
-    <div class="login-card">
-        <div class="login-logo">
-            <i class="fas fa-school"></i>
+<body class="login-page">
+    
+    <!-- Container untuk elemen animasi background -->
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-header">
+            <h2>Selamat Datang</h2>
+            <p>Silakan masuk untuk melanjutkan</p>
         </div>
         
-        <h1 class="app-title"><I>TANSE APP</I></h1>
-                      
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-container">
-                    {% for category, message in messages %}
-                        <div class="flash-message {{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <form method="post">
-            <div class="input-group">
-                <i class="fas fa-user"></i>
-                <input type="text" id="username" name="username" placeholder="Username" required autocomplete="off">
+        <form method="POST" class="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Masukkan username Anda" required autocomplete="username">
             </div>
-            <div class="input-group">
-                <i class="fas fa-lock"></i>
-                <input type="password" id="password" name="password" placeholder="Password" required>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Masukkan password Anda" required autocomplete="current-password">
             </div>
-            <button type="submit" class="btn-login">Login</button>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Masuk</button>
+            </div>
         </form>
+
+        <div class="login-footer">
+            <p>&copy; 2026 - Sistem Manajemen Pelanggaran by TANSE ALSEN 22</p>
+            <p>TANSE ALSEN 22</p>
+        </div>
     </div>
+
+    <!-- Script Animasi GSAP -->
+    <script>
+        document.addEventListener("DOMContentLoaded", (event) => {
+            // Animasi untuk shape 1 (gerakan lambat & floating)
+            gsap.to(".shape-1", {
+                x: "random(-100, 100)",
+                y: "random(-50, 50)",
+                scale: "random(0.8, 1.2)",
+                duration: 20,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+
+            // Animasi untuk shape 2 (sedikit lebih cepat)
+            gsap.to(".shape-2", {
+                x: "random(-50, 150)",
+                y: "random(50, -50)",
+                rotation: 360,
+                duration: 25,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+
+            // Animasi untuk shape 3
+            gsap.to(".shape-3", {
+                x: "random(-150, 50)",
+                y: "random(20, -20)",
+                scale: "random(0.5, 1.1)",
+                duration: 18,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut"
+            });
+            
+        });
+    </script>
 </body>
 </html>

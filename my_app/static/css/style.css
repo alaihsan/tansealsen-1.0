@@ -1,294 +1,192 @@
-/* General Body Styles */
+/* Reset CSS dasar */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border_box;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f7f6;
     color: #333;
     line-height: 1.6;
-    margin: 0;
-    padding: 20px 20px 80px 20px;
-    transition: padding 0.3s ease;
 }
 
-.container {
-    max-width: 900px;
-    margin: auto;
-    overflow: visible;
-    padding: 20px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    transition: padding 0.3s ease;
-}
-
-/* Judul Utama Estetik */
-.main-title {
-    font-size: 2.5rem;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 25px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    padding-bottom: 5px;
-}
-
-/* --- Gaya Toolbar --- */
-.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
-.toolbar-actions, .toolbar-options { display: flex; align-items: center; gap: 10px; }
-.link-button { display: inline-block; padding: 10px 15px; color: #fff; text-decoration: none; border-radius: 5px; transition: background-color 0.3s ease, transform 0.2s ease; border: none; cursor: pointer; white-space: nowrap; }
-.link-button:hover { transform: translateY(-2px); }
-.link-button.add { background-color: #28a745; } .link-button.add:hover { background-color: #218838; }
-.link-button.rules { background-color: #007bff; } .link-button.rules:hover { background-color: #0056b3; }
-.link-button.logout { background-color: #dc3545; } .link-button.logout:hover { background-color: #c82333; }
-
-/* --- Gaya Kotak Pencarian --- */
-.search-container { position: relative; flex-grow: 1; min-width: 200px; max-width: 350px; }
-#searchInput { width: 100%; padding: 10px 10px 10px 35px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
-#searchInput:focus { border-color: #007bff; outline: none; box-shadow: 0 0 5px rgba(0,123,255,.25); }
-.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #aaa; }
-
-/* --- View Switcher Styles --- */
-.view-switcher { display: flex; border: 1px solid #007bff; border-radius: 5px; overflow: hidden; }
-.view-btn { padding: 8px 12px; font-size: 16px; line-height: 1; border: none; background-color: #fff; color: #007bff; cursor: pointer; transition: all 0.3s ease; }
-.view-btn:first-of-type { border-right: 1px solid #007bff; }
-.view-btn.active { background-color: #007bff; color: #fff; }
-
-/* --- Flash Messages --- */
-.flash-messages { list-style-type: none; padding: 0; margin-bottom: 20px; }
-.flash-message { padding: 15px; margin-bottom: 10px; border-radius: 5px; color: #fff; }
-.flash-message.success { background-color: #28a745; } .flash-message.danger { background-color: #dc3545; } .flash-message.info { background-color: #17a2b8; } .flash-message.warning { background-color: #ffc107; color: #333; }
-
-/* --- Violation List Container --- */
-.violation-list { list-style: none; padding: 0; display: flex; gap: 20px; }
-.violation-item { position: relative; background: #ffffff; border-left: 5px solid #007bff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); transition: opacity 0.4s ease-in-out, transform 0.3s ease-in-out, flex-basis 0.4s ease; }
-.violation-item:hover { transform: translateY(-5px); }
-
-/* --- Tombol Aksi di Kartu (Print & Hapus) --- */
-.card-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 2; }
-.action-icon-btn { background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.5; transition: all 0.3s ease; padding: 5px; }
-.action-icon-btn.print-btn { color: #007bff; } .action-icon-btn.delete-btn { color: #dc3545; }
-.violation-item:hover .action-icon-btn { opacity: 1; }
-.action-icon-btn:hover { transform: scale(1.2); }
-
-/* --- Class untuk efek Fading --- */
-.fading .violation-item { opacity: 0; }
-
-/* == Tampilan Mode Kartu (CARD VIEW) == */
-.violation-list.card-view { flex-wrap: wrap; }
-.card-view .violation-item { display: flex; flex-direction: column; align-items: stretch; padding: 15px; padding-top: 50px; text-align: left; flex-basis: calc(50% - 10px); box-sizing: border-box; }
-.card-view .violation-item img, .card-view .image-thumbnail { align-self: center; width: 150px; height: 150px; margin-right: 0; margin-bottom: 15px; border-radius: 8px; }
-.card-view .violation-item img, .card-view .placeholder-img { object-fit: cover; }
-
-/* == Tampilan Mode Daftar (LIST VIEW) == */
-.violation-list.list-view { flex-direction: column; }
-.list-view .violation-item { display: flex; flex-direction: row; align-items: center; padding: 20px; width: 100%; box-sizing: border-box; }
-.list-view .violation-item img, .list-view .image-thumbnail img, .list-view .placeholder-img { width: 120px; height: 120px; margin-right: 20px; margin-bottom: 0; object-fit: cover; border-radius: 8px; }
-
-/* --- Common Styles --- */
-.violation-details p { margin: 5px 0; } .violation-details p strong { color: #555; }
-.no-violations { text-align: center; color: #777; font-size: 1.1em; padding: 20px; }
-.image-thumbnail { cursor: pointer; }
-
-/* --- Gaya Modal --- */
-.modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); padding-top: 60px; }
-.modal-content { margin: auto; display: block; max-width: 80%; max-height: 80vh; }
-.modal-content-dialog { background-color: #fefefe; margin: 5% auto; padding: 25px 30px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; }
-.modal-content-dialog h2 { margin-top: 0; } .modal-content-dialog .confirm-text { color: #dc3545; font-family: 'Courier New', Courier, monospace; }
-#deleteConfirmInput { width: 100%; padding: 10px; margin-top: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 16px; text-transform: uppercase; }
-.modal-buttons { display: flex; justify-content: flex-end; gap: 10px; }
-.modal-btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background-color 0.3s ease; }
-.btn-secondary { background-color: #6c757d; color: white; } .btn-secondary:hover { background-color: #5a6268; }
-.btn-danger { background-color: #dc3545; color: white; } .btn-danger:hover { background-color: #c82333; } .btn-danger:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; opacity: 0.7; }
-.modal-caption { margin: auto; display: block; width: 80%; max-width: 700px; text-align: center; color: #ccc; padding: 10px 0; height: 150px; }
-.close-button { position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; transition: 0.3s; cursor: pointer; z-index: 1001; }
-.download-button { position: absolute; bottom: 15px; right: 35px; color: #f1f1f1; background-color: #007bff; padding: 10px 15px; border-radius: 5px; text-decoration: none; font-size: 16px; }
-.download-button:hover { background-color: #0056b3; }
-.form-group{margin-bottom:15px}.form-group label{display:block;margin-bottom:5px;font-weight:700}.form-group input[type=text],.form-group textarea,.form-group select{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;box-sizing:border-box}.form-group textarea{height:100px;resize:vertical}.button-group{margin-top:20px}button[type=submit]{background:#007bff;color:#fff;padding:10px 20px;border:none;border-radius:5px;cursor:pointer;font-size:16px}button[type=submit]:hover{background:#0056b3}.back-link{display:inline-block;margin-left:10px;color:#555;text-decoration:none}.back-link:hover{text-decoration:underline}
-
-/* --- GAYA HALAMAN LOGIN --- */
-body.login-body { padding: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; }
-.login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); width: 100%; max-width: 450px; box-sizing: border-box; text-align: center; }
-.login-logo { font-size: 50px; color: #667eea; margin-bottom: 15px; }
-.app-title { font-size: 24px; font-weight: bold; color: #333; margin: 0; }
-.app-subtitle { font-size: 20px; font-weight: normal; color: #555; margin: 0 0 25px 0; }
-.login-header { font-size: 22px; color: #444; margin-bottom: 20px; font-weight: 500; }
-.login-card .flash-container { width: 100%; text-align: left; }
-.login-card .flash-message { width: auto; box-sizing: border-box; font-size: 14px; text-align: center; }
-.input-group { position: relative; margin-bottom: 20px; }
-.input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
-.input-group input { width: 100%; padding: 12px 15px 12px 45px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; transition: border-color 0.3s ease; }
-.input-group input:focus { outline: none; border-color: #667eea; }
-.btn-login { width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: opacity 0.3s ease; }
-.btn-login:hover { opacity: 0.9; }
-
-/* --- GAYA NAVIGASI PAGING --- */
-.pagination-nav { display: flex; justify-content: center; margin-top: 30px; }
-.pagination { display: flex; padding-left: 0; list-style: none; border-radius: .25rem; }
-.page-item .page-link { position: relative; display: block; padding: .5rem .75rem; margin-left: -1px; line-height: 1.25; color: #007bff; background-color: #fff; border: 1px solid #dee2e6; text-decoration: none; transition: all .3s ease; }
-.page-item:first-child .page-link { margin-left: 0; border-top-left-radius: .25rem; border-bottom-left-radius: .25rem; }
-.page-item:last-child .page-link { border-top-right-radius: .25rem; border-bottom-right-radius: .25rem; }
-.page-item.active .page-link { z-index: 1; color: #fff; background-color: #007bff; border-color: #007bff; }
-.page-item.disabled .page-link { color: #6c757d; pointer-events: none; cursor: auto; background-color: #fff; border-color: #dee2e6; }
-.page-item:not(.disabled) .page-link:hover { color: #0056b3; background-color: #e9ecef; border-color: #dee2e6; }
-
-/* --- Efek Transisi Fade In --- */
-@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-.violation-list.fade-in { animation: fadeIn 0.5s ease-out forwards; }
-
-/* --- Gaya Footer --- */
-footer { text-align: center; padding: 20px; margin-top: 30px; color: #888; border-top: 1px solid #e9ecef; }
-footer p { margin: 5px 0; font-size: 14px; }
-footer .subtitle { font-size: 12px; color: #aaa; }
-
-/* ================================================== */
-/* ---        GAYA UNTUK MEDIA CETAK (FINAL)      --- */
-/* ================================================== */
-@media print {
-  /* Pertama, sembunyikan semua elemen di halaman secara default */
-  body > * {
-    display: none !important;
-  }
-
-  /* Lalu, tampilkan HANYA area cetak yang kita siapkan dan isinya */
-  .print-area,
-  .print-area * {
-    display: block !important;
-    visibility: visible !important;
-  }
-
-  /* Atur tata letak halaman cetak agar rapi */
-  .print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 20mm; /* Beri margin pada kertas */
-    box-sizing: border-box;
-    font-size: 12pt;
-    color: #000;
-  }
-
-  .print-header {
-    text-align: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 10px;
-  }
-
-  .print-img {
-    max-width: 200px;
-    display: block;
-    margin: 20px auto 15px;
-    border-radius: 8px;
-  }
-
-  /* INI BAGIAN KUNCI UNTUK MEMBUAT 2 KOLOM */
-  .print-area .violation-details {
-    display: grid !important; /* Gunakan CSS Grid */
-    grid-template-columns: 1fr 1fr; /* Buat 2 kolom dengan lebar yang sama */
-    grid-column-gap: 40px; /* Jarak antar kolom */
-    grid-row-gap: 10px;   /* Jarak antar baris */
-  }
-
-  .print-area .violation-details p {
-    margin: 0;
-    padding: 5px 0;
-    border-bottom: 1px dotted #eee;
-  }
-}
-
-/* --- GAYA RESPONSIVE (MOBILE VIEW) --- */
-@media (max-width: 768px) {
-    body { padding: 10px 10px 60px 10px; } .container { padding: 15px; }
-    .main-title { font-size: 2rem; }
-    .toolbar { flex-direction: column; align-items: stretch; gap: 20px; }
-    .toolbar-actions, .toolbar-options { justify-content: center; flex-wrap: wrap; }
-    .search-container { order: -1; width: 100%; max-width: 100%; }
-    .violation-list.card-view { gap: 15px; }
-    .card-view .violation-item { flex-basis: 100%; }
-    .list-view .violation-item { flex-direction: column; text-align: center; }
-    .list-view .violation-item img, .list-view .image-thumbnail img { margin-right: 0; margin-bottom: 15px; }
-    .login-card { padding: 25px; margin: 15px; } .app-title { font-size: 22px; } .app-subtitle { font-size: 18px; }
-    .modal-content-dialog { padding: 20px; margin: 20px 10px; }
-    .modal-buttons { flex-direction: column-reverse; } .modal-btn { width: 100%; }
-}
-
-/* --- GAYA CUSTOM DATE PICKER --- */
-.flatpickr-calendar { font-family: Arial, sans-serif; background: #ffffff; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border: 1px solid #ddd; z-index: 9999; }
-.flatpickr-months .flatpickr-month { background: #667eea; color: white; fill: white; }
-.flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month { color: white; fill: white; }
-.flatpickr-weekdays { background: #764ba2; } span.flatpickr-weekday { color: rgba(255, 255, 255, 0.8); font-weight: bold; }
-.flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange { background: #667eea; border-color: #667eea; }
-.flatpickr-day.today { border-color: #764ba2; } .flatpickr-day:hover, .flatpickr-day:focus { background: #e9ecef; border-color: #e9ecef; }
-.flatpickr-time input:hover, .flatpickr-time .flatpickr-am-pm:hover, .flatpickr-time input:focus, .flatpickr-time .flatpickr-am-pm:focus { background: #f1f1f1; }
-.student-link {
-    text-decoration: none;
-    color: inherit;
-    display: inline-block;
-}
-
-.student-link .student-name {
-    font-weight: bold;
-    transition: color 0.3s ease;
-}
-
-.student-link:hover .student-name {
-    color: #007bff; /* Warna biru saat di-hover */
-    text-decoration: underline;
-}
-
-/* --- Gaya Filter Tanggal --- */
-.date-filter-form {
+/* --- Khusus Halaman Login --- */
+.login-page {
     display: flex;
-    gap: 8px;
+    justify-content: center;
     align-items: center;
-    flex-grow: 1;
-}
-.input-group-calendar {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     position: relative;
-    flex-grow: 1;
-}
-.input-group-calendar i {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #aaa;
-}
-.input-group-calendar input {
-    width: 100%;
-    padding: 10px 10px 10px 35px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 14px;
-    box-sizing: border-box;
-}
-.input-group-calendar input:focus {
-    border-color: #007bff;
-    outline: none;
-    box-shadow: 0 0 5px rgba(0,123,255,.25);
-}
-.link-button.filter-btn {
-    background-color: #17a2b8; /* Biru Info */
-}
-.link-button.filter-btn:hover {
-    background-color: #117a8b;
-}
-.link-button.reset-btn {
-    background-color: #6c757d; /* Abu-abu */
-}
-.link-button.reset-btn:hover {
-    background-color: #5a6268;
+    overflow: hidden;
 }
 
-/* Sesuaikan di mobile */
-@media (max-width: 768px) {
-    .date-filter-form {
-        flex-direction: column;
-        align-items: stretch;
-        width: 100%;
-    }
-    .input-group-calendar {
-        width: 100%;
+/* Container animasi background */
+.background-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1; /* Pastikan di atas background gradient */
+    pointer-events: none;
+}
+
+/* Bentuk dasar shape animasi */
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(50px); /* Efek pendaran cahaya */
+    opacity: 0.5; /* Transparansi agar tidak terlalu mencolok */
+}
+
+/* Variasi Shape 1 - Biru Muda */
+.shape-1 {
+    width: 400px;
+    height: 400px;
+    top: -100px;
+    left: -100px;
+    background: #4facfe;
+    animation: float1 15s ease-in-out infinite alternate;
+}
+
+/* Variasi Shape 2 - Ungu Muda */
+.shape-2 {
+    width: 350px;
+    height: 350px;
+    bottom: -80px;
+    right: -80px;
+    background: #a18cd1;
+    animation: float2 20s ease-in-out infinite alternate;
+}
+
+/* Variasi Shape 3 - Pink Lembut */
+.shape-3 {
+    width: 250px;
+    height: 250px;
+    top: 30%;
+    left: 70%;
+    background: #ff9a9e;
+    animation: float3 18s ease-in-out infinite alternate;
+}
+
+/* Definisi Animasi Gerak (Keyframes) */
+@keyframes float1 {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(100px, 50px) rotate(45deg); }
+}
+
+@keyframes float2 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-80px, -40px) scale(1.2); }
+}
+
+@keyframes float3 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-150px, 100px) scale(0.8); }
+    100% { transform: translate(50px, -50px) scale(1.1); }
+}
+
+/* Container Login */
+.login-container {
+    background-color: #ffffff; /* Putih Solid */
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    z-index: 10; /* Pastikan selalu di atas background animation */
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-header h2 {
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.login-header p {
+    color: #718096;
+    font-size: 0.95rem;
+}
+
+.login-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #4a5568;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    outline: none;
+    background-color: #f8fafc;
+}
+
+.login-form input:focus {
+    border-color: #667eea;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.login-form input::placeholder {
+    color: #a0aec0;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.login-footer {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: #a0aec0;
+}
+
+/* --- Responsive untuk Mobile --- */
+@media (max-width: 480px) {
+    .login-container {
+        padding: 2rem;
+        width: 90%;
     }
 }
