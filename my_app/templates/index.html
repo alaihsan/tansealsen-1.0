@@ -98,14 +98,14 @@
                                     <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                                 </div>
                                 <div class="flex space-x-2">
-                                    <button type="submit" class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200">
-                                        <i class="fas fa-filter mr-2"></i>
-                                        Filter
-                                    </button>
-                                    <a href="{{ url_for('index') }}" class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-all duration-200">
-                                        <i class="fas fa-redo mr-2"></i>
-                                        Reset
-                                    </a>
+                                <button type="submit" class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200" data-preserve-view="true">
+                                    <i class="fas fa-filter mr-2"></i>
+                                    Filter
+                                </button>
+                                <a href="{{ url_for('index') }}" class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-all duration-200" data-preserve-view="true">
+                                    <i class="fas fa-redo mr-2"></i>
+                                    Reset
+                                </a>
                                 </div>
                             </form>
                         </div>
@@ -449,8 +449,9 @@
                     <nav class="pagination-nav">
                         <ul class="flex items-center space-x-2">
                             <li class="page-item">
-                                <a class="page-link px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 hover:text-gray-700 {% if not pelanggaran_pagination.has_prev %}cursor-not-allowed opacity-50{% endif %}" 
-                                   href="{{ url_for('index', page=pelanggaran_pagination.prev_num, date_range=date_range_value) if pelanggaran_pagination.has_prev else '#' }}">
+                                <a class="page-link px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 {% if not pelanggaran_pagination.has_prev %}cursor-not-allowed opacity-50{% endif %}" 
+                                   href="{{ url_for('index', page=pelanggaran_pagination.prev_num, date_range=date_range_value) if pelanggaran_pagination.has_prev else '#' }}"
+                                   data-preserve-view="true">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
                             </li>
@@ -458,7 +459,8 @@
                                 {% if page_num %}
                                     <li class="page-item">
                                         <a class="page-link px-4 py-2 text-sm font-medium {% if page_num == pelanggaran_pagination.page %}bg-primary text-white border-primary{% else %}text-gray-700 bg-white border-gray-300 hover:bg-gray-50{% endif %} border rounded-lg transition-colors duration-200" 
-                                           href="{{ url_for('index', page=page_num, date_range=date_range_value) }}">{{ page_num }}</a>
+                                           href="{{ url_for('index', page=page_num, date_range=date_range_value) }}"
+                                           data-preserve-view="true">{{ page_num }}</a>
                                     </li>
                                 {% else %}
                                     <li class="page-item">
@@ -468,7 +470,8 @@
                             {% endfor %}
                             <li class="page-item">
                                 <a class="page-link px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50 {% if not pelanggaran_pagination.has_next %}cursor-not-allowed opacity-50{% endif %}" 
-                                   href="{{ url_for('index', page=pelanggaran_pagination.next_num, date_range=date_range_value) if pelanggaran_pagination.has_next else '#' }}">
+                                   href="{{ url_for('index', page=pelanggaran_pagination.next_num, date_range=date_range_value) if pelanggaran_pagination.has_next else '#' }}"
+                                   data-preserve-view="true">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>
                             </li>
@@ -476,6 +479,10 @@
                     </nav>
                 </div>
                 {% endif %}
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </main>
         </div>
 
@@ -534,7 +541,7 @@
     <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
     <script>
         // View Management
-        let currentView = 'card';
+        let currentView = localStorage.getItem('preferredView') || 'card';
         let sortField = null;
         let sortDirection = 'asc';
 
@@ -561,8 +568,29 @@
                 cardBtn.classList.add('text-gray-600', 'hover:text-gray-900');
             }
             currentView = view;
+            localStorage.setItem('preferredView', view);
             updateCategoryStatistics();
         }
+        
+        // Preserve view mode during pagination
+        function preserveViewMode() {
+            localStorage.setItem('preferredView', currentView);
+            // View will be restored on page load
+        }
+        
+        // Handle view preservation on links with data-preserve-view
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('[data-preserve-view="true"]');
+            if (target) {
+                e.preventDefault();
+                preserveViewMode();
+                
+                // Navigate after a short delay to ensure state is saved
+                setTimeout(() => {
+                    window.location.href = target.href;
+                }, 50);
+            }
+        });
 
         // Date parsing helper function
         function parseDate(dateStr) {
@@ -746,6 +774,9 @@
         
             // Initialize everything when page loads
             document.addEventListener('DOMContentLoaded', function() {
+                // Apply saved view mode
+                switchView(currentView);
+                
                 // Initialize date picker
                 initializeDatePicker();
                 
