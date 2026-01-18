@@ -217,7 +217,10 @@
                     <!-- Card View -->
                     <div id="violation-container-card" class="violation-list card-view grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {% for p in pelanggaran_pagination.items %}
-                            <div class="violation-item bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100" data-id="{{ p.id }}">
+                            <div class="violation-item bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100" 
+                                 data-id="{{ p.id }}"
+                                 data-nama_murid="{{ p.nama_murid }}"
+                                 data-tanggal="{{ p.tanggal_kejadian|replace('/', '-')|replace('/', '-') }}">
                                 <!-- Action Buttons -->
                                 <div class="absolute top-3 right-3 flex space-x-2 z-10">
                                     <button class="action-icon-btn print-btn w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full hover:shadow-lg transition-all duration-200 hover:scale-110" title="Cetak Data">
@@ -273,7 +276,7 @@
 
                                     <div class="text-sm">
                                         <p class="text-gray-600 mb-1">Tanggal Kejadian</p>
-                                        <p class="font-medium">{{ p.tanggal_kejadian }}</p>
+                                        <p class="font-medium" data-date="{{ p.tanggal_kejadian }}">{{ p.tanggal_kejadian }}</p>
                                     </div>
 
                                     {% if p.deskripsi %}
@@ -319,12 +322,12 @@
                                             <i class="fas fa-sort ml-1 text-gray-400"></i>
                                         </button>
                                     </div>
-                                    <div class="w-32 px-2">
-                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="tanggal_kejadian">
-                                            Tanggal
-                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
-                                        </button>
-                                    </div>
+                                <div class="w-32 px-2">
+                                    <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="tanggal">
+                                        Tanggal
+                                        <i class="fas fa-sort ml-1 text-gray-400"></i>
+                                    </button>
+                                </div>
                                     <div class="w-48 px-2">
                                         <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="pasal">
                                             Pasal
@@ -349,7 +352,7 @@
                                          data-nama_murid="{{ p.nama_murid }}"
                                          data-kelas="{{ p.kelas }}"
                                          data-kategori="{{ p.kategori_pelanggaran }}"
-                                         data-tanggal="{{ p.tanggal_kejadian }}"
+                                         data-tanggal="{{ p.tanggal_kejadian|replace('/', '-')|replace('/', '-') }}"
                                          data-pasal="{{ p.pasal }}"
                                          data-di_input_oleh="{{ p.di_input_oleh }}">
                                         <div class="flex items-center w-8 px-1">
@@ -527,6 +530,19 @@
             updateCategoryStatistics();
         }
 
+        // Date parsing helper function
+        function parseDate(dateStr) {
+            // Handle DD/MM/YYYY format
+            if (dateStr.includes('/')) {
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {
+                    return new Date(parts[2], parts[1] - 1, parts[0]);
+                }
+            }
+            // Handle ISO format
+            return new Date(dateStr);
+        }
+
         // Sorting Functionality
         function sortList(field, direction) {
             const container = document.getElementById('violation-container-list');
@@ -537,9 +553,9 @@
                 let bVal = b.dataset[field];
                 
                 // Handle different data types
-                if (field === 'tanggal_kejadian') {
-                    aVal = new Date(aVal);
-                    bVal = new Date(bVal);
+                if (field === 'tanggal') {
+                    aVal = parseDate(aVal);
+                    bVal = parseDate(bVal);
                 }
                 
                 if (aVal < bVal) return direction === 'asc' ? -1 : 1;
@@ -548,8 +564,87 @@
             });
             
             // Re-attach sorted rows
-            const listContainer = container.querySelector('.bg-white.border');
+            const listContainer = container.querySelector('.bg-white.border .max-h-96');
             rows.forEach(row => listContainer.appendChild(row));
+        }
+
+        // Date filtering functionality
+        function filterByDateRange(startDate, endDate) {
+            const cardItems = document.querySelectorAll('#violation-container-card .violation-item');
+            const listItems = document.querySelectorAll('#violation-container-list .violation-row');
+            
+            const filterFunc = (element) => {
+                const dateStr = element.dataset.tanggal;
+                const itemDate = parseDate(dateStr);
+                
+                if (!startDate && !endDate) return true; // No filter
+                if (startDate && !endDate) return itemDate >= startDate; // From date only
+                if (!startDate && endDate) return itemDate <= endDate; // To date only
+                return itemDate >= startDate && itemDate <= endDate; // Range
+            };
+            
+            // Apply filter to both views
+            cardItems.forEach(item => {
+                item.style.display = filterFunc(item) ? '' : 'none';
+            });
+            
+            listItems.forEach(item => {
+                item.style.display = filterFunc(item) ? '' : 'none';
+            });
+            
+            // Update statistics after filtering
+            setTimeout(updateCategoryStatistics, 100);
+        }
+
+        // Initialize date picker with enhanced functionality
+        function initializeDatePicker() {
+            const dateInput = document.getElementById('dateFilterInput');
+            
+            flatpickr(dateInput, {
+                locale: "id",
+                mode: "range",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "d F Y",
+                theme: "light",
+                onChange: function(selectedDates, dateStr) {
+                    if (selectedDates.length === 0) {
+                        // Clear filter
+                        filterByDateRange(null, null);
+                    } else if (selectedDates.length === 1) {
+                        // Single date selected
+                        filterByDateRange(selectedDates[0], null);
+                    } else {
+                        // Date range selected
+                        filterByDateRange(selectedDates[0], selectedDates[1]);
+                    }
+                }
+            });
+        }
+
+        // Card view sorting
+        function sortCardView(field, direction) {
+            const container = document.getElementById('violation-container-card');
+            const cards = Array.from(container.querySelectorAll('.violation-item'));
+            
+            cards.sort((a, b) => {
+                let aVal, bVal;
+                
+                if (field === 'nama_murid') {
+                    aVal = a.querySelector('.student-link').textContent.trim();
+                    bVal = b.querySelector('.student-link').textContent.trim();
+                } else if (field === 'tanggal') {
+                    aVal = parseDate(a.dataset.tanggal);
+                    bVal = parseDate(b.dataset.tanggal);
+                }
+                
+                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
+            // Re-attach sorted cards
+            cards.forEach(card => container.appendChild(card));
         }
 
         // Calculate category statistics
@@ -592,71 +687,89 @@
             }
         }
         
-        // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // View switching buttons
-            document.getElementById('view-card-btn').addEventListener('click', () => switchView('card'));
-            document.getElementById('view-list-btn').addEventListener('click', () => switchView('list'));
-            
-            // Sorting buttons
-            document.querySelectorAll('.sort-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const field = this.dataset.sort;
-                    
-                    // Update sort direction
-                    if (sortField === field) {
-                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        sortField = field;
-                        sortDirection = 'asc';
-                    }
-                    
-                    // Update icons
-                    document.querySelectorAll('.sort-btn i').forEach(icon => {
-                        icon.className = 'fas fa-sort ml-1 text-gray-400';
+            // Initialize everything when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                // Initialize date picker
+                initializeDatePicker();
+                
+                // View switching buttons
+                document.getElementById('view-card-btn').addEventListener('click', () => switchView('card'));
+                document.getElementById('view-list-btn').addEventListener('click', () => switchView('list'));
+                
+                // Sorting buttons
+                document.querySelectorAll('.sort-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const field = this.dataset.sort;
+                        
+                        // Update sort direction
+                        if (sortField === field) {
+                            sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                        } else {
+                            sortField = field;
+                            sortDirection = 'asc';
+                        }
+                        
+                        // Update icons
+                        document.querySelectorAll('.sort-btn i').forEach(icon => {
+                            icon.className = 'fas fa-sort ml-1 text-gray-400';
+                        });
+                        
+                        const icon = this.querySelector('i');
+                        icon.className = `fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'} ml-1 text-gray-600`;
+                        
+                        // Sort the list
+                        if (currentView === 'list') {
+                            sortList(field, sortDirection);
+                        }
+                        
+                        // Also sort card view by name or date if needed
+                        if (currentView === 'card' && (field === 'nama_murid' || field === 'tanggal')) {
+                            sortCardView(field, sortDirection);
+                        }
                     });
-                    
-                    const icon = this.querySelector('i');
-                    icon.className = `fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'} ml-1 text-gray-600`;
-                    
-                    // Sort the list
-                    if (currentView === 'list') {
-                        sortList(field, sortDirection);
-                    }
                 });
+                
+                // Select all functionality
+                document.getElementById('selectAll').addEventListener('change', function() {
+                    document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                });
+                
+                // Initialize statistics
+                updateCategoryStatistics();
+                
+                // Search functionality with date filtering
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput) {
+                    searchInput.addEventListener('input', function() {
+                        const searchTerm = this.value.toLowerCase();
+                        const cardItems = document.querySelectorAll('#violation-container-card .violation-item');
+                        const listItems = document.querySelectorAll('#violation-container-list .violation-row');
+                        
+                        const searchFunc = (element) => {
+                            const text = element.textContent.toLowerCase();
+                            return text.includes(searchTerm);
+                        };
+                        
+                        cardItems.forEach(item => {
+                            const matchesSearch = searchFunc(item);
+                            const visible = item.style.display !== 'none';
+                            item.style.display = matchesSearch && visible ? '' : 'none';
+                        });
+                        
+                        listItems.forEach(item => {
+                            const matchesSearch = searchFunc(item);
+                            const visible = item.style.display !== 'none';
+                            item.style.display = matchesSearch && visible ? '' : 'none';
+                        });
+                        
+                        setTimeout(updateCategoryStatistics, 100);
+                    });
+                }
             });
-            
-            // Select all functionality
-            document.getElementById('selectAll').addEventListener('change', function() {
-                document.querySelectorAll('.item-checkbox').forEach(checkbox => {
-                    checkbox.checked = this.checked;
-                });
-            });
-            
-            // Initialize statistics
-            updateCategoryStatistics();
-            
-            // Re-calculate when search or filter changes
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    setTimeout(updateCategoryStatistics, 100);
-                });
-            }
-        });
         
-        // Initialize Flatpickr with Tailwind styling
-        flatpickr("#dateFilterInput", {
-            locale: "id",
-            mode: "range",
-            dateFormat: "Y-m-d",
-            altInput: true,
-            altFormat: "d F Y",
-            theme: "light",
-            onChange: function(selectedDates, dateStr) {
-                setTimeout(updateCategoryStatistics, 500);
-            }
-        });
+        // The date picker is now initialized in the main DOMContentLoaded event
     </script>
 </body>
 </html>
