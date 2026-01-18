@@ -4,171 +4,659 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TANSE APP - Daftar Pelanggaran</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#667eea',
+                        secondary: '#764ba2',
+                        success: '#48bb78',
+                        danger: '#f56565',
+                        warning: '#ed8936'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-    <div class="container">
-        <h1 class="main-title"><i>TANSE APP</i></h1>
-
-        <div class="toolbar">
-            <!-- Left Section: Primary Actions -->
-            <div class="toolbar-section toolbar-primary">
-                <div class="toolbar-actions">
-                    <a href="{{ url_for('add_violation') }}" class="link-button add">
-                        <i class="fas fa-plus"></i>
-                        Tambah Pelanggaran
-                    </a>
-                    <a href="https://tanse-rules.netlify.app/" class="link-button rules" target="_blank" rel="noopener noreferrer">
-                        <i class="fas fa-book"></i>
-                        Tata Tertib
-                    </a>
-                </div>
-            </div>
-
-            <!-- Center Section: Search & Filter -->
-            <div class="toolbar-section toolbar-center">
-                <div class="toolbar-search">
-                    <div class="search-container">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" id="searchInput" placeholder="Cari nama atau kelas...">
+<body class="bg-gray-50">
+    <div class="min-h-screen flex flex-col h-screen">
+        <!-- Top Navigation Bar -->
+        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
+            <div class="px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <!-- Logo -->
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                            TANSE APP
+                        </h1>
                     </div>
-                    <form method="GET" action="{{ url_for('index') }}" class="date-filter-form">
-                        <div class="input-group-calendar">
-                            <i class="fas fa-calendar-alt"></i>
-                            <input type="text" id="dateFilterInput" name="date_range" placeholder="Filter Tanggal..." value="{{ date_range_value or '' }}">
-                        </div>
-                        <button type="submit" class="link-button filter-btn">
-                            <i class="fas fa-filter"></i>
-                            Filter
-                        </button>
-                        <a href="{{ url_for('index') }}" class="link-button reset-btn">
-                            <i class="fas fa-redo"></i>
-                            Reset
+
+                    <!-- Top Action Buttons -->
+                    <div class="flex items-center space-x-3">
+                        <a href="{{ url_for('add_violation') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-success to-green-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+                            <i class="fas fa-plus mr-2"></i>
+                            Tambah Pelanggaran
                         </a>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Right Section: View Options & Logout -->
-            <div class="toolbar-section toolbar-secondary">
-                <div class="toolbar-options">
-                    <div class="view-switcher">
-                        <button id="view-card-btn" class="view-btn active" title="Tampilan Kartu">
-                            <i class="fas fa-th-large"></i>
-                        </button>
-                        <button id="view-list-btn" class="view-btn" title="Tampilan Daftar">
-                            <i class="fas fa-list"></i>
-                        </button>
+                        <a href="https://tanse-rules.netlify.app/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+                            <i class="fas fa-book mr-2"></i>
+                            Tata Tertib
+                        </a>
+                        <div class="flex items-center border-l border-gray-300 pl-3">
+                            <div class="flex items-center bg-gray-100 rounded-lg p-1">
+                                <button id="view-card-btn" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-white bg-primary transition-all duration-200" title="Tampilan Kartu">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                                <button id="view-list-btn" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-all duration-200" title="Tampilan Daftar">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('logout') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-danger to-red-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Logout
+                        </a>
                     </div>
-                    <a href="{{ url_for('logout') }}" class="link-button logout">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Logout
-                    </a>
                 </div>
             </div>
-        </div>
+        </header>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <ul class="flash-messages">
-                    {% for category, message in messages %}
-                        <li class="flash-message {{ category }}">{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-        {% endwith %}
-
-        <div id="no-results-message" style="display: none; text-align: center; color: #777; padding: 20px;">
-            <p>Tidak ada hasil yang cocok dengan pencarian Anda.</p>
-        </div>
-
-        {% if pelanggaran_pagination.items %}
-            <ul class="violation-list card-view">
-                {% for p in pelanggaran_pagination.items %}
-                    <li class="violation-item" data-id="{{ p.id }}">
-                        <div class="card-actions">
-                            <button class="action-icon-btn print-btn" title="Cetak Data"><i class="fas fa-print"></i></button>
-                            <button class="action-icon-btn delete-btn" title="Hapus Data"><i class="fas fa-trash-alt"></i></button>
+        <!-- Main Content Area -->
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Left Sidebar - Fixed Position with Independent Scroll -->
+            <aside class="w-80 bg-white shadow-lg border-r border-gray-200 flex flex-col">
+                <div class="flex-1 overflow-y-auto p-6">
+                    <div class="space-y-6">
+                        <!-- Search Section -->
+                        <div>
+                            <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-search mr-2 text-primary"></i>
+                                Pencarian
+                            </h3>
+                            <div class="relative">
+                                <input type="text" id="searchInput" placeholder="Cari nama atau kelas..." 
+                                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            </div>
                         </div>
-                        {% if p.bukti_file %}
-                            <a href="#" class="image-thumbnail" data-full-image="{{ url_for('static', filename='uploads/' + p.bukti_file) }}">
-                                <img src="{{ url_for('static', filename='uploads/' + p.bukti_file) }}" alt="Bukti Pelanggaran">
-                            </a>
-                        {% else %}
-                            <img src="https://placehold.co/150x150/cccccc/333333?text=No+Image" alt="Tidak Ada Bukti" class="placeholder-img">
-                        {% endif %}
-                        <div class="violation-details">
-                            <p><strong>Nama Murid:</strong>
-                                <a href="{{ url_for('student_history', student_name=p.nama_murid) }}" class="student-link" title="Lihat Riwayat Pelanggaran {{ p.nama_murid }}">
-                                    <span class="student-name">{{ p.nama_murid }}</span>
-                                </a>
-                            </p>
-                            <p><strong>Kelas:</strong> {{ p.kelas }}</p>
-                            <p><strong>Pasal:</strong> {{ p.pasal }}</p>
-                            <p><strong>Kategori Pelanggaran:</strong> {{ p.kategori_pelanggaran }}</p>
-                            <p><strong>Tanggal Kejadian:</strong> {{ p.tanggal_kejadian }}</p>
-                            <p><strong>Deskripsi:</strong> {{ p.deskripsi if p.deskripsi else '-' }}</p>
-                            <p><strong>Di Input Oleh:</strong> {{ p.di_input_oleh }}</p>
-                        </div>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="no-violations">Belum ada pelanggaran yang tercatat.</p>
-        {% endif %}
 
-        {% if pelanggaran_pagination.pages > 1 %}
-        <nav class="pagination-nav">
-            <ul class="pagination">
-                <li class="page-item {{ 'disabled' if not pelanggaran_pagination.has_prev }}">
-                    <a class="page-link" href="{{ url_for('index', page=pelanggaran_pagination.prev_num) if pelanggaran_pagination.has_prev else '#' }}">&laquo;</a>
-                </li>
-                {% for page_num in pelanggaran_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-                    {% if page_num %}
-                        <li class="page-item {{ 'active' if page_num == pelanggaran_pagination.page }}">
-                            <a class="page-link" href="{{ url_for('index', page=page_num, date_range=date_range_value) }}">{{ page_num }}</a>
-                        </li>
-                    {% else %}
-                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        <!-- Date Filter Section -->
+                        <div>
+                            <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-calendar-alt mr-2 text-primary"></i>
+                                Filter Tanggal
+                            </h3>
+                            <form method="GET" action="{{ url_for('index') }}" class="space-y-3">
+                                <div class="relative">
+                                    <input type="text" id="dateFilterInput" name="date_range" 
+                                        placeholder="Pilih rentang tanggal..." value="{{ date_range_value or '' }}"
+                                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200">
+                                    <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button type="submit" class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200">
+                                        <i class="fas fa-filter mr-2"></i>
+                                        Filter
+                                    </button>
+                                    <a href="{{ url_for('index') }}" class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-all duration-200">
+                                        <i class="fas fa-redo mr-2"></i>
+                                        Reset
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Statistics Section -->
+                        <div class="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-4 border border-primary/20">
+                            <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-chart-bar mr-2 text-primary"></i>
+                                Statistik
+                            </h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Total Data:</span>
+                                    <span class="font-semibold text-gray-900">{{ pelanggaran_pagination.total if pelanggaran_pagination else 0 }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Halaman:</span>
+                                    <span class="font-semibold text-gray-900">{{ pelanggaran_pagination.page if pelanggaran_pagination else 1 }} / {{ pelanggaran_pagination.pages if pelanggaran_pagination else 1 }}</span>
+                                </div>
+                                
+                                <!-- Category Statistics -->
+                                <div class="pt-2 border-t border-primary/20">
+                                    <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
+                                        <i class="fas fa-layer-group mr-1 text-primary"></i>
+                                        Kategori Pelanggaran
+                                    </h4>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                                <span class="text-gray-600">Ringan:</span>
+                                            </div>
+                                            <span class="font-semibold text-gray-900" id="stat-ringan">0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                                                <span class="text-gray-600">Sedang:</span>
+                                            </div>
+                                            <span class="font-semibold text-gray-900" id="stat-sedang">0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-red-700 rounded-full mr-2"></span>
+                                                <span class="text-gray-600">Berat:</span>
+                                            </div>
+                                            <span class="font-semibold text-gray-900" id="stat-berat">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Progress Bar -->
+                                <div class="pt-2 border-t border-primary/20">
+                                    <div class="relative">
+                                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden flex" id="category-progress">
+                                            <div class="h-2 transition-all duration-500 flex-shrink-0" id="progress-ringan" style="width: 0%; background-color: #22c55e;"></div>
+                                            <div class="h-2 transition-all duration-500 flex-shrink-0" id="progress-sedang" style="width: 0%; background-color: #f97316;"></div>
+                                            <div class="h-2 transition-all duration-500 flex-shrink-0" id="progress-berat" style="width: 0%; background-color: #b91c1c;"></div>
+                                        </div>
+                                        <div class="flex justify-between mt-1 text-xs text-gray-500">
+                                            <span>Ringan</span>
+                                            <span>Sedang</span>
+                                            <span>Berat</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional spacing for scroll -->
+                        <div class="h-32"></div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content - Scrollable Area -->
+            <main class="flex-1 overflow-y-auto p-6">
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div class="mb-6 space-y-2">
+                            {% for category, message in messages %}
+                                <div class="alert 
+                                    {% if category == 'success' %}bg-green-100 border-green-400 text-green-700{% endif %}
+                                    {% if category == 'error' %}bg-red-100 border-red-400 text-red-700{% endif %}
+                                    {% if category == 'warning' %}bg-yellow-100 border-yellow-400 text-yellow-700{% endif %}
+                                    px-4 py-3 rounded-lg border flex items-center" role="alert">
+                                    <i class="fas 
+                                        {% if category == 'success' %}fa-check-circle{% endif %}
+                                        {% if category == 'error' %}fa-exclamation-circle{% endif %}
+                                        {% if category == 'warning' %}fa-exclamation-triangle{% endif %}
+                                        mr-3"></i>
+                                    <span>{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
                     {% endif %}
-                {% endfor %}
-                <li class="page-item {{ 'disabled' if not pelanggaran_pagination.has_next }}">
-                    <a class="page-link" href="{{ url_for('index', page=pelanggaran_pagination.next_num, date_range=date_range_value) if pelanggaran_pagination.has_next else '#' }}">&raquo;</a>
-                </li>
-            </ul>
-        </nav>
-        {% endif %}
+                {% endwith %}
+
+                <!-- No Results Message -->
+                <div id="no-results-message" class="hidden text-center py-12">
+                    <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 text-lg">Tidak ada hasil yang cocok dengan pencarian Anda.</p>
+                </div>
+
+                <!-- Violation List -->
+                {% if pelanggaran_pagination.items %}
+                    <!-- Card View -->
+                    <div id="violation-container-card" class="violation-list card-view grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for p in pelanggaran_pagination.items %}
+                            <div class="violation-item bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100" data-id="{{ p.id }}">
+                                <!-- Action Buttons -->
+                                <div class="absolute top-3 right-3 flex space-x-2 z-10">
+                                    <button class="action-icon-btn print-btn w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-full hover:shadow-lg transition-all duration-200 hover:scale-110" title="Cetak Data">
+                                        <i class="fas fa-print text-sm"></i>
+                                    </button>
+                                    <button class="action-icon-btn delete-btn w-10 h-10 bg-gradient-to-r from-danger to-red-600 text-white rounded-full hover:shadow-lg transition-all duration-200 hover:scale-110" title="Hapus Data">
+                                        <i class="fas fa-trash-alt text-sm"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Image -->
+                                <div class="h-48 bg-gray-100 overflow-hidden">
+                                    {% if p.bukti_file %}
+                                        <a href="#" class="image-thumbnail block h-full" data-full-image="{{ url_for('static', filename='uploads/' + p.bukti_file) }}">
+                                            <img src="{{ url_for('static', filename='uploads/' + p.bukti_file) }}" alt="Bukti Pelanggaran" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                                        </a>
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <img src="https://placehold.co/300x200/cccccc/333333?text=No+Image" alt="Tidak Ada Bukti" class="w-full h-full object-cover">
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Details -->
+                                <div class="p-4 space-y-3">
+                                    <div>
+                                        <p class="text-sm text-gray-600 mb-1">Nama Murid</p>
+                                        <a href="{{ url_for('student_history', student_name=p.nama_murid) }}" class="student-link text-primary font-semibold hover:text-primary/80 transition-colors duration-200" title="Lihat Riwayat Pelanggaran {{ p.nama_murid }}">
+                                            {{ p.nama_murid }}
+                                        </a>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <p class="text-gray-600">Kelas</p>
+                                            <p class="font-medium">{{ p.kelas }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600">Kategori</p>
+                                            <span class="inline-block px-2 py-1 text-xs font-medium rounded-full
+                                                {% if p.kategori_pelanggaran == 'Ringan' %}bg-green-100 text-green-800{% endif %}
+                                                {% if p.kategori_pelanggaran == 'Sedang' %}bg-orange-100 text-orange-800{% endif %}
+                                                {% if p.kategori_pelanggaran == 'Berat' %}bg-red-100 text-red-900{% endif %}">
+                                                {{ p.kategori_pelanggaran }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-sm">
+                                        <p class="text-gray-600 mb-1">Pasal</p>
+                                        <p class="font-medium">{{ p.pasal }}</p>
+                                    </div>
+
+                                    <div class="text-sm">
+                                        <p class="text-gray-600 mb-1">Tanggal Kejadian</p>
+                                        <p class="font-medium">{{ p.tanggal_kejadian }}</p>
+                                    </div>
+
+                                    {% if p.deskripsi %}
+                                    <div class="text-sm">
+                                        <p class="text-gray-600 mb-1">Deskripsi</p>
+                                        <p class="text-gray-700">{{ p.deskripsi }}</p>
+                                    </div>
+                                    {% endif %}
+
+                                    <div class="text-xs text-gray-500 pt-2 border-t border-gray-100">
+                                        <i class="fas fa-user mr-1"></i> Di input oleh: {{ p.di_input_oleh }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- List View (Mac Finder Style) -->
+                    <div id="violation-container-list" class="violation-list list-view hidden">
+                        <!-- Finder-style Container -->
+                        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                            <!-- Finder-style Header -->
+                            <div class="bg-gray-50 border-b border-gray-200 px-2 py-2">
+                                <div class="flex items-center text-xs font-medium text-gray-600">
+                                    <div class="flex items-center w-8 px-1">
+                                        <input type="checkbox" id="selectAll" class="rounded border-gray-300 hover:border-primary focus:ring-primary">
+                                    </div>
+                                    <div class="flex-1 px-2">
+                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="nama_murid">
+                                            Nama Murid
+                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
+                                        </button>
+                                    </div>
+                                    <div class="w-24 px-2">
+                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="kelas">
+                                            Kelas
+                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
+                                        </button>
+                                    </div>
+                                    <div class="w-28 px-2">
+                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="kategori_pelanggaran">
+                                            Kategori
+                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
+                                        </button>
+                                    </div>
+                                    <div class="w-32 px-2">
+                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="tanggal_kejadian">
+                                            Tanggal
+                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
+                                        </button>
+                                    </div>
+                                    <div class="w-48 px-2">
+                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="pasal">
+                                            Pasal
+                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
+                                        </button>
+                                    </div>
+                                    <div class="w-40 px-2">
+                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="di_input_oleh">
+                                            Di Input Oleh
+                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
+                                        </button>
+                                    </div>
+                                    <div class="w-20 px-2 text-center text-gray-500">Aksi</div>
+                                </div>
+                            </div>
+
+                            <!-- Finder-style List Items -->
+                            <div class="max-h-96 overflow-y-auto">
+                                {% for p in pelanggaran_pagination.items %}
+                                    <div class="violation-row flex items-center px-2 py-2 hover:bg-blue-50 border-b border-gray-50 last:border-b-0 transition-colors duration-150 cursor-pointer group" 
+                                         data-id="{{ p.id }}"
+                                         data-nama_murid="{{ p.nama_murid }}"
+                                         data-kelas="{{ p.kelas }}"
+                                         data-kategori="{{ p.kategori_pelanggaran }}"
+                                         data-tanggal="{{ p.tanggal_kejadian }}"
+                                         data-pasal="{{ p.pasal }}"
+                                         data-di_input_oleh="{{ p.di_input_oleh }}">
+                                        <div class="flex items-center w-8 px-1">
+                                            <input type="checkbox" class="item-checkbox rounded border-gray-300 hover:border-primary focus:ring-primary group-hover:border-primary">
+                                        </div>
+                                        <div class="flex-1 px-2">
+                                            <a href="{{ url_for('student_history', student_name=p.nama_murid) }}" 
+                                               class="text-primary font-medium hover:text-primary/80 transition-colors duration-200 flex items-center group-hover:text-blue-600">
+                                                {% if p.bukti_file %}
+                                                    <i class="fas fa-image text-gray-400 mr-2 text-sm group-hover:text-blue-400"></i>
+                                                {% else %}
+                                                    <i class="fas fa-user text-gray-300 mr-2 text-sm group-hover:text-blue-400"></i>
+                                                {% endif %}
+                                                <span class="truncate">{{ p.nama_murid }}</span>
+                                            </a>
+                                        </div>
+                                        <div class="w-24 px-2 text-sm text-gray-700 group-hover:text-gray-900">{{ p.kelas }}</div>
+                                        <div class="w-28 px-2">
+                                            <span class="inline-block px-2 py-0.5 text-xs font-medium rounded-full
+                                                {% if p.kategori_pelanggaran == 'Ringan' %}bg-green-100 text-green-800 group-hover:bg-green-200{% endif %}
+                                                {% if p.kategori_pelanggaran == 'Sedang' %}bg-orange-100 text-orange-800 group-hover:bg-orange-200{% endif %}
+                                                {% if p.kategori_pelanggaran == 'Berat' %}bg-red-100 text-red-900 group-hover:bg-red-200{% endif %}
+                                                transition-colors duration-150">
+                                                {{ p.kategori_pelanggaran }}
+                                            </span>
+                                        </div>
+                                        <div class="w-32 px-2 text-sm text-gray-700 group-hover:text-gray-900">{{ p.tanggal_kejadian }}</div>
+                                        <div class="w-48 px-2 text-sm text-gray-700 group-hover:text-gray-900 truncate" title="{{ p.pasal }}">{{ p.pasal }}</div>
+                                        <div class="w-40 px-2 text-sm text-gray-700 group-hover:text-gray-900 truncate" title="{{ p.di_input_oleh }}">{{ p.di_input_oleh }}</div>
+                                        <div class="w-20 px-2 flex justify-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                                            {% if p.bukti_file %}
+                                                <a href="#" class="image-thumbnail text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1 rounded transition-colors duration-200" 
+                                                   data-full-image="{{ url_for('static', filename='uploads/' + p.bukti_file) }}" title="Lihat Gambar">
+                                                    <i class="fas fa-image text-sm"></i>
+                                                </a>
+                                            {% endif %}
+                                            <button class="print-btn text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1 rounded transition-colors duration-200" title="Cetak">
+                                                <i class="fas fa-print text-sm"></i>
+                                            </button>
+                                            <button class="delete-btn text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors duration-200" title="Hapus">
+                                                <i class="fas fa-trash-alt text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-16">
+                        <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 text-lg">Belum ada pelanggaran yang tercatat.</p>
+                    </div>
+                {% endif %}
+
+                <!-- Pagination -->
+                {% if pelanggaran_pagination.pages > 1 %}
+                <div class="mt-8 flex justify-center">
+                    <nav class="pagination-nav">
+                        <ul class="flex items-center space-x-2">
+                            <li class="page-item">
+                                <a class="page-link px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 hover:text-gray-700 {% if not pelanggaran_pagination.has_prev %}cursor-not-allowed opacity-50{% endif %}" 
+                                   href="{{ url_for('index', page=pelanggaran_pagination.prev_num, date_range=date_range_value) if pelanggaran_pagination.has_prev else '#' }}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% for page_num in pelanggaran_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                {% if page_num %}
+                                    <li class="page-item">
+                                        <a class="page-link px-4 py-2 text-sm font-medium {% if page_num == pelanggaran_pagination.page %}bg-primary text-white border-primary{% else %}text-gray-700 bg-white border-gray-300 hover:bg-gray-50{% endif %} border rounded-lg transition-colors duration-200" 
+                                           href="{{ url_for('index', page=page_num, date_range=date_range_value) }}">{{ page_num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <span class="px-4 py-2 text-gray-500">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            <li class="page-item">
+                                <a class="page-link px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50 {% if not pelanggaran_pagination.has_next %}cursor-not-allowed opacity-50{% endif %}" 
+                                   href="{{ url_for('index', page=pelanggaran_pagination.next_num, date_range=date_range_value) if pelanggaran_pagination.has_next else '#' }}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 py-6 px-6">
+            <div class="text-center">
+                <p class="text-gray-600 flex items-center justify-center">
+                    <span class="mr-2">✨</span>
+                    Dibuat dengan ❤️ oleh Tim IT Alsen 22 &copy; 2025
+                    <span class="ml-2">✨</span>
+                </p>
+                <p class="text-sm text-gray-500 mt-1">Aplikasi Pencatatan Pelanggaran Murid</p>
+            </div>
+        </footer>
     </div>
 
-    <footer>
-        <p>✨ Dibuat dengan ❤️ oleh Tim IT Alsen 22 &copy; 2025 ✨</p>
-        <p class="subtitle">Aplikasi Pencatatan Pelanggaran Murid</p>
-    </footer>
-
-    <div id="fullscreenModal" class="modal">
-        <span class="close-button">&times;</span>
-        <img class="modal-content" id="fullImage">
-        <div class="modal-caption" id="caption"></div>
-        <a id="downloadButton" class="download-button" download>Unduh Gambar</a>
+    <!-- Modals -->
+    <!-- Fullscreen Image Modal -->
+    <div id="fullscreenModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center">
+        <button class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition-colors duration-200" onclick="closeImageModal()">
+            <i class="fas fa-times"></i>
+        </button>
+        <img class="modal-content max-w-4xl max-h-4xl rounded-lg shadow-2xl" id="fullImage">
+        <div class="modal-caption text-white text-center mt-4" id="caption"></div>
+        <a id="downloadButton" class="download-button fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors duration-200" download>
+            <i class="fas fa-download mr-2"></i>Unduh Gambar
+        </a>
     </div>
 
-    <div id="deleteConfirmModal" class="modal">
-        <div class="modal-content-dialog">
-            <h2>Konfirmasi Hapus</h2>
-            <p>Anda yakin ingin menghapus data pelanggaran oleh <strong id="studentNameToDelete"></strong>? Tindakan ini tidak dapat diurungkan.</p>
-            <p>Untuk konfirmasi, ketik <strong class="confirm-text">SETUJU</strong> di bawah ini:</p>
-            <input type="text" id="deleteConfirmInput" autocomplete="off">
-            <div class="modal-buttons">
-                <button id="cancelDeleteBtn" class="modal-btn btn-secondary">Batal</button>
-                <button id="confirmDeleteBtn" class="modal-btn btn-danger" disabled>Hapus Data</button>
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all duration-300 scale-95 opacity-0" id="deleteModalContent">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">Konfirmasi Hapus</h2>
+            </div>
+            <p class="text-gray-600 mb-4">Anda yakin ingin menghapus data pelanggaran oleh <strong id="studentNameToDelete" class="text-red-600"></strong>? Tindakan ini tidak dapat diurungkan.</p>
+            <p class="text-sm text-gray-500 mb-4">Untuk konfirmasi, ketik <strong class="confirm-text bg-red-100 text-red-700 px-2 py-1 rounded">SETUJU</strong> di bawah ini:</p>
+            <input type="text" id="deleteConfirmInput" placeholder="Ketik SETUJU" autocomplete="off" 
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
+            <div class="modal-buttons flex space-x-3 mt-6">
+                <button id="cancelDeleteBtn" class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium">
+                    <i class="fas fa-times mr-2"></i>Batal
+                </button>
+                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-gradient-to-r from-danger to-red-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fas fa-trash mr-2"></i>Hapus Data
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
+    <script>
+        // View Management
+        let currentView = 'card';
+        let sortField = null;
+        let sortDirection = 'asc';
+
+        // View Switching
+        function switchView(view) {
+            const cardView = document.getElementById('violation-container-card');
+            const listView = document.getElementById('violation-container-list');
+            const cardBtn = document.getElementById('view-card-btn');
+            const listBtn = document.getElementById('view-list-btn');
+
+            if (view === 'card') {
+                cardView.classList.remove('hidden');
+                listView.classList.add('hidden');
+                cardBtn.classList.add('text-white', 'bg-primary');
+                cardBtn.classList.remove('text-gray-600', 'hover:text-gray-900');
+                listBtn.classList.remove('text-white', 'bg-primary');
+                listBtn.classList.add('text-gray-600', 'hover:text-gray-900');
+            } else {
+                cardView.classList.add('hidden');
+                listView.classList.remove('hidden');
+                listBtn.classList.add('text-white', 'bg-primary');
+                listBtn.classList.remove('text-gray-600', 'hover:text-gray-900');
+                cardBtn.classList.remove('text-white', 'bg-primary');
+                cardBtn.classList.add('text-gray-600', 'hover:text-gray-900');
+            }
+            currentView = view;
+            updateCategoryStatistics();
+        }
+
+        // Sorting Functionality
+        function sortList(field, direction) {
+            const container = document.getElementById('violation-container-list');
+            const rows = Array.from(container.querySelectorAll('.violation-row'));
+            
+            rows.sort((a, b) => {
+                let aVal = a.dataset[field];
+                let bVal = b.dataset[field];
+                
+                // Handle different data types
+                if (field === 'tanggal_kejadian') {
+                    aVal = new Date(aVal);
+                    bVal = new Date(bVal);
+                }
+                
+                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+            
+            // Re-attach sorted rows
+            const listContainer = container.querySelector('.bg-white.border');
+            rows.forEach(row => listContainer.appendChild(row));
+        }
+
+        // Calculate category statistics
+        function updateCategoryStatistics() {
+            const selector = currentView === 'card' 
+                ? '#violation-container-card .violation-item' 
+                : '#violation-container-list .violation-row';
+            
+            const items = document.querySelectorAll(selector);
+            let ringan = 0, sedang = 0, berat = 0;
+            
+            items.forEach(item => {
+                const categoryElement = item.querySelector('.bg-green-100, .bg-orange-100, .bg-red-100');
+                if (categoryElement) {
+                    if (categoryElement.classList.contains('bg-green-100')) ringan++;
+                    else if (categoryElement.classList.contains('bg-orange-100')) sedang++;
+                    else if (categoryElement.classList.contains('bg-red-100')) berat++;
+                }
+            });
+            
+            // Update display
+            document.getElementById('stat-ringan').textContent = ringan;
+            document.getElementById('stat-sedang').textContent = sedang;
+            document.getElementById('stat-berat').textContent = berat;
+            
+            // Update progress bar
+            const total = ringan + sedang + berat;
+            if (total > 0) {
+                const progressRingan = (ringan / total) * 100;
+                const progressSedang = (sedang / total) * 100;
+                const progressBerat = (berat / total) * 100;
+                
+                // Create stacked progress bar
+                const progressBar = document.getElementById('category-progress');
+                progressBar.innerHTML = `
+                    <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressRingan}%; background-color: #22c55e;"></div>
+                    <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressSedang}%; background-color: #f97316;"></div>
+                    <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressBerat}%; background-color: #b91c1c;"></div>
+                `;
+            }
+        }
+        
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // View switching buttons
+            document.getElementById('view-card-btn').addEventListener('click', () => switchView('card'));
+            document.getElementById('view-list-btn').addEventListener('click', () => switchView('list'));
+            
+            // Sorting buttons
+            document.querySelectorAll('.sort-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const field = this.dataset.sort;
+                    
+                    // Update sort direction
+                    if (sortField === field) {
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortField = field;
+                        sortDirection = 'asc';
+                    }
+                    
+                    // Update icons
+                    document.querySelectorAll('.sort-btn i').forEach(icon => {
+                        icon.className = 'fas fa-sort ml-1 text-gray-400';
+                    });
+                    
+                    const icon = this.querySelector('i');
+                    icon.className = `fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'} ml-1 text-gray-600`;
+                    
+                    // Sort the list
+                    if (currentView === 'list') {
+                        sortList(field, sortDirection);
+                    }
+                });
+            });
+            
+            // Select all functionality
+            document.getElementById('selectAll').addEventListener('change', function() {
+                document.querySelectorAll('.item-checkbox').forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+            });
+            
+            // Initialize statistics
+            updateCategoryStatistics();
+            
+            // Re-calculate when search or filter changes
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    setTimeout(updateCategoryStatistics, 100);
+                });
+            }
+        });
+        
+        // Initialize Flatpickr with Tailwind styling
+        flatpickr("#dateFilterInput", {
+            locale: "id",
+            mode: "range",
+            dateFormat: "Y-m-d",
+            altInput: true,
+            altFormat: "d F Y",
+            theme: "light",
+            onChange: function(selectedDates, dateStr) {
+                setTimeout(updateCategoryStatistics, 500);
+            }
+        });
+    </script>
 </body>
 </html>
