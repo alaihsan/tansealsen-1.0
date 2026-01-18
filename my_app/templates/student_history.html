@@ -12,11 +12,28 @@
         <h1 class="main-title">Riwayat Pelanggaran<br><i>{{ student_name }}</i></h1>
 
         <div class="toolbar">
-            <div class="toolbar-actions">
-                <a href="{{ url_for('index') }}" class="link-button rules">&laquo; Kembali ke Daftar Utama</a>
+            <!-- Left Section: Navigation -->
+            <div class="toolbar-section toolbar-primary">
+                <div class="toolbar-actions">
+                    <a href="{{ url_for('index') }}" class="link-button rules">
+                        <i class="fas fa-arrow-left"></i>
+                        Kembali ke Daftar Utama
+                    </a>
+                </div>
             </div>
-            <div class="toolbar-options">
-                <a href="{{ url_for('logout') }}" class="link-button logout">Logout</a>
+
+            <!-- Center Section: Empty for balance -->
+            <div class="toolbar-section toolbar-center">
+            </div>
+
+            <!-- Right Section: Logout -->
+            <div class="toolbar-section toolbar-secondary">
+                <div class="toolbar-options">
+                    <a href="{{ url_for('logout') }}" class="link-button logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -60,7 +77,9 @@
             <p class="no-violations">Belum ada pelanggaran yang tercatat untuk murid ini.</p>
         {% endif %}
 
-    </div> <footer>
+    </div>
+
+    <footer>
         <p>✨ Dibuat dengan ❤️ oleh Tim IT Alsen 22 &copy; 2025 ✨</p>
         <p class="subtitle">Aplikasi Pencatatan Pelanggaran Murid</p>
     </footer>

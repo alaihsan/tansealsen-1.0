@@ -3,43 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tanse App - Daftar Pelanggaran</title>
+    <title>TANSE APP - Daftar Pelanggaran</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <title>Tanse App - Daftar Pelanggaran</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-</head>
 </head>
 <body>
     <div class="container">
         <h1 class="main-title"><i>TANSE APP</i></h1>
 
         <div class="toolbar">
-            <div class="toolbar-actions">
-                <a href="{{ url_for('add_violation') }}" class="link-button add">Tambah Pelanggaran</a>
-                <a href="https://tanse-rules.netlify.app/" class="link-button rules" target="_blank" rel="noopener noreferrer">Tata Tertib</a>
+            <!-- Left Section: Primary Actions -->
+            <div class="toolbar-section toolbar-primary">
+                <div class="toolbar-actions">
+                    <a href="{{ url_for('add_violation') }}" class="link-button add">
+                        <i class="fas fa-plus"></i>
+                        Tambah Pelanggaran
+                    </a>
+                    <a href="https://tanse-rules.netlify.app/" class="link-button rules" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-book"></i>
+                        Tata Tertib
+                    </a>
+                </div>
             </div>
 
-            <form method="GET" action="{{ url_for('index') }}" class="date-filter-form">
-                <div class="input-group-calendar">
-                    <i class="fas fa-calendar-alt"></i>
-                    <input type="text" id="dateFilterInput" name="date_range" placeholder="Filter Tanggal Kejadian..." value="{{ date_range_value or '' }}">
+            <!-- Center Section: Search & Filter -->
+            <div class="toolbar-section toolbar-center">
+                <div class="toolbar-search">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" placeholder="Cari nama atau kelas...">
+                    </div>
+                    <form method="GET" action="{{ url_for('index') }}" class="date-filter-form">
+                        <div class="input-group-calendar">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="text" id="dateFilterInput" name="date_range" placeholder="Filter Tanggal..." value="{{ date_range_value or '' }}">
+                        </div>
+                        <button type="submit" class="link-button filter-btn">
+                            <i class="fas fa-filter"></i>
+                            Filter
+                        </button>
+                        <a href="{{ url_for('index') }}" class="link-button reset-btn">
+                            <i class="fas fa-redo"></i>
+                            Reset
+                        </a>
+                    </form>
                 </div>
-                <button type="submit" class="link-button filter-btn">Filter</button>
-                <a href="{{ url_for('index') }}" class="link-button reset-btn">Reset</a>
-            </form>
-
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Cari nama atau kelas...">
             </div>
-            <div class="toolbar-options">
-                <div class="view-switcher">
-                    <button id="view-card-btn" class="view-btn active" title="Tampilan Kartu"><i class="fas fa-th-large"></i></button>
-                    <button id="view-list-btn" class="view-btn" title="Tampilan Daftar"><i class="fas fa-list"></i></button>
+
+            <!-- Right Section: View Options & Logout -->
+            <div class="toolbar-section toolbar-secondary">
+                <div class="toolbar-options">
+                    <div class="view-switcher">
+                        <button id="view-card-btn" class="view-btn active" title="Tampilan Kartu">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button id="view-list-btn" class="view-btn" title="Tampilan Daftar">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="link-button logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
                 </div>
-                <a href="{{ url_for('logout') }}" class="link-button logout">Logout</a>
             </div>
         </div>
 
@@ -101,13 +128,15 @@
                 {% for page_num in pelanggaran_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
                     {% if page_num %}
                         <li class="page-item {{ 'active' if page_num == pelanggaran_pagination.page }}">
-                    <a class="page-link" href="{{ url_for('index', page=pelanggaran_pagination.prev_num, date_range=date_range_value) if pelanggaran_pagination.has_prev else '#' }}">&laquo;</a>                        </li>
+                            <a class="page-link" href="{{ url_for('index', page=page_num, date_range=date_range_value) }}">{{ page_num }}</a>
+                        </li>
                     {% else %}
                         <li class="page-item disabled"><span class="page-link">...</span></li>
                     {% endif %}
                 {% endfor %}
                 <li class="page-item {{ 'disabled' if not pelanggaran_pagination.has_next }}">
-<a class="page-link" href="{{ url_for('index', page=pelanggaran_pagination.prev_num, date_range=date_range_value) if pelanggaran_pagination.has_prev else '#' }}">&laquo;</a>                </li>
+                    <a class="page-link" href="{{ url_for('index', page=pelanggaran_pagination.next_num, date_range=date_range_value) if pelanggaran_pagination.has_next else '#' }}">&raquo;</a>
+                </li>
             </ul>
         </nav>
         {% endif %}
@@ -141,7 +170,5 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
-</body>
-</html>
 </body>
 </html>
