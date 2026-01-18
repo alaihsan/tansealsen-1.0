@@ -42,6 +42,19 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def get_global_statistics():
+    """Menghitung statistik global untuk semua kategori pelanggaran"""
+    total_ringan = Pelanggaran.query.filter_by(kategori_pelanggaran='Ringan').count()
+    total_sedang = Pelanggaran.query.filter_by(kategori_pelanggaran='Sedang').count()
+    total_berat = Pelanggaran.query.filter_by(kategori_pelanggaran='Berat').count()
+    
+    return {
+        'total_ringan': total_ringan,
+        'total_sedang': total_sedang,
+        'total_berat': total_berat,
+        'total_all': total_ringan + total_sedang + total_berat
+    }
+
 # --- Rute Aplikasi ---
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -73,8 +86,16 @@ def student_history(student_name):
     # Ambil semua pelanggaran HANYA untuk murid yang spesifik
     violations = Pelanggaran.query.filter_by(nama_murid=student_name).order_by(Pelanggaran.tanggal_dicatat.desc()).all()
 
+    # Dapatkan statistik global
+    global_stats = get_global_statistics()
+    
     # Kirim data ke template baru yang akan kita buat
-    return render_template('student_history.html', violations=violations, student_name=student_name)
+    return render_template('student_history.html', 
+                           violations=violations, 
+                           student_name=student_name,
+                           total_ringan=global_stats['total_ringan'],
+                           total_sedang=global_stats['total_sedang'],
+                           total_berat=global_stats['total_berat'])
 @app.route('/')
 def index():
     if not session.get('logged_in'):
@@ -108,10 +129,16 @@ def index():
         page=page, per_page=PER_PAGE
     )
 
+    # Dapatkan statistik global
+    global_stats = get_global_statistics()
+    
     # Kirim nilai filter kembali ke template agar input tetap terisi
     return render_template('index.html',
                            pelanggaran_pagination=pelanggaran_pagination,
-                           date_range_value=date_range_str)
+                           date_range_value=date_range_str,
+                           total_ringan=global_stats['total_ringan'],
+                           total_sedang=global_stats['total_sedang'],
+                           total_berat=global_stats['total_berat'])
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_violation():
@@ -125,7 +152,7 @@ def add_violation():
                 filename = str(uuid.uuid4()) + '.' + file.filename.rsplit('.', 1)[1].lower()
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 bukti_file_nama = filename
-            elif file.filename != '' and not allowed_file(file.filename):
+            elif file and file.filename != '' and not allowed_file(file.filename):
                 flash('Tipe file tidak diizinkan. Hanya PNG, JPG, JPEG, GIF.', 'danger')
                 return redirect(request.url)
 

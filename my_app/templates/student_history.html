@@ -74,12 +74,46 @@
 
                         <!-- Category Statistics -->
                         <div class="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-4 border border-primary/20">
-                            <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
-                                <i class="fas fa-chart-pie mr-2 text-primary"></i>
-                                Statistik Pelanggaran
+                            <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chart-pie mr-2 text-primary"></i>
+                                    Statistik Pelanggaran
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button id="toggleStudentStats" class="text-xs text-primary hover:text-primary/80 transition-colors" title="Toggle Global/Student Stats">
+                                        <i class="fas fa-globe mr-1"></i>
+                                        <span id="studentStatsMode">Global</span>
+                                    </button>
+                                </div>
                             </h3>
                             <div class="space-y-3 text-sm">
-                                <div class="space-y-2">
+                                <!-- Global Statistics -->
+                                <div id="globalStudentStats" class="space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center">
+                                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                            <span class="text-gray-600">Ringan:</span>
+                                        </div>
+                                        <span class="font-semibold text-gray-900">{{ total_ringan if total_ringan is defined else 0 }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center">
+                                            <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                                            <span class="text-gray-600">Sedang:</span>
+                                        </div>
+                                        <span class="font-semibold text-gray-900">{{ total_sedang if total_sedang is defined else 0 }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center">
+                                            <span class="w-2 h-2 bg-red-700 rounded-full mr-2"></span>
+                                            <span class="text-gray-600">Berat:</span>
+                                        </div>
+                                        <span class="font-semibold text-gray-900">{{ total_berat if total_berat is defined else 0 }}</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Student Statistics -->
+                                <div id="currentStudentStats" class="space-y-2 hidden">
                                     <div class="flex justify-between items-center">
                                         <div class="flex items-center">
                                             <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
@@ -329,8 +363,86 @@
             }
         }
         
+        // Calculate student category statistics
+        function updateStudentCategoryStatistics() {
+            const violationItems = document.querySelectorAll('.violation-item');
+            let ringan = 0, sedang = 0, berat = 0;
+            
+            violationItems.forEach(item => {
+                const categoryElement = item.querySelector('.bg-green-100, .bg-orange-100, .bg-red-100');
+                if (categoryElement) {
+                    if (categoryElement.classList.contains('bg-green-100')) ringan++;
+                    else if (categoryElement.classList.contains('bg-orange-100')) sedang++;
+                    else if (categoryElement.classList.contains('bg-red-100')) berat++;
+                }
+            });
+            
+            // Get the current statistics mode
+            const isGlobal = document.getElementById('studentStatsMode').textContent.trim() === 'Global';
+            
+            if (isGlobal) {
+                // Use global statistics from server (displayed directly in template)
+                const globalRingan = parseInt('{{ total_ringan if total_ringan is defined else 0 }}');
+                const globalSedang = parseInt('{{ total_sedang if total_sedang is defined else 0 }}');
+                const globalBerat = parseInt('{{ total_berat if total_berat is defined else 0 }}');
+                
+                updateStudentStatisticsDisplay(globalRingan, globalSedang, globalBerat);
+            } else {
+                // Use current student statistics
+                updateStudentStatisticsDisplay(ringan, sedang, berat);
+            }
+        }
+        
+        function updateStudentStatisticsDisplay(ringan, sedang, berat) {
+            // Update display
+            document.getElementById('student-stat-ringan').textContent = ringan;
+            document.getElementById('student-stat-sedang').textContent = sedang;
+            document.getElementById('student-stat-berat').textContent = berat;
+            
+            // Update progress bar
+            const total = ringan + sedang + berat;
+            if (total > 0) {
+                const progressRingan = (ringan / total) * 100;
+                const progressSedang = (sedang / total) * 100;
+                const progressBerat = (berat / total) * 100;
+                
+                // Create stacked progress bar
+                const progressBar = document.getElementById('student-category-progress');
+                if (progressBar) {
+                    progressBar.innerHTML = `
+                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressRingan}%; background-color: #22c55e;"></div>
+                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressSedang}%; background-color: #f97316;"></div>
+                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressBerat}%; background-color: #b91c1c;"></div>
+                    `;
+                }
+            }
+        }
+        
         // Initialize statistics when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            // Statistics toggle functionality
+            document.getElementById('toggleStudentStats').addEventListener('click', function() {
+                const globalStats = document.getElementById('globalStudentStats');
+                const currentStats = document.getElementById('currentStudentStats');
+                const statsMode = document.getElementById('studentStatsMode');
+                
+                if (globalStats.classList.contains('hidden')) {
+                    // Show global stats
+                    globalStats.classList.remove('hidden');
+                    currentStats.classList.add('hidden');
+                    statsMode.textContent = 'Global';
+                    this.querySelector('i').className = 'fas fa-globe mr-1';
+                } else {
+                    // Show student stats
+                    globalStats.classList.add('hidden');
+                    currentStats.classList.remove('hidden');
+                    statsMode.textContent = 'Siswa Ini';
+                    this.querySelector('i').className = 'fas fa-user mr-1';
+                }
+                
+                updateStudentCategoryStatistics();
+            });
+            
             updateStudentCategoryStatistics();
         });
     </script>

@@ -126,33 +126,68 @@
                                     <span class="font-semibold text-gray-900">{{ pelanggaran_pagination.page if pelanggaran_pagination else 1 }} / {{ pelanggaran_pagination.pages if pelanggaran_pagination else 1 }}</span>
                                 </div>
                                 
-                                <!-- Category Statistics -->
+                                <!-- Global Category Statistics -->
                                 <div class="pt-2 border-t border-primary/20">
-                                    <h4 class="text-xs font-semibold text-gray-700 mb-2 flex items-center">
-                                        <i class="fas fa-layer-group mr-1 text-primary"></i>
-                                        Kategori Pelanggaran
-                                    </h4>
-                                    <div class="space-y-2">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h4 class="text-xs font-semibold text-gray-700 flex items-center">
+                                            <i class="fas fa-layer-group mr-1 text-primary"></i>
+                                            Kategori Pelanggaran
+                                        </h4>
+                                        <div class="flex items-center space-x-2">
+                                            <button id="toggleStats" class="text-xs text-primary hover:text-primary/80 transition-colors" title="Toggle Global/Current Stats">
+                                                <i class="fas fa-globe mr-1"></i>
+                                                <span id="statsMode">Global</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Global Statistics -->
+                                    <div id="globalStats" class="space-y-2">
                                         <div class="flex justify-between items-center">
                                             <div class="flex items-center">
                                                 <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                                                 <span class="text-gray-600">Ringan:</span>
                                             </div>
-                                            <span class="font-semibold text-gray-900" id="stat-ringan">0</span>
+                                            <span class="font-semibold text-gray-900" id="global-ringan">{{ total_ringan if total_ringan is defined else 0 }}</span>
                                         </div>
                                         <div class="flex justify-between items-center">
                                             <div class="flex items-center">
                                                 <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
                                                 <span class="text-gray-600">Sedang:</span>
                                             </div>
-                                            <span class="font-semibold text-gray-900" id="stat-sedang">0</span>
+                                            <span class="font-semibold text-gray-900" id="global-sedang">{{ total_sedang if total_sedang is defined else 0 }}</span>
                                         </div>
                                         <div class="flex justify-between items-center">
                                             <div class="flex items-center">
                                                 <span class="w-2 h-2 bg-red-700 rounded-full mr-2"></span>
                                                 <span class="text-gray-600">Berat:</span>
                                             </div>
-                                            <span class="font-semibold text-gray-900" id="stat-berat">0</span>
+                                            <span class="font-semibold text-gray-900" id="global-berat">{{ total_berat if total_berat is defined else 0 }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Current Page Statistics -->
+                                    <div id="currentStats" class="space-y-2 hidden">
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                                <span class="text-gray-600">Ringan:</span>
+                                            </div>
+                                            <span class="font-semibold text-gray-900" id="current-ringan">0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                                                <span class="text-gray-600">Sedang:</span>
+                                            </div>
+                                            <span class="font-semibold text-gray-900" id="current-sedang">0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <div class="flex items-center">
+                                                <span class="w-2 h-2 bg-red-700 rounded-full mr-2"></span>
+                                                <span class="text-gray-600">Berat:</span>
+                                            </div>
+                                            <span class="font-semibold text-gray-900" id="current-berat">0</span>
                                         </div>
                                     </div>
                                 </div>
@@ -665,10 +700,31 @@
                 }
             });
             
+            // Get the current statistics mode
+            const isGlobal = document.getElementById('statsMode').textContent.trim() === 'Global';
+            
+            if (isGlobal) {
+                // Use global statistics from server
+                const globalRingan = parseInt(document.getElementById('global-ringan').textContent) || 0;
+                const globalSedang = parseInt(document.getElementById('global-sedang').textContent) || 0;
+                const globalBerat = parseInt(document.getElementById('global-berat').textContent) || 0;
+                
+                updateStatisticsDisplay(globalRingan, globalSedang, globalBerat);
+            } else {
+                // Use current page statistics
+                updateStatisticsDisplay(ringan, sedang, berat);
+            }
+        }
+        
+        function updateStatisticsDisplay(ringan, sedang, berat) {
             // Update display
-            document.getElementById('stat-ringan').textContent = ringan;
-            document.getElementById('stat-sedang').textContent = sedang;
-            document.getElementById('stat-berat').textContent = berat;
+            const currentRinganEl = document.getElementById('current-ringan');
+            const currentSedangEl = document.getElementById('current-sedang');
+            const currentBeratEl = document.getElementById('current-berat');
+            
+            if (currentRinganEl) currentRinganEl.textContent = ringan;
+            if (currentSedangEl) currentSedangEl.textContent = sedang;
+            if (currentBeratEl) currentBeratEl.textContent = berat;
             
             // Update progress bar
             const total = ringan + sedang + berat;
@@ -679,11 +735,13 @@
                 
                 // Create stacked progress bar
                 const progressBar = document.getElementById('category-progress');
-                progressBar.innerHTML = `
-                    <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressRingan}%; background-color: #22c55e;"></div>
-                    <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressSedang}%; background-color: #f97316;"></div>
-                    <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressBerat}%; background-color: #b91c1c;"></div>
-                `;
+                if (progressBar) {
+                    progressBar.innerHTML = `
+                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressRingan}%; background-color: #22c55e;"></div>
+                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressSedang}%; background-color: #f97316;"></div>
+                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressBerat}%; background-color: #b91c1c;"></div>
+                    `;
+                }
             }
         }
         
@@ -734,6 +792,29 @@
                     document.querySelectorAll('.item-checkbox').forEach(checkbox => {
                         checkbox.checked = this.checked;
                     });
+                });
+                
+                // Statistics toggle functionality
+                document.getElementById('toggleStats').addEventListener('click', function() {
+                    const globalStats = document.getElementById('globalStats');
+                    const currentStats = document.getElementById('currentStats');
+                    const statsMode = document.getElementById('statsMode');
+                    
+                    if (globalStats.classList.contains('hidden')) {
+                        // Show global stats
+                        globalStats.classList.remove('hidden');
+                        currentStats.classList.add('hidden');
+                        statsMode.textContent = 'Global';
+                        this.querySelector('i').className = 'fas fa-globe mr-1';
+                    } else {
+                        // Show current page stats
+                        globalStats.classList.add('hidden');
+                        currentStats.classList.remove('hidden');
+                        statsMode.textContent = 'Halaman Ini';
+                        this.querySelector('i').className = 'fas fa-filter mr-1';
+                    }
+                    
+                    updateCategoryStatistics();
                 });
                 
                 // Initialize statistics
