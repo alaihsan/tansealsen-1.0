@@ -86,6 +86,7 @@ def _get_date_filter_from_args(args):
     start_date_str = args.get('start_date')
     end_date_str = args.get('end_date')
     custom_range = args.get('custom_range')
+    date_range_str = args.get('date_range') # Menangkap input dari flatpickr range mode
     
     start_date, end_date = None, None
     today = datetime.now().date()
@@ -102,6 +103,19 @@ def _get_date_filter_from_args(args):
         elif custom_range == 'last_7_days':
             start_date = today - timedelta(days=6)
             end_date = today
+    elif date_range_str:
+        # Handle format "YYYY-MM-DD to YYYY-MM-DD" dari Flatpickr
+        try:
+            if " to " in date_range_str:
+                parts = date_range_str.split(" to ")
+                start_date = datetime.strptime(parts[0], '%Y-%m-%d').date()
+                end_date = datetime.strptime(parts[1], '%Y-%m-%d').date()
+            else:
+                # Kasus jika user hanya memilih satu tanggal
+                start_date = datetime.strptime(date_range_str, '%Y-%m-%d').date()
+                end_date = start_date
+        except ValueError:
+            pass
     elif start_date_str and end_date_str:
         try:
             start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
@@ -286,15 +300,14 @@ def index():
     
     page = request.args.get('page', 1, type=int)
     search_query = request.args.get('search', '').strip()
-    category_filter = request.args.get('category', '').strip() # Tangkap filter kategori
+    category_filter = request.args.get('category', '').strip()
     
-    # Tangkap raw date_range untuk keperluan link pagination/filter
+    # Tangkap raw date_range untuk keperluan link pagination/filter di template
     date_range_value = request.args.get('date_range', '')
-
+    
     start_date, end_date, custom_range = _get_date_filter_from_args(request.args)
     
     # 1. Base Query: Filter dasar (Search + Date)
-    # Kita gunakan ini sebagai dasar untuk statistik dan list akhir
     base_query = Pelanggaran.query
     
     if search_query:
@@ -308,8 +321,6 @@ def index():
     base_query = _apply_date_filter_to_query(base_query, start_date, end_date)
 
     # 2. Hitung Statistik (Berdasarkan Base Query)
-    # Ini memastikan angka di sidebar tetap menunjukkan total ketersediaan data
-    # meskipun kita sedang memfilter salah satu kategori.
     total_ringan = base_query.filter_by(kategori_pelanggaran='Ringan').count()
     total_sedang = base_query.filter_by(kategori_pelanggaran='Sedang').count()
     total_berat = base_query.filter_by(kategori_pelanggaran='Berat').count()
@@ -319,7 +330,6 @@ def index():
     if category_filter in ['Ringan', 'Sedang', 'Berat']:
         final_query = final_query.filter_by(kategori_pelanggaran=category_filter)
 
-    # Pagination menggunakan Final Query
     pelanggaran_pagination = final_query.order_by(Pelanggaran.tanggal_dicatat.desc()).paginate(
         page=page, per_page=PER_PAGE
     )
@@ -333,8 +343,8 @@ def index():
                            start_date=start_date_str,
                            end_date=end_date_str,
                            custom_range=custom_range,
-                           date_range_value=date_range_value, # Kirim value asli untuk form/link
-                           category_filter=category_filter,   # Kirim status filter aktif
+                           date_range_value=date_range_value,
+                           category_filter=category_filter,
                            total_ringan=total_ringan,
                            total_sedang=total_sedang,
                            total_berat=total_berat)
