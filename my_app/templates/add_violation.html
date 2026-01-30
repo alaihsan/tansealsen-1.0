@@ -1,70 +1,23 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Pelanggaran Baru</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#667eea',
-                        secondary: '#764ba2',
-                        success: '#48bb78',
-                        danger: '#f56565',
-                        warning: '#ed8936'
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-<body class="bg-gray-50">
-    <div class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-            <div class="px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                        <i class="fas fa-plus-circle mr-2"></i>
-                        Tambah Pelanggaran Baru
-                    </h1>
-                    <a href="{{ url_for('index') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Kembali
-                    </a>
-                </div>
-            </div>
-        </header>
+{% extends "base.html" %}
 
-        <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto">
+{% block title %}Tambah Pelanggaran Baru{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+    <!-- Page Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+            <i class="fas fa-plus-circle mr-3 text-primary"></i>
+            Tambah Pelanggaran Baru
+        </h1>
+        <p class="text-gray-600 mt-2">Catat pelanggaran murid ke dalam sistem</p>
+    </div>
             <div class="max-w-4xl mx-auto p-6">
-                <!-- Flash Messages -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        <div class="mb-6 space-y-2">
-                            {% for category, message in messages %}
-                                <div class="alert 
-                                    {% if category == 'success' %}bg-green-100 border-green-400 text-green-700{% endif %}
-                                    {% if category == 'error' %}bg-red-100 border-red-400 text-red-700{% endif %}
-                                    {% if category == 'warning' %}bg-yellow-100 border-yellow-400 text-yellow-700{% endif %}
-                                    px-4 py-3 rounded-lg border flex items-center" role="alert">
-                                    <i class="fas 
-                                        {% if category == 'success' %}fa-check-circle text-green-500{% endif %}
-                                        {% if category == 'error' %}fa-exclamation-circle text-red-500{% endif %}
-                                        {% if category == 'warning' %}fa-exclamation-triangle text-yellow-500{% endif %}
-                                        mr-3"></i>
-                                    <span class="font-medium">{{ message }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
+
 
                 <!-- Form Container -->
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden">
@@ -307,9 +260,8 @@
                         <div class="text-xl font-bold text-gray-800" id="statTotal">0</div>
                     </div>
                 </div>
-            </div>
-        </main>
-    </div>
+</div>
+{% endblock %}
 
     <!-- Success Modal -->
     <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
@@ -332,6 +284,8 @@
         </div>
     </div>
 
+{% block scripts %}
+    {{ super() }}
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
     <script>
@@ -558,6 +512,5 @@
             // Refresh stats every 30 seconds
             setInterval(refreshStats, 30000);
         });
-    </script>
-</body>
-</html>
+</script>
+{% endblock %}
