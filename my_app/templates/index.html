@@ -72,7 +72,7 @@
         <!-- Main Content Area -->
         <div class="flex flex-1 overflow-hidden">
             <!-- Left Sidebar - Reorganized -->
-            <aside class="w-80 bg-white shadow-lg border-r border-gray-200 flex flex-col z-30">
+            <aside class="w-89 bg-white shadow-lg border-r border-gray-200 flex flex-col z-30">
                 <div class="flex-1 overflow-y-auto p-6">
                     <div class="space-y-6">
                         
@@ -124,97 +124,97 @@
                         <!-- Statistics Panel -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center">
-                                    <i class="fas fa-chart-pie mr-2"></i>
-                                    Ringkasan Data
-                                </h3>
-                                <button id="toggleStats" class="text-xs text-primary hover:text-secondary font-medium transition-colors focus:outline-none" title="Ganti Mode Statistik">
-                                    <i class="fas fa-globe mr-1"></i>
-                                    <span id="statsMode">Global</span>
-                                </button>
-                            </div>
-                            
-                            <div class="p-4 space-y-4">
-                                <!-- Stats Numbers -->
-                                <div class="grid grid-cols-2 gap-4 text-sm border-b border-gray-100 pb-3">
-                                    <div>
-                                        <p class="text-xs text-gray-500">Total Data</p>
-                                        <p class="font-bold text-gray-900 text-lg">{{ pelanggaran_pagination.total if pelanggaran_pagination else 0 }}</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-xs text-gray-500">Halaman</p>
-                                        <p class="font-bold text-gray-900 text-lg">{{ pelanggaran_pagination.page if pelanggaran_pagination else 1 }} <span class="text-sm font-normal text-gray-400">/ {{ pelanggaran_pagination.pages if pelanggaran_pagination else 1 }}</span></p>
-                                    </div>
+                        <!-- Statistics Section -->
+                        <div class="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-5 border border-primary/20">
+                            <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <i class="fas fa-chart-bar mr-2 text-primary"></i>
+                                Statistik
+                            </h3>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Total Data:</span>
+                                    <span class="font-semibold text-gray-900">{{ pelanggaran_pagination.total if pelanggaran_pagination else 0 }}</span>
                                 </div>
-
-                                <!-- Category Stats Container -->
-                                <div>
-                                    <p class="text-xs font-medium text-gray-500 mb-2">Berdasarkan Kategori</p>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-600">Halaman:</span>
+                                    <span class="font-semibold text-gray-900">{{ pelanggaran_pagination.page if pelanggaran_pagination else 1 }} / {{ pelanggaran_pagination.pages if pelanggaran_pagination else 1 }}</span>
+                                </div>
+                                
+                                <!-- Global Category Statistics -->
+                                <div class="pt-2 border-t border-primary/20">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h4 class="text-xs font-semibold text-gray-700 flex items-center">
+                                            <i class="fas fa-layer-group mr-1 text-primary"></i>
+                                            Kategori Pelanggaran
+                                        </h4>
+                                        <!-- Tombol Hapus Filter Kategori (Muncul jika ada filter) -->
+                                        {% if category_filter %}
+                                        <a href="{{ url_for('index', search=search_query, date_range=date_range_value) }}" class="text-xs text-red-500 hover:text-red-700 transition-colors" title="Hapus Filter Kategori">
+                                            <i class="fas fa-times mr-1"></i>Reset
+                                        </a>
+                                        {% endif %}
+                                    </div>
                                     
-                                    <!-- Global Statistics -->
+                                    <!-- Global Statistics Links -->
                                     <div id="globalStats" class="space-y-2">
-                                        <div class="flex justify-between items-center text-sm">
+                                        <!-- Ringan -->
+                                        <a href="{{ url_for('index', category='Ringan', search=search_query, date_range=date_range_value) }}" 
+                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Ringan' %}bg-white shadow-sm border-green-200{% endif %}">
                                             <div class="flex items-center">
-                                                <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                                                <span class="text-gray-600">Ringan</span>
+                                                <span class="w-2.5 h-2.5 bg-green-500 rounded-full mr-2 shadow-sm"></span>
+                                                <span class="{% if category_filter == 'Ringan' %}text-green-700 font-semibold{% else %}text-gray-600{% endif %}">Ringan</span>
                                             </div>
-                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="global-ringan">{{ total_ringan if total_ringan is defined else 0 }}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="font-semibold text-xs px-2 py-0.5 rounded-full {% if category_filter == 'Ringan' %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-700{% endif %}" id="global-ringan">
+                                                {{ total_ringan if total_ringan is defined else 0 }}
+                                            </span>
+                                        </a>
+
+                                        <!-- Sedang -->
+                                        <a href="{{ url_for('index', category='Sedang', search=search_query, date_range=date_range_value) }}" 
+                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Sedang' %}bg-white shadow-sm border-orange-200{% endif %}">
                                             <div class="flex items-center">
-                                                <div class="w-2 h-2 rounded-full bg-orange-500 mr-2"></div>
-                                                <span class="text-gray-600">Sedang</span>
+                                                <span class="w-2.5 h-2.5 bg-orange-500 rounded-full mr-2 shadow-sm"></span>
+                                                <span class="{% if category_filter == 'Sedang' %}text-orange-700 font-semibold{% else %}text-gray-600{% endif %}">Sedang</span>
                                             </div>
-                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="global-sedang">{{ total_sedang if total_sedang is defined else 0 }}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center text-sm">
+                                            <span class="font-semibold text-xs px-2 py-0.5 rounded-full {% if category_filter == 'Sedang' %}bg-orange-100 text-orange-700{% else %}bg-gray-100 text-gray-700{% endif %}" id="global-sedang">
+                                                {{ total_sedang if total_sedang is defined else 0 }}
+                                            </span>
+                                        </a>
+
+                                        <!-- Berat -->
+                                        <a href="{{ url_for('index', category='Berat', search=search_query, date_range=date_range_value) }}" 
+                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Berat' %}bg-white shadow-sm border-red-200{% endif %}">
                                             <div class="flex items-center">
-                                                <div class="w-2 h-2 rounded-full bg-red-600 mr-2"></div>
-                                                <span class="text-gray-600">Berat</span>
+                                                <span class="w-2.5 h-2.5 bg-red-700 rounded-full mr-2 shadow-sm"></span>
+                                                <span class="{% if category_filter == 'Berat' %}text-red-700 font-semibold{% else %}text-gray-600{% endif %}">Berat</span>
                                             </div>
-                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="global-berat">{{ total_berat if total_berat is defined else 0 }}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Current Page Statistics (Hidden by default) -->
-                                    <div id="currentStats" class="space-y-2 hidden">
-                                        <div class="flex justify-between items-center text-sm">
-                                            <div class="flex items-center">
-                                                <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                                                <span class="text-gray-600">Ringan</span>
-                                            </div>
-                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="current-ringan">0</span>
-                                        </div>
-                                        <div class="flex justify-between items-center text-sm">
-                                            <div class="flex items-center">
-                                                <div class="w-2 h-2 rounded-full bg-orange-500 mr-2"></div>
-                                                <span class="text-gray-600">Sedang</span>
-                                            </div>
-                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="current-sedang">0</span>
-                                        </div>
-                                        <div class="flex justify-between items-center text-sm">
-                                            <div class="flex items-center">
-                                                <div class="w-2 h-2 rounded-full bg-red-600 mr-2"></div>
-                                                <span class="text-gray-600">Berat</span>
-                                            </div>
-                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="current-berat">0</span>
-                                        </div>
+                                            <span class="font-semibold text-xs px-2 py-0.5 rounded-full {% if category_filter == 'Berat' %}bg-red-100 text-red-700{% else %}bg-gray-100 text-gray-700{% endif %}" id="global-berat">
+                                                {{ total_berat if total_berat is defined else 0 }}
+                                            </span>
+                                        </a>
                                     </div>
                                 </div>
 
-                                <!-- Visual Progress Bar -->
-                                <div class="pt-1">
-                                    <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden flex" id="category-progress">
-                                        <div class="h-full transition-all duration-500 flex-shrink-0" id="progress-ringan" style="width: 33%; background-color: #22c55e;"></div>
-                                        <div class="h-full transition-all duration-500 flex-shrink-0" id="progress-sedang" style="width: 33%; background-color: #f97316;"></div>
-                                        <div class="h-full transition-all duration-500 flex-shrink-0" id="progress-berat" style="width: 34%; background-color: #dc2626;"></div>
+                                <!-- Progress Bar -->
+                                <div class="pt-2 border-t border-primary/20">
+                                    <div class="relative">
+                                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden flex" id="category-progress">
+                                            <div class="h-2 transition-all duration-500 flex-shrink-0" id="progress-ringan" style="width: 0%; background-color: #22c55e;"></div>
+                                            <div class="h-2 transition-all duration-500 flex-shrink-0" id="progress-sedang" style="width: 0%; background-color: #f97316;"></div>
+                                            <div class="h-2 transition-all duration-500 flex-shrink-0" id="progress-berat" style="width: 0%; background-color: #b91c1c;"></div>
+                                        </div>
+                                        <div class="flex justify-between mt-1 text-xs text-gray-500">
+                                            <span>Ringan</span>
+                                            <span>Sedang</span>
+                                            <span>Berat</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Extra spacing -->
-                        <div class="h-20"></div>
+                        <!-- Additional spacing for scroll -->
+                        <div class="h-32"></div>
                     </div>
                 </div>
             </aside>

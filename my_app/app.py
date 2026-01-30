@@ -286,27 +286,41 @@ def index():
     
     page = request.args.get('page', 1, type=int)
     search_query = request.args.get('search', '').strip()
+    category_filter = request.args.get('category', '').strip() # Tangkap filter kategori
     
+    # Tangkap raw date_range untuk keperluan link pagination/filter
+    date_range_value = request.args.get('date_range', '')
+
     start_date, end_date, custom_range = _get_date_filter_from_args(request.args)
     
-    query = Pelanggaran.query
+    # 1. Base Query: Filter dasar (Search + Date)
+    # Kita gunakan ini sebagai dasar untuk statistik dan list akhir
+    base_query = Pelanggaran.query
     
     if search_query:
-        query = query.filter(
+        base_query = base_query.filter(
             Pelanggaran.nama_murid.ilike(f'%{search_query}%') |
             Pelanggaran.kelas.ilike(f'%{search_query}%') |
             Pelanggaran.pasal.ilike(f'%{search_query}%') |
             Pelanggaran.deskripsi.ilike(f'%{search_query}%')
         )
     
-    query = _apply_date_filter_to_query(query, start_date, end_date)
+    base_query = _apply_date_filter_to_query(base_query, start_date, end_date)
 
-    # Hitung statistik ringkasan berdasarkan query yang sudah difilter
-    total_ringan = query.filter_by(kategori_pelanggaran='Ringan').count()
-    total_sedang = query.filter_by(kategori_pelanggaran='Sedang').count()
-    total_berat = query.filter_by(kategori_pelanggaran='Berat').count()
+    # 2. Hitung Statistik (Berdasarkan Base Query)
+    # Ini memastikan angka di sidebar tetap menunjukkan total ketersediaan data
+    # meskipun kita sedang memfilter salah satu kategori.
+    total_ringan = base_query.filter_by(kategori_pelanggaran='Ringan').count()
+    total_sedang = base_query.filter_by(kategori_pelanggaran='Sedang').count()
+    total_berat = base_query.filter_by(kategori_pelanggaran='Berat').count()
 
-    pelanggaran_pagination = query.order_by(Pelanggaran.tanggal_dicatat.desc()).paginate(
+    # 3. Final Query: Terapkan Filter Kategori (Jika ada)
+    final_query = base_query
+    if category_filter in ['Ringan', 'Sedang', 'Berat']:
+        final_query = final_query.filter_by(kategori_pelanggaran=category_filter)
+
+    # Pagination menggunakan Final Query
+    pelanggaran_pagination = final_query.order_by(Pelanggaran.tanggal_dicatat.desc()).paginate(
         page=page, per_page=PER_PAGE
     )
     
@@ -319,6 +333,8 @@ def index():
                            start_date=start_date_str,
                            end_date=end_date_str,
                            custom_range=custom_range,
+                           date_range_value=date_range_value, # Kirim value asli untuk form/link
+                           category_filter=category_filter,   # Kirim status filter aktif
                            total_ringan=total_ringan,
                            total_sedang=total_sedang,
                            total_berat=total_berat)
