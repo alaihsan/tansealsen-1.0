@@ -301,6 +301,11 @@ def index():
     
     query = _apply_date_filter_to_query(query, start_date, end_date)
 
+    # Hitung statistik ringkasan berdasarkan query yang sudah difilter
+    total_ringan = query.filter_by(kategori_pelanggaran='Ringan').count()
+    total_sedang = query.filter_by(kategori_pelanggaran='Sedang').count()
+    total_berat = query.filter_by(kategori_pelanggaran='Berat').count()
+
     pelanggaran_pagination = query.order_by(Pelanggaran.tanggal_dicatat.desc()).paginate(
         page=page, per_page=PER_PAGE
     )
@@ -313,7 +318,10 @@ def index():
                            search_query=search_query,
                            start_date=start_date_str,
                            end_date=end_date_str,
-                           custom_range=custom_range)
+                           custom_range=custom_range,
+                           total_ringan=total_ringan,
+                           total_sedang=total_sedang,
+                           total_berat=total_berat)
 
 # --- Rute Tambah Pelanggaran ---
 @app.route('/add', methods=['GET', 'POST'])
