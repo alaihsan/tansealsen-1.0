@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     
     <!-- Custom Tailwind Config -->
     <script>
@@ -45,15 +45,15 @@
                     
                     <nav class="flex items-center space-x-4">
                         {% if session.get('logged_in') %}
-                            <a href="{{ url_for('index') }}" class="text-gray-700 hover:text-primary transition-colors">
+                            <a href="{{ url_for('main.index') }}" class="text-gray-700 hover:text-primary transition-colors">
                                 <i class="fas fa-home mr-1"></i>
                                 Beranda
                             </a>
-                            <a href="{{ url_for('statistics') }}" class="text-gray-700 hover:text-primary transition-colors">
+                            <a href="{{ url_for('main.statistics') }}" class="text-gray-700 hover:text-primary transition-colors">
                                 <i class="fas fa-chart-bar mr-1"></i>
                                 Statistik
                             </a>
-                            <a href="{{ url_for('add_violation') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200">
+                            <a href="{{ url_for('main.add_violation') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200">
                                 <i class="fas fa-plus mr-2"></i>
                                 Tambah Pelanggaran
                             </a>
@@ -62,7 +62,7 @@
                                     <i class="fas fa-user mr-1"></i>
                                     {{ session.get('username', 'Admin') }}
                                 </span>
-                                <a href="{{ url_for('logout') }}" class="text-red-600 hover:text-red-700 transition-colors">
+                                <a href="{{ url_for('main.logout') }}" class="text-red-600 hover:text-red-700 transition-colors">
                                     <i class="fas fa-sign-out-alt"></i>
                                 </a>
                             </div>

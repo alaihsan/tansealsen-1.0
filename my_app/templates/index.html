@@ -38,11 +38,11 @@
 
                     <!-- Top Action Buttons -->
                     <div class="flex items-center space-x-3">
-                        <a href="{{ url_for('add_violation') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-success to-green-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+                        <a href="{{ url_for('main.add_violation') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-success to-green-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
                             <i class="fas fa-plus mr-2"></i>
                             Tambah Pelanggaran
                         </a>
-                        <a href="{{ url_for('statistics') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+                        <a href="{{ url_for('main.statistics') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
                             <i class="fas fa-chart-line mr-2"></i>
                             Statistik
                         </a>
@@ -60,7 +60,7 @@
                                 </button>
                             </div>
                         </div>
-                        <a href="{{ url_for('logout') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-danger to-red-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
+                        <a href="{{ url_for('main.logout') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-danger to-red-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
                             <i class="fas fa-sign-out-alt mr-2"></i>
                             Logout
                         </a>
@@ -71,8 +71,8 @@
 
         <!-- Main Content Area -->
         <div class="flex flex-1 overflow-hidden">
-            <!-- Left Sidebar - Reorganized -->
-            <aside class="w-89 bg-white shadow-lg border-r border-gray-200 flex flex-col z-30">
+            <!-- Left Sidebar -->
+            <aside class="w-96 bg-white shadow-lg border-r border-gray-200 flex flex-col z-30">
                 <div class="flex-1 overflow-y-auto p-6">
                     <div class="space-y-6">
                         
@@ -96,7 +96,7 @@
                                 </div>
 
                                 <!-- Date Filter Form -->
-                                <form method="GET" action="{{ url_for('index') }}" class="space-y-3">
+                                <form method="GET" action="{{ url_for('main.index') }}" class="space-y-3">
                                     <div class="relative group">
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Rentang Waktu</label>
                                         <div class="relative">
@@ -112,7 +112,7 @@
                                             <i class="fas fa-filter mr-1.5"></i>
                                             Terapkan
                                         </button>
-                                        <a href="{{ url_for('index') }}" class="flex items-center justify-center px-3 py-2 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200 transition-all duration-200">
+                                        <a href="{{ url_for('main.index') }}" class="flex items-center justify-center px-3 py-2 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200 transition-all duration-200">
                                             <i class="fas fa-undo mr-1.5"></i>
                                             Reset
                                         </a>
@@ -124,24 +124,31 @@
                         <!-- Statistics Panel -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                             <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                        <!-- Statistics Section -->
-                        <div class="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg p-5 border border-primary/20">
-                            <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
-                                <i class="fas fa-chart-bar mr-2 text-primary"></i>
-                                Statistik
-                            </h3>
-                            <div class="space-y-3 text-sm">
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Total Data:</span>
-                                    <span class="font-semibold text-gray-900">{{ pelanggaran_pagination.total if pelanggaran_pagination else 0 }}</span>
+                                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center">
+                                    <i class="fas fa-chart-pie mr-2"></i>
+                                    Ringkasan Data
+                                </h3>
+                                <button id="toggleStats" class="text-xs text-primary hover:text-secondary font-medium transition-colors focus:outline-none" title="Ganti Mode Statistik">
+                                    <i class="fas fa-globe mr-1"></i>
+                                    <span id="statsMode">Global</span>
+                                </button>
+                            </div>
+                            
+                            <div class="p-4 space-y-4">
+                                <!-- Stats Numbers -->
+                                <div class="grid grid-cols-2 gap-4 text-sm border-b border-gray-100 pb-3">
+                                    <div>
+                                        <p class="text-xs text-gray-500">Total Data</p>
+                                        <p class="font-bold text-gray-900 text-lg">{{ pelanggaran_pagination.total if pelanggaran_pagination else 0 }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-gray-500">Halaman</p>
+                                        <p class="font-bold text-gray-900 text-lg">{{ pelanggaran_pagination.page if pelanggaran_pagination else 1 }} <span class="text-sm font-normal text-gray-400">/ {{ pelanggaran_pagination.pages if pelanggaran_pagination else 1 }}</span></p>
+                                    </div>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="text-gray-600">Halaman:</span>
-                                    <span class="font-semibold text-gray-900">{{ pelanggaran_pagination.page if pelanggaran_pagination else 1 }} / {{ pelanggaran_pagination.pages if pelanggaran_pagination else 1 }}</span>
-                                </div>
-                                
-                                <!-- Global Category Statistics -->
-                                <div class="pt-2 border-t border-primary/20">
+
+                                <!-- Category Stats Container -->
+                                <div class="pt-2">
                                     <div class="flex items-center justify-between mb-2">
                                         <h4 class="text-xs font-semibold text-gray-700 flex items-center">
                                             <i class="fas fa-layer-group mr-1 text-primary"></i>
@@ -149,7 +156,7 @@
                                         </h4>
                                         <!-- Tombol Hapus Filter Kategori (Muncul jika ada filter) -->
                                         {% if category_filter %}
-                                        <a href="{{ url_for('index', search=search_query, date_range=date_range_value) }}" class="text-xs text-red-500 hover:text-red-700 transition-colors" title="Hapus Filter Kategori">
+                                        <a href="{{ url_for('main.index', search=search_query, date_range=date_range_value) }}" class="text-xs text-red-500 hover:text-red-700 transition-colors" title="Hapus Filter Kategori">
                                             <i class="fas fa-times mr-1"></i>Reset
                                         </a>
                                         {% endif %}
@@ -158,8 +165,8 @@
                                     <!-- Global Statistics Links -->
                                     <div id="globalStats" class="space-y-2">
                                         <!-- Ringan -->
-                                        <a href="{{ url_for('index', category='Ringan', search=search_query, date_range=date_range_value) }}" 
-                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Ringan' %}bg-white shadow-sm border-green-200{% endif %}">
+                                        <a href="{{ url_for('main.index', category='Ringan', search=search_query, date_range=date_range_value) }}" 
+                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Ringan' %}bg-white shadow-sm border-green-200{% endif %}">
                                             <div class="flex items-center">
                                                 <span class="w-2.5 h-2.5 bg-green-500 rounded-full mr-2 shadow-sm"></span>
                                                 <span class="{% if category_filter == 'Ringan' %}text-green-700 font-semibold{% else %}text-gray-600{% endif %}">Ringan</span>
@@ -170,8 +177,8 @@
                                         </a>
 
                                         <!-- Sedang -->
-                                        <a href="{{ url_for('index', category='Sedang', search=search_query, date_range=date_range_value) }}" 
-                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Sedang' %}bg-white shadow-sm border-orange-200{% endif %}">
+                                        <a href="{{ url_for('main.index', category='Sedang', search=search_query, date_range=date_range_value) }}" 
+                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Sedang' %}bg-white shadow-sm border-orange-200{% endif %}">
                                             <div class="flex items-center">
                                                 <span class="w-2.5 h-2.5 bg-orange-500 rounded-full mr-2 shadow-sm"></span>
                                                 <span class="{% if category_filter == 'Sedang' %}text-orange-700 font-semibold{% else %}text-gray-600{% endif %}">Sedang</span>
@@ -182,8 +189,8 @@
                                         </a>
 
                                         <!-- Berat -->
-                                        <a href="{{ url_for('index', category='Berat', search=search_query, date_range=date_range_value) }}" 
-                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Berat' %}bg-white shadow-sm border-red-200{% endif %}">
+                                        <a href="{{ url_for('main.index', category='Berat', search=search_query, date_range=date_range_value) }}" 
+                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Berat' %}bg-white shadow-sm border-red-200{% endif %}">
                                             <div class="flex items-center">
                                                 <span class="w-2.5 h-2.5 bg-red-700 rounded-full mr-2 shadow-sm"></span>
                                                 <span class="{% if category_filter == 'Berat' %}text-red-700 font-semibold{% else %}text-gray-600{% endif %}">Berat</span>
@@ -193,28 +200,46 @@
                                             </span>
                                         </a>
                                     </div>
+                                    
+                                    <!-- Current Page Statistics (Hidden by default) -->
+                                    <div id="currentStats" class="space-y-2 hidden">
+                                        <div class="flex justify-between items-center text-sm">
+                                            <div class="flex items-center">
+                                                <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                                                <span class="text-gray-600">Ringan</span>
+                                            </div>
+                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="current-ringan">0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-sm">
+                                            <div class="flex items-center">
+                                                <div class="w-2 h-2 rounded-full bg-orange-500 mr-2"></div>
+                                                <span class="text-gray-600">Sedang</span>
+                                            </div>
+                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="current-sedang">0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-sm">
+                                            <div class="flex items-center">
+                                                <div class="w-2 h-2 rounded-full bg-red-600 mr-2"></div>
+                                                <span class="text-gray-600">Berat</span>
+                                            </div>
+                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="current-berat">0</span>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <!-- Progress Bar -->
-                                <div class="pt-2 border-t border-primary/20">
-                                    <div class="relative">
-                                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden flex" id="category-progress">
-                                            <div class="h-2 transition-all duration-500 flex-shrink-0" id="progress-ringan" style="width: 0%; background-color: #22c55e;"></div>
-                                            <div class="h-2 transition-all duration-500 flex-shrink-0" id="progress-sedang" style="width: 0%; background-color: #f97316;"></div>
-                                            <div class="h-2 transition-all duration-500 flex-shrink-0" id="progress-berat" style="width: 0%; background-color: #b91c1c;"></div>
-                                        </div>
-                                        <div class="flex justify-between mt-1 text-xs text-gray-500">
-                                            <span>Ringan</span>
-                                            <span>Sedang</span>
-                                            <span>Berat</span>
-                                        </div>
+                                <!-- Visual Progress Bar -->
+                                <div class="pt-1">
+                                    <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden flex" id="category-progress">
+                                        <div class="h-full transition-all duration-500 flex-shrink-0" id="progress-ringan" style="width: 33%; background-color: #22c55e;"></div>
+                                        <div class="h-full transition-all duration-500 flex-shrink-0" id="progress-sedang" style="width: 33%; background-color: #f97316;"></div>
+                                        <div class="h-full transition-all duration-500 flex-shrink-0" id="progress-berat" style="width: 34%; background-color: #dc2626;"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Additional spacing for scroll -->
-                        <div class="h-32"></div>
+                        <!-- Extra spacing -->
+                        <div class="h-20"></div>
                     </div>
                 </div>
             </aside>
@@ -310,7 +335,7 @@
                                 <!-- Details -->
                                 <div class="p-4">
                                     <div class="mb-3">
-                                        <a href="{{ url_for('student_history', student_name=p.nama_murid) }}" class="student-link text-lg font-bold text-gray-900 hover:text-primary transition-colors line-clamp-1" title="{{ p.nama_murid }}">
+                                        <a href="{{ url_for('main.student_history', student_name=p.nama_murid) }}" class="student-link text-lg font-bold text-gray-900 hover:text-primary transition-colors line-clamp-1" title="{{ p.nama_murid }}">
                                             {{ p.nama_murid }}
                                         </a>
                                         <p class="text-xs text-gray-500 font-medium mt-0.5">Kelas {{ p.kelas }}</p>
@@ -411,7 +436,7 @@
                                             <input type="checkbox" class="item-checkbox rounded border-gray-300 hover:border-primary focus:ring-primary group-hover:border-primary">
                                         </div>
                                         <div class="flex-1 px-2">
-                                            <a href="{{ url_for('student_history', student_name=p.nama_murid) }}" 
+                                            <a href="{{ url_for('main.student_history', student_name=p.nama_murid) }}" 
                                                class="text-primary font-medium hover:text-primary/80 transition-colors duration-200 flex items-center group-hover:text-blue-600">
                                                 {% if p.bukti_file %}
                                                     <i class="fas fa-image text-gray-400 mr-2 text-sm group-hover:text-blue-400"></i>
@@ -471,7 +496,7 @@
                         <ul class="flex items-center space-x-2">
                             <li class="page-item">
                                 <a class="page-link px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 {% if not pelanggaran_pagination.has_prev %}cursor-not-allowed opacity-50{% endif %}" 
-                                   href="{{ url_for('index', page=pelanggaran_pagination.prev_num, date_range=date_range_value) if pelanggaran_pagination.has_prev else '#' }}"
+                                   href="{{ url_for('main.index', page=pelanggaran_pagination.prev_num, date_range=date_range_value) if pelanggaran_pagination.has_prev else '#' }}"
                                    data-preserve-view="true">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
@@ -480,7 +505,7 @@
                                 {% if page_num %}
                                     <li class="page-item">
                                         <a class="page-link px-4 py-2 text-sm font-medium {% if page_num == pelanggaran_pagination.page %}bg-primary text-white border-primary{% else %}text-gray-700 bg-white border-gray-300 hover:bg-gray-50{% endif %} border rounded-lg transition-colors duration-200" 
-                                           href="{{ url_for('index', page=page_num, date_range=date_range_value) }}"
+                                           href="{{ url_for('main.index', page=page_num, date_range=date_range_value) }}"
                                            data-preserve-view="true">{{ page_num }}</a>
                                     </li>
                                 {% else %}
@@ -491,7 +516,7 @@
                             {% endfor %}
                             <li class="page-item">
                                 <a class="page-link px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50 {% if not pelanggaran_pagination.has_next %}cursor-not-allowed opacity-50{% endif %}" 
-                                   href="{{ url_for('index', page=pelanggaran_pagination.next_num, date_range=date_range_value) if pelanggaran_pagination.has_next else '#' }}"
+                                   href="{{ url_for('main.index', page=pelanggaran_pagination.next_num, date_range=date_range_value) if pelanggaran_pagination.has_next else '#' }}"
                                    data-preserve-view="true">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>
@@ -734,15 +759,7 @@
         // Sorting Functionality
         function sortList(field, direction) {
             const container = document.getElementById('violation-container-list');
-            const listContainer = container.querySelector('.max-h-96');
-            const rows = Array.from(listContainer.querySelectorAll('.violation-row'));
-            
-            // Add sorting animation
-            rows.forEach(row => {
-                row.style.transition = 'all 0.3s ease';
-                row.style.transform = 'translateX(-10px)';
-                row.style.opacity = '0.7';
-            });
+            const rows = Array.from(container.querySelectorAll('.violation-row'));
             
             rows.sort((a, b) => {
                 let aVal = a.dataset[field];
@@ -752,14 +769,6 @@
                 if (field === 'tanggal') {
                     aVal = parseDate(aVal);
                     bVal = parseDate(bVal);
-                } else if (field === 'kategori') {
-                    // Custom sort for categories if needed
-                    const order = { 'Ringan': 1, 'Sedang': 2, 'Berat': 3 };
-                    aVal = order[aVal] || 0;
-                    bVal = order[bVal] || 0;
-                } else {
-                    aVal = aVal ? aVal.toLowerCase() : '';
-                    bVal = bVal ? bVal.toLowerCase() : '';
                 }
                 
                 if (aVal < bVal) return direction === 'asc' ? -1 : 1;
@@ -767,18 +776,9 @@
                 return 0;
             });
             
-            // Re-attach sorted rows with animation
-            setTimeout(() => {
-                rows.forEach((row, index) => {
-                    setTimeout(() => {
-                        listContainer.appendChild(row);
-                        setTimeout(() => {
-                            row.style.transform = 'translateX(0)';
-                            row.style.opacity = '1';
-                        }, 50);
-                    }, index * 30);
-                });
-            }, 100);
+            // Re-attach sorted rows
+            const listContainer = container.querySelector('.bg-white.border .max-h-96');
+            rows.forEach(row => listContainer.appendChild(row));
         }
 
         // Card view sorting with improved animation
@@ -800,10 +800,6 @@
                 } else if (field === 'tanggal') {
                     aVal = parseDate(a.dataset.tanggal);
                     bVal = parseDate(b.dataset.tanggal);
-                } else {
-                    // Fallback to dataset
-                    aVal = a.dataset[field] ? a.dataset[field].toLowerCase() : '';
-                    bVal = b.dataset[field] ? b.dataset[field].toLowerCase() : '';
                 }
                 
                 if (aVal < bVal) return direction === 'asc' ? -1 : 1;
@@ -836,12 +832,6 @@
                 const dateStr = element.dataset.tanggal;
                 const itemDate = parseDate(dateStr);
                 
-                // Reset time part for accurate date comparison
-                itemDate.setHours(0, 0, 0, 0);
-                
-                if (startDate) startDate.setHours(0, 0, 0, 0);
-                if (endDate) endDate.setHours(0, 0, 0, 0);
-                
                 if (!startDate && !endDate) return true; // No filter
                 if (startDate && !endDate) return itemDate >= startDate; // From date only
                 if (!startDate && endDate) return itemDate <= endDate; // To date only
@@ -863,76 +853,52 @@
 
         // Print functionality
         function printViolation(violationId, studentName) {
+            console.log('Print function called with ID:', violationId, 'Student:', studentName);
+            
             // Create a printable version of the violation data
             const violationItem = document.querySelector(`[data-id="${violationId}"]`);
             
             if (violationItem) {
-                // Get violation data from dataset or DOM elements
-                const name = violationItem.dataset.nama_murid || studentName;
-                const kelas = violationItem.dataset.kelas || '';
-                const kategori = violationItem.dataset.kategori || '';
-                const pasal = violationItem.dataset.pasal || '';
-                const tanggal = violationItem.dataset.tanggal || '';
-                const inputOleh = violationItem.dataset.di_input_oleh || '';
-                
-                // Try to find description from DOM
-                let deskripsi = '';
-                const descEl = violationItem.querySelector('.italic') || violationItem.querySelector('p.text-gray-700');
-                if (descEl) deskripsi = descEl.textContent;
+                // Get violation data
+                const name = violationItem.querySelector('.student-link')?.textContent || studentName;
+                const kelas = violationItem.querySelector('[data-kelas]')?.dataset.kelas || '';
+                const kategori = violationItem.querySelector('.bg-green-100, .bg-orange-100, .bg-red-100')?.textContent.trim() || '';
+                const pasal = violationItem.querySelector('[data-pasal]')?.dataset.pasal || '';
+                const tanggal = violationItem.querySelector('[data-tanggal]')?.dataset.tanggal || '';
+                const deskripsi = violationItem.querySelector('p')?.textContent || '';
+                const inputOleh = violationItem.querySelector('[data-di_input_oleh]')?.dataset.di_input_oleh || '';
                 
                 // Create print content
                 const printContent = `
-                    <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; border: 1px solid #eee;">
-                        <div style="text-align: center; border-bottom: 2px solid #667eea; padding-bottom: 20px; margin-bottom: 30px;">
-                            <h1 style="color: #667eea; margin: 0;">Laporan Pelanggaran Siswa</h1>
-                            <p style="color: #666; margin: 5px 0;">Sistem Manajemen Kedisiplinan</p>
+                    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Data Pelanggaran</h2>
+                        <div style="margin: 20px 0;">
+                            <p><strong>Nama Murid:</strong> ${name}</p>
+                            <p><strong>Kelas:</strong> ${kelas}</p>
+                            <p><strong>Kategori:</strong> ${kategori}</p>
+                            <p><strong>Pasal:</strong> ${pasal}</p>
+                            <p><strong>Tanggal Kejadian:</strong> ${tanggal}</p>
+                            <p><strong>Di Input Oleh:</strong> ${inputOleh}</p>
+                            ${deskripsi ? `<p><strong>Deskripsi:</strong> ${deskripsi}</p>` : ''}
                         </div>
-                        
-                        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-                            <table style="width: 100%; border-collapse: collapse;">
-                                <tr>
-                                    <td style="padding: 10px; font-weight: bold; width: 150px; color: #555;">Nama Siswa:</td>
-                                    <td style="padding: 10px; font-size: 1.1em;">${name}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; font-weight: bold; color: #555;">Kelas:</td>
-                                    <td style="padding: 10px;">${kelas}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 10px; font-weight: bold; color: #555;">Tanggal:</td>
-                                    <td style="padding: 10px;">${tanggal}</td>
-                                </tr>
-                            </table>
-                        </div>
-                        
-                        <div style="margin-bottom: 30px;">
-                            <h3 style="color: #333; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Detail Pelanggaran</h3>
-                            <p style="margin: 15px 0;"><strong>Pasal:</strong> ${pasal}</p>
-                            <p style="margin: 15px 0;"><strong>Kategori:</strong> <span style="background-color: #eee; padding: 3px 8px; border-radius: 4px;">${kategori}</span></p>
-                            ${deskripsi ? `<div style="margin-top: 20px;"><p><strong>Deskripsi Kejadian:</strong></p><p style="background-color: #fff; border: 1px solid #eee; padding: 15px; border-radius: 5px; color: #555;">${deskripsi}</p></div>` : ''}
-                        </div>
-                        
-                        <div style="margin-top: 50px; text-align: right; color: #666; font-size: 12px;">
-                            <p>Dicetak oleh: ${inputOleh}</p>
-                            <p>Waktu Cetak: ${new Date().toLocaleString('id-ID')}</p>
+                        <div style="margin-top: 30px; font-size: 12px; color: #666;">
+                            <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
                         </div>
                     </div>
                 `;
                 
                 // Open print window
                 const printWindow = window.open('', '_blank');
-                printWindow.document.write('<html><head><title>Cetak Pelanggaran</title></head><body>');
                 printWindow.document.write(printContent);
-                printWindow.document.write('</body></html>');
                 printWindow.document.close();
-                setTimeout(() => {
-                    printWindow.print();
-                }, 500);
+                printWindow.print();
             }
         }
         
         // Delete functionality
         function deleteViolation(violationId, studentName) {
+            console.log('Delete function called with ID:', violationId, 'Student:', studentName);
+            
             // Set the student name in the modal
             document.getElementById('studentNameToDelete').textContent = studentName;
             
@@ -963,7 +929,14 @@
                 theme: "light",
                 onChange: function(selectedDates, dateStr) {
                     if (selectedDates.length === 0) {
-                        // Clear filter logic if handled client-side
+                        // Clear filter
+                        filterByDateRange(null, null);
+                    } else if (selectedDates.length === 1) {
+                        // Single date selected
+                        filterByDateRange(selectedDates[0], null);
+                    } else {
+                        // Date range selected
+                        filterByDateRange(selectedDates[0], selectedDates[1]);
                     }
                 }
             });
@@ -988,11 +961,33 @@
         
         function updateBulkSelectedCount() {
             const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-            const countSpan = document.getElementById('bulkSelectedCount');
-            if (countSpan) countSpan.textContent = checkboxes.length;
+            document.getElementById('bulkSelectedCount').textContent = checkboxes.length;
             
-            // Enable/disable buttons based on selection if needed
-            // This part is for the modal, which is separate
+            // Update button states
+            const selectAllBtn = document.getElementById('selectAllBulk');
+            const bulkPrintBtn = document.querySelector('[onclick="bulkPrint()"]');
+            const bulkExportBtn = document.querySelector('[onclick="bulkExport()"]');
+            const bulkDeleteBtn = document.querySelector('[onclick="bulkDelete()"]');
+            
+            if (checkboxes.length === 0) {
+                selectAllBtn.checked = false;
+                selectAllBtn.indeterminate = false;
+                if(bulkPrintBtn) bulkPrintBtn.disabled = true;
+                if(bulkExportBtn) bulkExportBtn.disabled = true;
+                if(bulkDeleteBtn) bulkDeleteBtn.disabled = true;
+            } else if (checkboxes.length === document.querySelectorAll('.item-checkbox').length) {
+                selectAllBtn.checked = true;
+                selectAllBtn.indeterminate = false;
+                if(bulkPrintBtn) bulkPrintBtn.disabled = false;
+                if(bulkExportBtn) bulkExportBtn.disabled = false;
+                if(bulkDeleteBtn) bulkDeleteBtn.disabled = false;
+            } else {
+                selectAllBtn.checked = false;
+                selectAllBtn.indeterminate = true;
+                if(bulkPrintBtn) bulkPrintBtn.disabled = false;
+                if(bulkExportBtn) bulkExportBtn.disabled = false;
+                if(bulkDeleteBtn) bulkDeleteBtn.disabled = false;
+            }
         }
         
         // Modal helper functions
@@ -1016,50 +1011,56 @@
             let ringan = 0, sedang = 0, berat = 0;
             
             items.forEach(item => {
-                // Find visible items only
-                if (item.style.display !== 'none') {
-                    const category = item.dataset.kategori;
-                    if (category === 'Ringan') ringan++;
-                    else if (category === 'Sedang') sedang++;
-                    else if (category === 'Berat') berat++;
+                const categoryElement = item.querySelector('.bg-green-100, .bg-orange-100, .bg-red-100');
+                if (categoryElement) {
+                    if (categoryElement.classList.contains('bg-green-100')) ringan++;
+                    else if (categoryElement.classList.contains('bg-orange-100')) sedang++;
+                    else if (categoryElement.classList.contains('bg-red-100')) berat++;
                 }
             });
             
             // Get the current statistics mode
-            const statsModeEl = document.getElementById('statsMode');
-            const isGlobal = statsModeEl && statsModeEl.textContent.trim() === 'Global';
+            const isGlobal = document.getElementById('statsMode').textContent.trim() === 'Global';
             
-            if (!isGlobal) {
+            if (isGlobal) {
+                // Use global statistics from server
+                const globalRingan = parseInt(document.getElementById('global-ringan').textContent) || 0;
+                const globalSedang = parseInt(document.getElementById('global-sedang').textContent) || 0;
+                const globalBerat = parseInt(document.getElementById('global-berat').textContent) || 0;
+                
+                updateStatisticsDisplay(globalRingan, globalSedang, globalBerat);
+            } else {
+                // Use current page statistics
                 updateStatisticsDisplay(ringan, sedang, berat);
             }
         }
         
         function updateStatisticsDisplay(ringan, sedang, berat) {
-            // Update display numbers
-            const elements = {
-                ringan: document.getElementById('current-ringan'),
-                sedang: document.getElementById('current-sedang'),
-                berat: document.getElementById('current-berat')
-            };
+            // Update display
+            const currentRinganEl = document.getElementById('current-ringan');
+            const currentSedangEl = document.getElementById('current-sedang');
+            const currentBeratEl = document.getElementById('current-berat');
             
-            if (elements.ringan) elements.ringan.textContent = ringan;
-            if (elements.sedang) elements.sedang.textContent = sedang;
-            if (elements.berat) elements.berat.textContent = berat;
+            if (currentRinganEl) currentRinganEl.textContent = ringan;
+            if (currentSedangEl) currentSedangEl.textContent = sedang;
+            if (currentBeratEl) currentBeratEl.textContent = berat;
             
             // Update progress bar
             const total = ringan + sedang + berat;
             if (total > 0) {
-                const pRingan = (ringan / total) * 100;
-                const pSedang = (sedang / total) * 100;
-                const pBerat = (berat / total) * 100;
+                const progressRingan = (ringan / total) * 100;
+                const progressSedang = (sedang / total) * 100;
+                const progressBerat = (berat / total) * 100;
                 
-                const barRingan = document.getElementById('progress-ringan');
-                const barSedang = document.getElementById('progress-sedang');
-                const barBerat = document.getElementById('progress-berat');
-                
-                if (barRingan) barRingan.style.width = `${pRingan}%`;
-                if (barSedang) barSedang.style.width = `${pSedang}%`;
-                if (barBerat) barBerat.style.width = `${pBerat}%`;
+                // Create stacked progress bar
+                const progressBar = document.getElementById('category-progress');
+                if (progressBar) {
+                    progressBar.innerHTML = `
+                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressRingan}%; background-color: #22c55e;"></div>
+                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressSedang}%; background-color: #f97316;"></div>
+                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressBerat}%; background-color: #b91c1c;"></div>
+                    `;
+                }
             }
         }
         
@@ -1071,125 +1072,171 @@
             // Initialize date picker
             initializeDatePicker();
             
-            // View switching buttons
+            // View switching buttons with visual feedback
             document.getElementById('view-card-btn').addEventListener('click', function() {
-                switchView('card');
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    switchView('card');
+                    this.style.transform = 'scale(1)';
+                }, 100);
             });
             
             document.getElementById('view-list-btn').addEventListener('click', function() {
-                switchView('list');
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    switchView('list');
+                    this.style.transform = 'scale(1)';
+                }, 100);
             });
             
-            // Sorting buttons
+            // Sorting buttons with visual feedback
             document.querySelectorAll('.sort-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const field = this.dataset.sort;
-                    
-                    // Update sort direction
-                    if (sortField === field) {
-                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        sortField = field;
-                        sortDirection = 'asc';
-                    }
-                    
-                    // Update icons
-                    document.querySelectorAll('.sort-btn i').forEach(icon => {
-                        icon.className = 'fas fa-sort ml-1 text-gray-400';
-                    });
-                    
-                    const icon = this.querySelector('i');
-                    icon.className = `fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'} ml-1 text-gray-600`;
-                    
-                    // Sort the list
-                    if (currentView === 'list') {
-                        sortList(field, sortDirection);
-                    }
-                    
-                    // Also sort card view if needed
-                    if (currentView === 'card') {
-                        sortCardView(field, sortDirection);
-                    }
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        const field = this.dataset.sort;
+                        
+                        // Update sort direction
+                        if (sortField === field) {
+                            sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                        } else {
+                            sortField = field;
+                            sortDirection = 'asc';
+                        }
+                        
+                        // Update icons
+                        document.querySelectorAll('.sort-btn i').forEach(icon => {
+                            icon.className = 'fas fa-sort ml-1 text-gray-400';
+                        });
+                        
+                        const icon = this.querySelector('i');
+                        icon.className = `fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'} ml-1 text-gray-600`;
+                        
+                        // Sort the list
+                        if (currentView === 'list') {
+                            sortList(field, sortDirection);
+                        }
+                        
+                        // Also sort card view by name or date if needed
+                        if (currentView === 'card' && (field === 'nama_murid' || field === 'tanggal')) {
+                            sortCardView(field, sortDirection);
+                        }
+                        
+                        this.style.transform = 'scale(1)';
+                    }, 100);
                 });
             });
             
-            // Select all functionality
-            const selectAllCheckbox = document.getElementById('selectAll');
-            if (selectAllCheckbox) {
-                selectAllCheckbox.addEventListener('change', function() {
-                    document.querySelectorAll('.item-checkbox').forEach(checkbox => {
-                        checkbox.checked = this.checked;
-                        // Trigger visual update for rows
-                        const row = checkbox.closest('.violation-row');
-                        if (row) {
-                            if (this.checked) row.classList.add('bg-blue-50');
-                            else row.classList.remove('bg-blue-50');
+            // Enhanced select all functionality
+            document.getElementById('selectAll').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.item-checkbox');
+                const isChecked = this.checked;
+                
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                    
+                    // Add visual feedback to rows
+                    const row = checkbox.closest('.violation-row');
+                    if (row) {
+                        if (isChecked) {
+                            row.classList.add('bg-blue-50', 'border-blue-200');
+                        } else {
+                            row.classList.remove('bg-blue-50', 'border-blue-200');
                         }
-                    });
-                    updateBulkSelectedCount();
+                    }
                 });
-            }
+                
+                updateBulkSelectedCount();
+            });
             
-            // Individual checkboxes
+            // Individual checkbox change listener with visual feedback
             document.addEventListener('change', function(e) {
                 if (e.target.classList.contains('item-checkbox')) {
-                    const row = e.target.closest('.violation-row');
+                    const checkbox = e.target;
+                    const row = checkbox.closest('.violation-row');
+                    
                     if (row) {
-                        if (e.target.checked) row.classList.add('bg-blue-50');
-                        else row.classList.remove('bg-blue-50');
+                        if (checkbox.checked) {
+                            row.classList.add('bg-blue-50', 'border-blue-200');
+                        } else {
+                            row.classList.remove('bg-blue-50', 'border-blue-200');
+                        }
                     }
+                    
                     updateBulkSelectedCount();
                 }
             });
             
-            // Statistics toggle functionality
-            const toggleStatsBtn = document.getElementById('toggleStats');
-            if (toggleStatsBtn) {
-                toggleStatsBtn.addEventListener('click', function() {
-                    const globalStats = document.getElementById('globalStats');
-                    const currentStats = document.getElementById('currentStats');
-                    const statsMode = document.getElementById('statsMode');
-                    const icon = this.querySelector('i');
+            // Enhanced statistics toggle with animation
+            document.getElementById('toggleStats').addEventListener('click', function() {
+                const globalStats = document.getElementById('globalStats');
+                const currentStats = document.getElementById('currentStats');
+                const statsMode = document.getElementById('statsMode');
+                
+                // Add animation
+                this.style.transform = 'scale(0.95)';
+                
+                if (globalStats.classList.contains('hidden')) {
+                    // Show global stats with animation
+                    globalStats.classList.remove('hidden');
+                    currentStats.classList.add('hidden');
+                    statsMode.textContent = 'Global';
+                    this.querySelector('i').className = 'fas fa-globe mr-1';
                     
-                    if (globalStats.classList.contains('hidden')) {
-                        // Show global stats
-                        globalStats.classList.remove('hidden');
-                        currentStats.classList.add('hidden');
-                        statsMode.textContent = 'Global';
-                        icon.className = 'fas fa-globe mr-1';
-                    } else {
-                        // Show current page stats
-                        globalStats.classList.add('hidden');
-                        currentStats.classList.remove('hidden');
-                        statsMode.textContent = 'Halaman Ini';
-                        icon.className = 'fas fa-filter mr-1';
-                        
-                        // Recalculate current stats
+                    // Animate global numbers
+                    animateNumberChange('global-ringan', parseInt(document.getElementById('global-ringan').textContent));
+                    animateNumberChange('global-sedang', parseInt(document.getElementById('global-sedang').textContent));
+                    animateNumberChange('global-berat', parseInt(document.getElementById('global-berat').textContent));
+                } else {
+                    // Show current page stats with animation
+                    globalStats.classList.add('hidden');
+                    currentStats.classList.remove('hidden');
+                    statsMode.textContent = 'Halaman Ini';
+                    this.querySelector('i').className = 'fas fa-filter mr-1';
+                }
+                
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                    updateCategoryStatistics();
+                }, 100);
+            });
+            
+            // Enhanced date range filter with visual feedback
+            const dateInput = document.getElementById('dateFilterInput');
+            if (dateInput) {
+                dateInput.addEventListener('change', function() {
+                    // Add loading state
+                    this.classList.add('border-blue-300', 'ring-blue-100', 'ring-opacity-30');
+                    
+                    setTimeout(() => {
+                        this.classList.remove('border-blue-300', 'ring-blue-100', 'ring-opacity-30');
                         updateCategoryStatistics();
-                    }
+                    }, 1000);
                 });
             }
             
-            // Cancel delete button
+            // Cancel delete button with animation
             document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
                 closeModal();
             });
             
-            // Confirm delete button
+            // Confirm delete button with animation
             document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
                 confirmDelete();
             });
             
-            // Delete confirmation input
+            // Delete confirmation input with validation
             document.getElementById('deleteConfirmInput').addEventListener('input', function() {
                 const input = this.value.trim();
                 const confirmBtn = document.getElementById('confirmDeleteBtn');
                 if (input === 'SETUJU') {
                     confirmBtn.disabled = false;
                     confirmBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed');
+                    confirmBtn.classList.add('bg-gradient-to-r', 'hover:shadow-lg');
                 } else {
                     confirmBtn.disabled = true;
                     confirmBtn.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
+                    confirmBtn.classList.remove('bg-gradient-to-r', 'hover:shadow-lg');
                 }
             });
             
@@ -1203,47 +1250,350 @@
             // Initialize statistics
             updateCategoryStatistics();
             
-            // Search functionality
+            // Re-calculate when search or filter changes with debouncing
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
+                let searchTimeout;
+                
                 searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    const cardItems = document.querySelectorAll('#violation-container-card .violation-item');
-                    const listItems = document.querySelectorAll('#violation-container-list .violation-row');
-                    
-                    const searchFunc = (element) => {
-                        // Search in multiple data attributes
-                        const text = (element.dataset.nama_murid + ' ' + 
-                                     element.dataset.kelas + ' ' + 
-                                     element.dataset.pasal + ' ' +
-                                     element.dataset.di_input_oleh).toLowerCase();
-                        return text.includes(searchTerm);
-                    };
-                    
-                    cardItems.forEach(item => {
-                        const matches = searchFunc(item);
-                        item.style.display = matches ? '' : 'none';
-                    });
-                    
-                    listItems.forEach(item => {
-                        const matches = searchFunc(item);
-                        item.style.display = matches ? '' : 'none';
-                    });
-                    
-                    // Show/hide "No Results" message
-                    const visibleCards = Array.from(cardItems).filter(item => item.style.display !== 'none').length;
-                    const noResultsMsg = document.getElementById('no-results-message');
-                    if (noResultsMsg) {
-                        noResultsMsg.style.display = (visibleCards === 0 && cardItems.length > 0) ? 'block' : 'none';
-                    }
-                    
-                    // Update stats for current view
-                    updateCategoryStatistics();
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        updateCategoryStatistics();
+                        // Also trigger the search logic
+                        const searchTerm = this.value.toLowerCase();
+                        const cardItems = document.querySelectorAll('#violation-container-card .violation-item');
+                        const listItems = document.querySelectorAll('#violation-container-list .violation-row');
+                        
+                        const searchFunc = (element) => {
+                            const text = element.textContent.toLowerCase();
+                            return text.includes(searchTerm);
+                        };
+                        
+                        let visibleCount = 0;
+                        cardItems.forEach(item => {
+                            const matchesSearch = searchFunc(item);
+                            item.style.display = matchesSearch ? '' : 'none';
+                            if(matchesSearch) visibleCount++;
+                        });
+                        
+                        listItems.forEach(item => {
+                            const matchesSearch = searchFunc(item);
+                            item.style.display = matchesSearch ? '' : 'none';
+                        });
+                        
+                        const noResults = document.getElementById('no-results-message');
+                        if(noResults) noResults.style.display = (visibleCount === 0) ? 'block' : 'none';
+
+                    }, 300);
                 });
             }
         });
         
-        // Confirm Delete Action
+        // Bulk Actions Functions
+        function showBulkActions() {
+            const modal = document.getElementById('bulkActionsModal');
+            const modalContent = modal.querySelector('#bulkActionsModalContent');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+        
+        function closeBulkActionsModal() {
+            const modal = document.getElementById('bulkActionsModal');
+            const modalContent = modal.querySelector('#bulkActionsModalContent');
+            
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+        
+        function bulkPrint() {
+            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showToast('Pilih setidaknya satu data untuk dicetak', 'warning');
+                return;
+            }
+            
+            const format = document.getElementById('bulkPrintFormat').value;
+            if (format === 'individual') {
+                checkboxes.forEach(checkbox => {
+                    const itemId = checkbox.closest('.violation-row').dataset.id;
+                    const studentName = checkbox.closest('.violation-row').dataset.nama_murid;
+                    printViolation(itemId, studentName);
+                });
+            } else if (format === 'summary') {
+                generatePrintSummary(checkboxes);
+            } else {
+                showToast('Format tidak tersedia', 'warning');
+            }
+            
+            closeBulkActionsModal();
+        }
+        
+        function bulkExport() {
+            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showToast('Pilih setidaknya satu data untuk diekspor', 'warning');
+                return;
+            }
+            
+            showExportModal();
+            closeBulkActionsModal();
+        }
+        
+        function bulkDelete() {
+            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showToast('Pilih setidaknya satu data untuk dihapus', 'warning');
+                return;
+            }
+            
+            const count = checkboxes.length;
+            
+            if (confirm(`Hapus ${count} data pelanggaran?`)) {
+                let deletedCount = 0;
+                checkboxes.forEach(checkbox => {
+                    const itemId = checkbox.closest('.violation-row').dataset.id;
+                    fetch(`/delete/${itemId}`, { method: 'POST' })
+                        .then(res => {
+                            if(res.ok) deletedCount++;
+                            if(deletedCount === count) {
+                                window.location.reload();
+                            }
+                        });
+                });
+            }
+            
+            closeBulkActionsModal();
+        }
+        
+        // Export Functions
+        function showExportModal() {
+            const modal = document.getElementById('exportModal');
+            const modalContent = modal.querySelector('#exportModalContent');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+        
+        function closeExportModal() {
+            const modal = document.getElementById('exportModal');
+            const modalContent = modal.querySelector('#exportModalContent');
+            
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+        
+        function performExport() {
+            const format = document.getElementById('exportFormat').value;
+            const includeImages = document.getElementById('includeImages').checked;
+            const includeStats = document.getElementById('includeStatistics').checked;
+            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+            
+            if (checkboxes.length === 0) {
+                showToast('Pilih setidaknya satu data untuk diekspor', 'warning');
+                return;
+            }
+            
+            const data = Array.from(checkboxes).map(checkbox => {
+                const row = checkbox.closest('.violation-row');
+                return {
+                    id: row.dataset.id,
+                    nama_murid: row.dataset.nama_murid,
+                    kelas: row.dataset.kelas,
+                    kategori: row.dataset.kategori,
+                    pasal: row.dataset.pasal,
+                    tanggal: row.dataset.tanggal,
+                    di_input_oleh: row.dataset.di_input_oleh
+                };
+            });
+            
+            // Create download
+            const filename = `pelanggaran_${new Date().toISOString().split('T')[0]}.${format}`;
+            
+            if (format === 'json') {
+                downloadJSON(data, filename, includeStats);
+            } else if (format === 'csv') {
+                downloadCSV(data, filename, includeStats);
+            } else if (format === 'excel') {
+                downloadExcel(data, filename, includeStats);
+            } else if (format === 'pdf') {
+                downloadPDF(data, filename, includeStats, includeImages);
+            }
+            
+            showToast(`Data berhasil diekspor ke ${filename}`, 'success');
+            closeExportModal();
+        }
+        
+        function generatePrintSummary(checkboxes) {
+            const data = Array.from(checkboxes).map(checkbox => {
+                const row = checkbox.closest('.violation-row');
+                return {
+                    nama_murid: row.dataset.nama_murid,
+                    kelas: row.dataset.kelas,
+                    kategori: row.dataset.kategori,
+                    pasal: row.dataset.pasal,
+                    tanggal: row.dataset.tanggal
+                };
+            });
+            
+            // Generate summary for printing
+            const summaryContent = `
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
+                    <h1 style="text-align: center; color: #333; margin-bottom: 30px;">Ringkasan Pelanggaran</h1>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                        ${data.map((item, index) => `
+                            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                                <h3 style="margin: 0 0 10px 0; color: #667eea;">${index + 1}. ${item.nama_murid}</h3>
+                                <p><strong>Kelas:</strong> ${item.kelas}</p>
+                                <p><strong>Kategori:</strong> ${item.kategori}</p>
+                                <p><strong>Pasal:</strong> ${item.pasal}</p>
+                                <p><strong>Tanggal:</strong> ${item.tanggal}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="text-align: center; margin-top: 30px; color: #666;">
+                        <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+                    </div>
+                </div>
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(summaryContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        // Download helper functions
+        function downloadJSON(data, filename, includeStats) {
+            const exportData = {
+                data: data,
+                statistics: includeStats ? calculateStatistics(data) : null,
+                export_date: new Date().toISOString(),
+                total_records: data.length
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function downloadCSV(data, filename, includeStats) {
+            const headers = ['Nama Murid', 'Kelas', 'Kategori', 'Pasal', 'Tanggal Kejadian', 'Di Input Oleh'];
+            const csvContent = [
+                headers.join(','),
+                ...data.map(item => 
+                    `"${item.nama_murid}","${item.kelas}","${item.kategori}","${item.pasal}","${item.tanggal}","${item.di_input_oleh}"`
+                )
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function downloadExcel(data, filename, includeStats) {
+            // Simple CSV format that Excel can open
+            downloadCSV(data, filename.replace('.xlsx', '.csv'), includeStats);
+        }
+        
+        function downloadPDF(data, filename, includeStats, includeImages) {
+            // Generate PDF content
+            const pdfContent = generatePDFContent(data, includeStats, includeImages);
+            
+            const blob = new Blob([pdfContent], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function generatePDFContent(data, includeStats, includeImages) {
+            // Simple PDF content (in real implementation, use PDF library)
+            return `
+                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                    <h1>Laporan Pelanggaran</h1>
+                    ${data.map(item => `
+                        <div style="margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                            <h3>${item.nama_murid}</h3>
+                            <p><strong>Kelas:</strong> ${item.kelas}</p>
+                            <p><strong>Kategori:</strong> ${item.kategori}</p>
+                            <p><strong>Pasal:</strong> ${item.pasal}</p>
+                            <p><strong>Tanggal:</strong> ${item.tanggal}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function calculateStatistics(data) {
+            const stats = {
+                total: data.length,
+                ringan: data.filter(item => item.kategori === 'Ringan').length,
+                sedang: data.filter(item => item.kategori === 'Sedang').length,
+                berat: data.filter(item => item.kategori === 'Berat').length
+            };
+            return stats;
+        }
+        
+        // Toast notification
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('successToast');
+            const messageEl = document.getElementById('successToastMessage');
+            
+            messageEl.textContent = message;
+            
+            // Update toast styling based on type
+            toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-50`;
+            if (type === 'success') {
+                toast.className += ' bg-green-500 text-white';
+            } else if (type === 'warning') {
+                toast.className += ' bg-yellow-500 text-white';
+            } else if (type === 'error') {
+                toast.className += ' bg-red-500 text-white';
+            }
+            
+            toast.classList.remove('hidden', 'translate-x-full');
+            
+            // Auto-hide after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 300);
+            }, 3000);
+        }
+        
+        // Modal helper functions
+        function closeModal() {
+            const modal = document.getElementById('deleteConfirmModal');
+            const modalContent = modal.querySelector('#deleteModalContent');
+            
+            modalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+        
         function confirmDelete() {
             if (window.violationToDelete) {
                 // Create and submit form
@@ -1251,7 +1601,7 @@
                 form.method = 'POST';
                 form.action = `/delete/${window.violationToDelete}`;
                 
-                // Add CSRF token if available
+                // Add CSRF token (if needed)
                 const csrfToken = document.querySelector('meta[name="csrf-token"]');
                 if (csrfToken) {
                     const csrfInput = document.createElement('input');
@@ -1261,33 +1611,9 @@
                     form.appendChild(csrfInput);
                 }
                 
+                // Submit form
                 document.body.appendChild(form);
                 form.submit();
-            }
-        }
-        
-        // Toast notification (kept for future use)
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('successToast');
-            const messageEl = document.getElementById('successToastMessage');
-            
-            if (toast && messageEl) {
-                messageEl.textContent = message;
-                
-                // Update styling
-                toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-50`;
-                if (type === 'success') toast.classList.add('bg-green-500', 'text-white');
-                else if (type === 'warning') toast.classList.add('bg-yellow-500', 'text-white');
-                else if (type === 'error') toast.classList.add('bg-red-500', 'text-white');
-                
-                toast.classList.remove('hidden', 'translate-x-full');
-                
-                setTimeout(() => {
-                    toast.classList.add('translate-x-full');
-                    setTimeout(() => {
-                        toast.classList.add('hidden');
-                    }, 300);
-                }, 3000);
             }
         }
     </script>
