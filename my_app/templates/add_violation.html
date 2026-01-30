@@ -48,6 +48,7 @@
                             <i class="fas fa-calendar-alt text-gray-400"></i>
                         </div>
                         <input type="text" id="tanggal_kejadian" name="tanggal_kejadian" required
+                               value="{{ form_data.get('tanggal_kejadian', '') }}"
                                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
                                placeholder="Pilih tanggal...">
                     </div>
@@ -65,11 +66,50 @@
                         <select id="di_input_oleh" name="di_input_oleh" required
                                 class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white appearance-none">
                             <option value="">Pilih Guru / Staff</option>
-                            <option value="Maylinda Puspita Sari">Maylinda Puspita Sari</option>
-                            <option value="Desi Artika">Desi Artika</option>
-                            <option value="Heni Ermawati">Heni Ermawati</option>
-                            <option value="Muhamad Ichsan">Muhamad Ichsan</option>
-                            <option value="Suftiyano">Suftiyano</option>
+                            {% set selected_input = form_data.get('di_input_oleh', '') %}
+                            <option value="Maylinda Puspita Sari" {% if selected_input == 'Maylinda Puspita Sari' %}selected{% endif %}>Maylinda Puspita Sari</option>
+                            <option value="Desi Artika" {% if selected_input == 'Desi Artika' %}selected{% endif %}>Desi Artika</option>
+                            <option value="Heni Ermawati" {% if selected_input == 'Heni Ermawati' %}selected{% endif %}>Heni Ermawati</option>
+                            <option value="Muhamad Ichsan" {% if selected_input == 'Muhamad Ichsan' %}selected{% endif %}>Muhamad Ichsan</option>
+                            <option value="Suftiyano" {% if selected_input == 'Suftiyano' %}selected{% endif %}>Suftiyano</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kelas (Dipindah ke atas) -->
+                <div>
+                    <label for="kelas" class="block text-sm font-medium text-gray-700 mb-2">
+                        Kelas <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-school text-gray-400"></i>
+                        </div>
+                        <select id="kelas" name="kelas" required onchange="loadStudents(this.value)"
+                                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white appearance-none">
+                            <option value="">Pilih Kelas</option>
+                            {% set selected_kelas = form_data.get('kelas', '') %}
+                            <optgroup label="Kelas 7">
+                                <option value="7A" {% if selected_kelas == '7A' %}selected{% endif %}>7A</option>
+                                <option value="7B" {% if selected_kelas == '7B' %}selected{% endif %}>7B</option>
+                                <option value="7C" {% if selected_kelas == '7C' %}selected{% endif %}>7C</option>
+                                <option value="7D" {% if selected_kelas == '7D' %}selected{% endif %}>7D</option>
+                            </optgroup>
+                            <optgroup label="Kelas 8">
+                                <option value="8A" {% if selected_kelas == '8A' %}selected{% endif %}>8A</option>
+                                <option value="8B" {% if selected_kelas == '8B' %}selected{% endif %}>8B</option>
+                                <option value="8C" {% if selected_kelas == '8C' %}selected{% endif %}>8C</option>
+                                <option value="8D" {% if selected_kelas == '8D' %}selected{% endif %}>8D</option>
+                            </optgroup>
+                            <optgroup label="Kelas 9">
+                                <option value="9A" {% if selected_kelas == '9A' %}selected{% endif %}>9A</option>
+                                <option value="9B" {% if selected_kelas == '9B' %}selected{% endif %}>9B</option>
+                                <option value="9C" {% if selected_kelas == '9C' %}selected{% endif %}>9C</option>
+                                <option value="9D" {% if selected_kelas == '9D' %}selected{% endif %}>9D</option>
+                            </optgroup>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
@@ -86,48 +126,20 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-user-graduate text-gray-400"></i>
                         </div>
-                        <input type="text" id="nama_murid" name="nama_murid" required
-                               class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                               placeholder="Ketik nama siswa..." autocomplete="off">
-                    </div>
-                    <!-- Autocomplete Dropdown -->
-                    <div id="studentSuggestions" class="hidden absolute z-50 left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-60 overflow-y-auto">
-                    </div>
-                </div>
-
-                <!-- Kelas -->
-                <div>
-                    <label for="kelas" class="block text-sm font-medium text-gray-700 mb-2">
-                        Kelas <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-school text-gray-400"></i>
-                        </div>
-                        <select id="kelas" name="kelas" required
-                                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white appearance-none">
-                            <option value="">Pilih Kelas</option>
-                            <optgroup label="Kelas 7">
-                                <option value="7A">7A</option>
-                                <option value="7B">7B</option>
-                                <option value="7C">7C</option>
-                                <option value="7D">7D</option>
-                            </optgroup>
-                            <optgroup label="Kelas 8">
-                                <option value="8A">8A</option>
-                                <option value="8B">8B</option>
-                                <option value="8C">8C</option>
-                                <option value="8D">8D</option>
-                            </optgroup>
-                            <optgroup label="Kelas 9">
-                                <option value="9A">9A</option>
-                                <option value="9B">9B</option>
-                                <option value="9C">9C</option>
-                                <option value="9D">9D</option>
-                            </optgroup>
+                        <!-- Input hidden untuk menyimpan nilai nama murid jika terjadi error -->
+                        <input type="hidden" id="saved_nama_murid" value="{{ form_data.get('nama_murid', '') }}">
+                        
+                        <select id="nama_murid" name="nama_murid" required disabled
+                                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-100 appearance-none cursor-not-allowed">
+                            <option value="">Pilih Kelas Terlebih Dahulu</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
+                        </div>
+                        
+                        <!-- Loading Indicator -->
+                        <div id="loadingStudent" class="hidden absolute right-8 top-3 text-blue-500">
+                            <i class="fas fa-spinner fa-spin"></i>
                         </div>
                     </div>
                 </div>
@@ -156,13 +168,14 @@
                             <select id="pasal" name="pasal" required
                                     class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white appearance-none">
                                 <option value="">Pilih Pasal Tata Tertib</option>
-                                <option value="Pasal 1 - Pakaian Seragam Sekolah">Pasal 1 - Pakaian Seragam Sekolah</option>
-                                <option value="Pasal 2 - Kegiatan Pembelajaran">Pasal 2 - Kegiatan Pembelajaran</option>
-                                <option value="Pasal 3 - Kebersihan dan Keindahan Lingkungan">Pasal 3 - Kebersihan dan Keindahan Lingkungan</option>
-                                <option value="Pasal 4 - Hubungan Murid dengan Guru, Karyawan/Pegawai">Pasal 4 - Hubungan Murid dengan Guru/Pegawai</option>
-                                <option value="Pasal 5 - Hubungan Murid dengan Murid">Pasal 5 - Hubungan Murid dengan Murid</option>
-                                <option value="Pasal 6 - Kegiatan Organisasi Murid dan Ekstrakurikuler">Pasal 6 - Organisasi & Ekstrakurikuler</option>
-                                <option value="Pasal 7 - Tindakan Kekerasan dan Amoral dan Asusila">Pasal 7 - Kekerasan & Asusila</option>
+                                {% set selected_pasal = form_data.get('pasal', '') %}
+                                <option value="Pasal 1 - Pakaian Seragam Sekolah" {% if selected_pasal == 'Pasal 1 - Pakaian Seragam Sekolah' %}selected{% endif %}>Pasal 1 - Pakaian Seragam Sekolah</option>
+                                <option value="Pasal 2 - Kegiatan Pembelajaran" {% if selected_pasal == 'Pasal 2 - Kegiatan Pembelajaran' %}selected{% endif %}>Pasal 2 - Kegiatan Pembelajaran</option>
+                                <option value="Pasal 3 - Kebersihan dan Keindahan Lingkungan" {% if selected_pasal == 'Pasal 3 - Kebersihan dan Keindahan Lingkungan' %}selected{% endif %}>Pasal 3 - Kebersihan dan Keindahan Lingkungan</option>
+                                <option value="Pasal 4 - Hubungan Murid dengan Guru, Karyawan/Pegawai" {% if selected_pasal == 'Pasal 4 - Hubungan Murid dengan Guru, Karyawan/Pegawai' %}selected{% endif %}>Pasal 4 - Hubungan Murid dengan Guru/Pegawai</option>
+                                <option value="Pasal 5 - Hubungan Murid dengan Murid" {% if selected_pasal == 'Pasal 5 - Hubungan Murid dengan Murid' %}selected{% endif %}>Pasal 5 - Hubungan Murid dengan Murid</option>
+                                <option value="Pasal 6 - Kegiatan Organisasi Murid dan Ekstrakurikuler" {% if selected_pasal == 'Pasal 6 - Kegiatan Organisasi Murid dan Ekstrakurikuler' %}selected{% endif %}>Pasal 6 - Organisasi & Ekstrakurikuler</option>
+                                <option value="Pasal 7 - Tindakan Kekerasan dan Amoral dan Asusila" {% if selected_pasal == 'Pasal 7 - Tindakan Kekerasan dan Amoral dan Asusila' %}selected{% endif %}>Pasal 7 - Kekerasan & Asusila</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
@@ -182,9 +195,10 @@
                             <select id="kategori_pelanggaran" name="kategori_pelanggaran" required
                                     class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white appearance-none">
                                 <option value="">Pilih Tingkat</option>
-                                <option value="Ringan">🟢 Ringan</option>
-                                <option value="Sedang">🟠 Sedang</option>
-                                <option value="Berat">🔴 Berat</option>
+                                {% set selected_kat = form_data.get('kategori_pelanggaran', '') %}
+                                <option value="Ringan" {% if selected_kat == 'Ringan' %}selected{% endif %}>🟢 Ringan</option>
+                                <option value="Sedang" {% if selected_kat == 'Sedang' %}selected{% endif %}>🟠 Sedang</option>
+                                <option value="Berat" {% if selected_kat == 'Berat' %}selected{% endif %}>🔴 Berat</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
@@ -200,7 +214,7 @@
                     </label>
                     <textarea id="deskripsi" name="deskripsi" rows="4"
                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 resize-none placeholder-gray-400"
-                              placeholder="Ceritakan detail kejadian secara singkat dan jelas..."></textarea>
+                              placeholder="Ceritakan detail kejadian secara singkat dan jelas...">{{ form_data.get('deskripsi', '') }}</textarea>
                     <p class="text-xs text-gray-500 mt-1 text-right">Maksimal 500 karakter</p>
                 </div>
             </div>
@@ -289,17 +303,77 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
     <script>
-        // Initialize Flatpickr
+        // Initialize Flatpickr dengan format DD/MM/YYYY yang BENAR
         flatpickr("#tanggal_kejadian", {
             locale: "id",
-            dateFormat: "Y-m-d",
-            altInput: true,
-            altFormat: "d F Y",
+            dateFormat: "d/m/Y", // format yang dikirim ke server (WAJIB INI)
+            altInput: true,      // menampilkan input alternatif yang lebih cantik
+            altFormat: "d F Y",  // format tampilan di layar (misal: 31 Januari 2026)
             theme: "light",
-            defaultDate: "today",
+            defaultDate: "{{ form_data.get('tanggal_kejadian', '') }}" || "today",
             maxDate: "today"
         });
         
+        // --- Logic Load Student ---
+        function loadStudents(className, selectedStudent = null) {
+            const studentSelect = document.getElementById('nama_murid');
+            const loadingIndicator = document.getElementById('loadingStudent');
+            
+            // Reset Dropdown
+            studentSelect.innerHTML = '<option value="">Pilih Siswa</option>';
+            studentSelect.disabled = true;
+            studentSelect.classList.add('bg-gray-100', 'cursor-not-allowed');
+            studentSelect.classList.remove('bg-white');
+            
+            if (className) {
+                // Show loading
+                loadingIndicator.classList.remove('hidden');
+                
+                // Fetch data
+                fetch(`/api/students/${className}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            data.forEach(name => {
+                                const option = document.createElement('option');
+                                option.value = name;
+                                option.textContent = name;
+                                if (selectedStudent && name === selectedStudent) {
+                                    option.selected = true;
+                                }
+                                studentSelect.appendChild(option);
+                            });
+                            studentSelect.disabled = false;
+                            studentSelect.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                            studentSelect.classList.add('bg-white');
+                        } else {
+                            const option = document.createElement('option');
+                            option.textContent = "Tidak ada data siswa";
+                            studentSelect.appendChild(option);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotification('Gagal memuat data siswa', 'error');
+                    })
+                    .finally(() => {
+                        loadingIndicator.classList.add('hidden');
+                    });
+            } else {
+                studentSelect.innerHTML = '<option value="">Pilih Kelas Terlebih Dahulu</option>';
+            }
+        }
+
+        // Initialize Student Data if returning with error
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedClass = document.getElementById('kelas').value;
+            const savedStudent = document.getElementById('saved_nama_murid').value;
+            
+            if (savedClass) {
+                loadStudents(savedClass, savedStudent);
+            }
+        });
+
         // File preview functionality
         const fileInput = document.getElementById('bukti_file');
         const filePreview = document.getElementById('filePreview');
@@ -334,55 +408,6 @@
         function clearFile() {
             if (fileInput) fileInput.value = '';
             if (filePreview) filePreview.classList.add('hidden');
-        }
-        
-        // Student name autocomplete
-        const studentNames = [
-            'Ahmad Rizki', 'Siti Nurhaliza', 'Budi Santoso', 'Dewi Lestari',
-            'Eko Prasetyo', 'Fitri Handayani', 'Ganjar Pranowo',
-            'Hadi Wijaya', 'Indira Gandhi', 'Joko Widodo',
-            'Megawati Sukarnoputro', 'Mohammad Hatta', 'Soekarno Kartosasmito',
-            'Soeharto', 'Sukarnopati', 'Suharto', 'Adhrian', 'Maymunah', 'Ucul'
-        ];
-        
-        const nameInput = document.getElementById('nama_murid');
-        const suggestions = document.getElementById('studentSuggestions');
-
-        if (nameInput) {
-            nameInput.addEventListener('input', function() {
-                const value = this.value.toLowerCase();
-                
-                if (value.length > 1) {
-                    const filtered = studentNames.filter(function(name) { 
-                        return name.toLowerCase().includes(value);
-                    }).slice(0, 5);
-                    
-                    if (filtered.length > 0) {
-                        suggestions.innerHTML = filtered.map(function(name) {
-                            return `<div class="px-4 py-3 hover:bg-blue-50 cursor-pointer text-sm text-gray-700 transition-colors border-b border-gray-100 last:border-0" onclick="selectStudent('${name}')">
-                                <i class="fas fa-user-circle mr-2 text-gray-400"></i>${name}
-                            </div>`;
-                        }).join('');
-                        suggestions.classList.remove('hidden');
-                    } else {
-                        suggestions.classList.add('hidden');
-                    }
-                } else {
-                    suggestions.classList.add('hidden');
-                }
-            });
-        }
-        
-        // Click outside to close suggestions
-        document.addEventListener('click', function(e) {
-            if (suggestions && !suggestions.contains(e.target) && e.target !== nameInput) {
-                suggestions.classList.add('hidden');
-            }
-        });
-        
-        function selectStudent(name) {
-            if (nameInput) nameInput.value = name;
-            if (suggestions) suggestions.classList.add('hidden');
         }
         
         // Form validation
@@ -486,6 +511,12 @@
             
             // Clear Selects Manually to be sure
             document.querySelectorAll('select').forEach(select => select.value = "");
+            
+            // Reset dropdown siswa
+            const studentSelect = document.getElementById('nama_murid');
+            studentSelect.innerHTML = '<option value="">Pilih Kelas Terlebih Dahulu</option>';
+            studentSelect.disabled = true;
+            studentSelect.classList.add('bg-gray-100', 'cursor-not-allowed');
             
             // Clear Validations
             document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500', 'ring-2', 'ring-red-200'));

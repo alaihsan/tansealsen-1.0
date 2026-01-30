@@ -1,7 +1,15 @@
+import sys
+import os
+
+# Tambahkan direktori parent ke sys.path agar bisa import 'my_app' sebagai package
+# Ini penting karena kita menggunakan absolute import (e.g. 'from my_app.routes ...')
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from flask import Flask
-from config import Config
-from extensions import db
-from routes import main
+from my_app.config import Config
+from my_app.extensions import db
+from my_app.routes import main
+from my_app.models import Student 
 
 def create_app():
     # Inisialisasi aplikasi Flask
@@ -18,7 +26,7 @@ def create_app():
     
     return app
 
-# Membuat instance aplikasi
+# Inisialisasi aplikasi
 app = create_app()
 
 if __name__ == '__main__':

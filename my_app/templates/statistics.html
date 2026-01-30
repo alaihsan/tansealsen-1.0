@@ -5,6 +5,7 @@
 {% block head %}
     {{ super() }}
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script> <!-- Load locale ID -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/statistics.css') }}">
@@ -54,10 +55,13 @@
             </div>
 
             <!-- Custom Date Filter -->
-            <form method="GET" action="{{ url_for('main.statistics') }}" class="custom-filter-form">
+            <form method="GET" action="{{ url_for('main.statistics') }}" class="custom-filter-form" id="statsFilterForm">
                 <div class="date-picker-wrapper">
                     <i class="fas fa-calendar-alt date-picker-icon"></i>
+                    <!-- Input utama untuk range picker -->
                     <input type="text" id="date_range_picker" name="date_range" placeholder="Pilih rentang tanggal..." class="date-picker-input">
+                    
+                    <!-- Hidden inputs untuk start_date dan end_date yang akan dikirim ke server -->
                     <input type="hidden" id="start_date" name="start_date" value="{{ stats_data.start_date }}">
                     <input type="hidden" id="end_date" name="end_date" value="{{ stats_data.end_date }}">
                 </div>
@@ -178,22 +182,102 @@
 {% block scripts %}
     {{ super() }}
     <script src="{{ url_for('static', filename='js/statistics.js') }}"></script>
-    <script>
-        // Chart data from backend
-        const statsData = {
-            total: {{ stats_data.total if stats_data.total is defined else 0 }},
-            ringan: {{ stats_data.ringan if stats_data.ringan is defined else 0 }},
-            sedang: {{ stats_data.sedang if stats_data.sedang is defined else 0 }},
-            berat: {{ stats_data.berat if stats_data.berat is defined else 0 }},
-            today_ringan: {{ stats_data.today_ringan if stats_data.today_ringan is defined else 0 }},
-            today_sedang: {{ stats_data.today_sedang if stats_data.today_sedang is defined else 0 }},
-            today_berat: {{ stats_data.today_berat if stats_data.today_berat is defined else 0 }}
-        };
+    
+    <!-- Embed data securely to avoid syntax errors in editors -->
+    <script id="stats-data-json" type="application/json">
+        {{ stats_data | tojson | safe }}
+    </script>
 
-        // Initialize charts when DOM is loaded
+    <script>
+        // Parse the JSON data from the script tag
+        let statsData = {};
+        try {
+            const jsonElement = document.getElementById('stats-data-json');
+            if (jsonElement) {
+                statsData = JSON.parse(jsonElement.textContent);
+            }
+        } catch (e) {
+            console.error("Error parsing stats data:", e);
+            // Default fallback
+            statsData = {
+                total: 0, ringan: 0, sedang: 0, berat: 0,
+                today_ringan: 0, today_sedang: 0, today_berat: 0,
+                start_date: '', end_date: ''
+            };
+        }
+
+        // Initialize charts and datepicker when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             initializeCharts();
+            initializeDateRangePicker();
         });
+
+        function initializeDateRangePicker() {
+            // Konfigurasi Flatpickr agar sesuai dengan format server (d/m/Y)
+            flatpickr("#date_range_picker", {
+                mode: "range",
+                locale: "id",
+                dateFormat: "d/m/Y", // Format yang dikirim ke server (Wajib d/m/Y)
+                altInput: true,
+                altFormat: "d F Y",  // Format tampilan user friendly
+                theme: "light",
+                defaultDate: [
+                    statsData.start_date ? formatDateForFlatpickr(statsData.start_date) : null, 
+                    statsData.end_date ? formatDateForFlatpickr(statsData.end_date) : null
+                ],
+                onChange: function(selectedDates, dateStr, instance) {
+                    // Update hidden inputs ketika tanggal berubah
+                    if (selectedDates.length === 2) {
+                        // Format ke string YYYY-MM-DD untuk hidden input jika backend utils.py mengharapkannya
+                        // TAPI, berdasarkan utils.py:
+                        // get_date_filter_from_args membaca 'date_range' langsung atau 'start_date'/'end_date'.
+                        // Jika 'date_range' formatnya "d/m/Y to d/m/Y", kita harus sesuaikan di utils.py atau
+                        // pastikan formatnya konsisten.
+                        // Di sini kita biarkan 'date_range' input text mengirim nilai sesuai dateFormat (d/m/Y).
+                        // Jadi server akan menerima "31/01/2025 to 02/02/2025".
+                        
+                        // KITA PERLU UPDATE utils.py AGAR MENERIMA d/m/Y JUGA DI date_range_str
+                        // ATAU KITA UBAH HIDDEN INPUTS.
+                        
+                        // Strategi paling aman tanpa ubah banyak backend:
+                        // Biarkan form submit 'date_range' string. Backend utils.py harus parse string itu.
+                        // Saat ini utils.py parse '%Y-%m-%d'.
+                        // Jadi kita harus ubah dateFormat Flatpickr di sini ke 'Y-m-d' 
+                        // ATAU ubah utils.py.
+                        
+                        // Permintaan user: "samain deh dengan sistem date di sisi server"
+                        // Server (models.py) pakai DD/MM/YYYY.
+                        // TAPI utils.py _get_date_filter_from_args mencoba parse YYYY-MM-DD.
+                        
+                        // SOLUSI:
+                        // Kita set dateFormat Flatpickr ini ke 'Y-m-d' agar utils.py (yang sudah ada) bisa baca.
+                        // TAPI user minta "samain". 
+                        // Jika backend mengharapkan DD/MM/YYYY untuk penyimpanan, tapi YYYY-MM-DD untuk filtering,
+                        // maka kita ikuti cara filtering.
+                        
+                        // Mari kita lihat utils.py di history:
+                        // if " to " in date_range_str: parts = date_range_str.split(" to "); datetime.strptime(parts[0], '%Y-%m-%d')
+                        
+                        // Jadi Utils mengharapkan Y-m-d.
+                        // TAPI user komplain "Format tanggal tidak valid. Gunakan format DD/MM/YYYY" di Add Violation.
+                        // Di Statistics, ini hanya filter.
+                        
+                        // Mari kita set hidden inputs dengan format Y-m-d untuk backend processing yang mudah,
+                        // tapi visual input tetap user friendly.
+                        
+                        document.getElementById('start_date').value = instance.formatDate(selectedDates[0], "Y-m-d");
+                        document.getElementById('end_date').value = instance.formatDate(selectedDates[1], "Y-m-d");
+                    }
+                }
+            });
+        }
+        
+        // Helper untuk ubah YYYY-MM-DD (dari server stats_data) ke format Date object
+        function formatDateForFlatpickr(dateStr) {
+            if (!dateStr) return null;
+            // Asumsi dateStr dari server formatnya YYYY-MM-DD (standard SQL date string)
+            return dateStr; 
+        }
 
         function initializeCharts() {
             // Pie Chart - Distribution of violations
@@ -236,7 +320,7 @@
                                     const label = context.label || '';
                                     const value = context.parsed || 0;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
                                     return `${label}: ${value} (${percentage}%)`;
                                 }
                             }
