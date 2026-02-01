@@ -20,14 +20,16 @@ class User(db.Model, UserMixin):
 class Classroom(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
-    # students = db.relationship('Student', backref='classroom', lazy=True)
+    # Uncomment baris di bawah ini agar relasi backref 'classroom' tersedia di Student
+    students = db.relationship('Student', backref='classroom', lazy=True)
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     nis = db.Column(db.String(20), unique=True, nullable=False)
     
-    # classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'))
+    # Uncomment baris di bawah ini agar kolom classroom_id tersedia di database
+    classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'))
     rombel = db.Column(db.String(50)) 
 
     poin = db.Column(db.Integer, default=100)
