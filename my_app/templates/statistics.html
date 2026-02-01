@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+                    <a href="{{ url_for('main.home') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
                     </a>
@@ -117,7 +117,7 @@
                 <div class="space-y-3">
                     {% if top_violators %}
                         {% for violator in top_violators %}
-                        <a href="{{ url_for('main.student_history', student_name=violator.nama_murid) }}" class="violator-item-link">
+                        <a href="{{ url_for('main.student_history', student_id=violator.student_id) }}" class="violator-item-link">
                             <div class="violator-item">
                                 <span class="violator-rank">#{{ loop.index }}</span>
                                 <div class="flex-grow">

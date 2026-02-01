@@ -96,7 +96,7 @@
                                 </div>
 
                                 <!-- Date Filter Form -->
-                                <form method="GET" action="{{ url_for('main.index') }}" class="space-y-3">
+                                <form method="GET" action="{{ url_for('main.home') }}" class="space-y-3">
                                     <div class="relative group">
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Rentang Waktu</label>
                                         <div class="relative">
@@ -112,7 +112,7 @@
                                             <i class="fas fa-filter mr-1.5"></i>
                                             Terapkan
                                         </button>
-                                        <a href="{{ url_for('main.index') }}" class="flex items-center justify-center px-3 py-2 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200 transition-all duration-200">
+                                        <a href="{{ url_for('main.home') }}" class="flex items-center justify-center px-3 py-2 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-200 transition-all duration-200">
                                             <i class="fas fa-undo mr-1.5"></i>
                                             Reset
                                         </a>
@@ -156,7 +156,7 @@
                                         </h4>
                                         <!-- Tombol Hapus Filter Kategori (Muncul jika ada filter) -->
                                         {% if category_filter %}
-                                        <a href="{{ url_for('main.index', search=search_query, date_range=date_range_value) }}" class="text-xs text-red-500 hover:text-red-700 transition-colors" title="Hapus Filter Kategori">
+                                        <a href="{{ url_for('main.home', search=search_query, date_range=date_range_value) }}" class="text-xs text-red-500 hover:text-red-700 transition-colors" title="Hapus Filter Kategori">
                                             <i class="fas fa-times mr-1"></i>Reset
                                         </a>
                                         {% endif %}
@@ -165,7 +165,7 @@
                                     <!-- Global Statistics Links -->
                                     <div id="globalStats" class="space-y-2">
                                         <!-- Ringan -->
-                                        <a href="{{ url_for('main.index', category='Ringan', search=search_query, date_range=date_range_value) }}" 
+                                        <a href="{{ url_for('main.home', category='Ringan', search=search_query, date_range=date_range_value) }}" 
                                            class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Ringan' %}bg-white shadow-sm border-green-200{% endif %}">
                                             <div class="flex items-center">
                                                 <span class="w-2.5 h-2.5 bg-green-500 rounded-full mr-2 shadow-sm"></span>
@@ -177,7 +177,7 @@
                                         </a>
 
                                         <!-- Sedang -->
-                                        <a href="{{ url_for('main.index', category='Sedang', search=search_query, date_range=date_range_value) }}" 
+                                        <a href="{{ url_for('main.home', category='Sedang', search=search_query, date_range=date_range_value) }}" 
                                            class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Sedang' %}bg-white shadow-sm border-orange-200{% endif %}">
                                             <div class="flex items-center">
                                                 <span class="w-2.5 h-2.5 bg-orange-500 rounded-full mr-2 shadow-sm"></span>
@@ -189,7 +189,7 @@
                                         </a>
 
                                         <!-- Berat -->
-                                        <a href="{{ url_for('main.index', category='Berat', search=search_query, date_range=date_range_value) }}" 
+                                        <a href="{{ url_for('main.home', category='Berat', search=search_query, date_range=date_range_value) }}" 
                                            class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Berat' %}bg-white shadow-sm border-red-200{% endif %}">
                                             <div class="flex items-center">
                                                 <span class="w-2.5 h-2.5 bg-red-700 rounded-full mr-2 shadow-sm"></span>
@@ -285,8 +285,8 @@
                         {% for p in pelanggaran_pagination.items %}
                              <div class="violation-item bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 group" 
                                   data-id="{{ p.id }}"
-                                  data-nama_murid="{{ p.nama_murid }}"
-                                  data-kelas="{{ p.kelas }}"
+                                  data-nama_murid="{{ p.student.name }}"
+                                  data-kelas="{{ p.student.classroom.name if p.student.classroom else 'Tidak ada' }}"
                                   data-kategori="{{ p.kategori_pelanggaran }}"
                                   data-pasal="{{ p.pasal }}"
                                   data-di_input_oleh="{{ p.di_input_oleh }}"
@@ -295,12 +295,12 @@
                                 <div class="absolute top-3 right-3 flex space-x-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                     <button class="action-icon-btn print-btn w-8 h-8 flex items-center justify-center bg-white text-blue-600 rounded-lg shadow-md hover:bg-blue-50 transition-colors" 
                                             title="Cetak Data"
-                                            onclick="printViolation('{{ p.id }}', '{{ p.nama_murid }}')">
+                                            onclick="printViolation('{{ p.id }}', '{{ p.student.name }}')">
                                         <i class="fas fa-print text-sm"></i>
                                     </button>
                                     <button class="action-icon-btn delete-btn w-8 h-8 flex items-center justify-center bg-white text-red-600 rounded-lg shadow-md hover:bg-red-50 transition-colors" 
                                             title="Hapus Data"
-                                            onclick="deleteViolation('{{ p.id }}', '{{ p.nama_murid }}')">
+                                            onclick="deleteViolation('{{ p.id }}', '{{ p.student.name }}')">
                                         <i class="fas fa-trash-alt text-sm"></i>
                                     </button>
                                 </div>
@@ -335,10 +335,10 @@
                                 <!-- Details -->
                                 <div class="p-4">
                                     <div class="mb-3">
-                                        <a href="{{ url_for('main.student_history', student_name=p.nama_murid) }}" class="student-link text-lg font-bold text-gray-900 hover:text-primary transition-colors line-clamp-1" title="{{ p.nama_murid }}">
-                                            {{ p.nama_murid }}
+                                        <a href="{{ url_for('main.student_history', student_id=p.student.id) }}" class="student-link text-lg font-bold text-gray-900 hover:text-primary transition-colors line-clamp-1" title="{{ p.student.name }}">
+                                            {{ p.student.name }}
                                         </a>
-                                        <p class="text-xs text-gray-500 font-medium mt-0.5">Kelas {{ p.kelas }}</p>
+                                        <p class="text-xs text-gray-500 font-medium mt-0.5">Kelas {{ p.student.classroom.name if p.student.classroom else 'Tidak ada' }}</p>
                                     </div>
 
                                     <div class="space-y-2.5">
@@ -426,8 +426,8 @@
                                 {% for p in pelanggaran_pagination.items %}
                                     <div class="violation-row flex items-center px-2 py-2 hover:bg-blue-50 border-b border-gray-50 last:border-b-0 transition-colors duration-150 cursor-pointer group" 
                                          data-id="{{ p.id }}"
-                                         data-nama_murid="{{ p.nama_murid }}"
-                                         data-kelas="{{ p.kelas }}"
+                                         data-nama_murid="{{ p.student.name }}"
+                                         data-kelas="{{ p.student.classroom.name if p.student.classroom else 'Tidak ada' }}"
                                          data-kategori="{{ p.kategori_pelanggaran }}"
                                          data-tanggal="{{ p.tanggal_kejadian|replace('/', '-')|replace('/', '-') }}"
                                          data-pasal="{{ p.pasal }}"
@@ -436,17 +436,17 @@
                                             <input type="checkbox" class="item-checkbox rounded border-gray-300 hover:border-primary focus:ring-primary group-hover:border-primary">
                                         </div>
                                         <div class="flex-1 px-2">
-                                            <a href="{{ url_for('main.student_history', student_name=p.nama_murid) }}" 
+                                            <a href="{{ url_for('main.student_history', student_id=p.student.id) }}" 
                                                class="text-primary font-medium hover:text-primary/80 transition-colors duration-200 flex items-center group-hover:text-blue-600">
                                                 {% if p.bukti_file %}
                                                     <i class="fas fa-image text-gray-400 mr-2 text-sm group-hover:text-blue-400"></i>
                                                 {% else %}
                                                     <i class="fas fa-user text-gray-300 mr-2 text-sm group-hover:text-blue-400"></i>
                                                 {% endif %}
-                                                <span class="truncate">{{ p.nama_murid }}</span>
+                                                <span class="truncate">{{ p.student.name }}</span>
                                             </a>
                                         </div>
-                                        <div class="w-24 px-2 text-sm text-gray-700 group-hover:text-gray-900">{{ p.kelas }}</div>
+                                        <div class="w-24 px-2 text-sm text-gray-700 group-hover:text-gray-900">{{ p.student.classroom.name if p.student.classroom else 'Tidak ada' }}</div>
                                         <div class="w-28 px-2">
                                             <span class="inline-block px-2 py-0.5 text-xs font-medium rounded-full
                                                 {% if p.kategori_pelanggaran == 'Ringan' %}bg-green-100 text-green-800 group-hover:bg-green-200{% endif %}
@@ -468,12 +468,12 @@
                                             {% endif %}
                                             <button class="print-btn text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1 rounded transition-colors duration-200" 
                                                     title="Cetak"
-                                                    onclick="printViolation('{{ p.id }}', '{{ p.nama_murid }}')">
+                                                    onclick="printViolation('{{ p.id }}', '{{ p.student.name }}')">
                                                 <i class="fas fa-print text-sm"></i>
                                             </button>
                                             <button class="delete-btn text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors duration-200" 
                                                     title="Hapus"
-                                                    onclick="deleteViolation('{{ p.id }}', '{{ p.nama_murid }}')">
+                                                    onclick="deleteViolation('{{ p.id }}', '{{ p.student.name }}')">
                                                 <i class="fas fa-trash-alt text-sm"></i>
                                             </button>
                                         </div>
@@ -496,7 +496,7 @@
                         <ul class="flex items-center space-x-2">
                             <li class="page-item">
                                 <a class="page-link px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 {% if not pelanggaran_pagination.has_prev %}cursor-not-allowed opacity-50{% endif %}" 
-                                   href="{{ url_for('main.index', page=pelanggaran_pagination.prev_num, date_range=date_range_value) if pelanggaran_pagination.has_prev else '#' }}"
+                                   href="{{ url_for('main.home', page=pelanggaran_pagination.prev_num, date_range=date_range_value) if pelanggaran_pagination.has_prev else '#' }}"
                                    data-preserve-view="true">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
@@ -505,7 +505,7 @@
                                 {% if page_num %}
                                     <li class="page-item">
                                         <a class="page-link px-4 py-2 text-sm font-medium {% if page_num == pelanggaran_pagination.page %}bg-primary text-white border-primary{% else %}text-gray-700 bg-white border-gray-300 hover:bg-gray-50{% endif %} border rounded-lg transition-colors duration-200" 
-                                           href="{{ url_for('main.index', page=page_num, date_range=date_range_value) }}"
+                                           href="{{ url_for('main.home', page=page_num, date_range=date_range_value) }}"
                                            data-preserve-view="true">{{ page_num }}</a>
                                     </li>
                                 {% else %}
@@ -516,7 +516,7 @@
                             {% endfor %}
                             <li class="page-item">
                                 <a class="page-link px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50 {% if not pelanggaran_pagination.has_next %}cursor-not-allowed opacity-50{% endif %}" 
-                                   href="{{ url_for('main.index', page=pelanggaran_pagination.next_num, date_range=date_range_value) if pelanggaran_pagination.has_next else '#' }}"
+                                   href="{{ url_for('main.home', page=pelanggaran_pagination.next_num, date_range=date_range_value) if pelanggaran_pagination.has_next else '#' }}"
                                    data-preserve-view="true">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>

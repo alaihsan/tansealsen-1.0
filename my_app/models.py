@@ -1,39 +1,46 @@
 from datetime import datetime
 from my_app.extensions import db
+from flask_login import UserMixin
 
-class Pelanggaran(db.Model):
-    # Menambahkan extend_existing=True untuk mencegah error "Table already defined"
-    # saat script seeding dijalankan (masalah double import context)
-    __table_args__ = {'extend_existing': True}
-    
+# --- Model Baru: Kelas ---
+class Classroom(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    nama_murid = db.Column(db.String(100), nullable=False)
-    kelas = db.Column(db.String(50), nullable=False)
-    pasal = db.Column(db.String(100), nullable=False)
-    kategori_pelanggaran = db.Column(db.String(50), nullable=False)
-    tanggal_kejadian = db.Column(db.String(50), nullable=False) # Format DD/MM/YYYY
-    deskripsi = db.Column(db.Text, nullable=True)
-    bukti_file = db.Column(db.String(255), nullable=True)
-    di_input_oleh = db.Column(db.String(100), nullable=False)
-    tanggal_dicatat = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    @property
-    def tanggal_kejadian_date(self):
-        try:
-            return datetime.strptime(self.tanggal_kejadian, '%d/%m/%Y').date()
-        except (ValueError, TypeError):
-            return None
+    name = db.Column(db.String(50), unique=True, nullable=False)  # Contoh: "X IPA 1", "XI IPS 2"
+    # Relasi ke murid: Satu kelas memiliki banyak murid
+    students = db.relationship('Student', backref='classroom', lazy=True)
 
     def __repr__(self):
-        return f"Pelanggaran('{self.nama_murid}', '{self.pasal}', '{self.tanggal_kejadian}')"
+        return f"Classroom('{self.name}')"
 
 class Student(db.Model):
-    # Menambahkan extend_existing=True
-    __table_args__ = {'extend_existing': True}
-    
     id = db.Column(db.Integer, primary_key=True)
-    nama = db.Column(db.String(100), nullable=False)
-    kelas = db.Column(db.String(20), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    nis = db.Column(db.String(20), unique=True, nullable=False)
+    
+    # --- Update: Tambahkan Foreign Key ke Kelas ---
+    # nullable=True agar murid bisa dibuat tanpa kelas dulu (opsional)
+    classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'), nullable=True)
+
+    # Relasi ke pelanggaran (Kasus ikut murid, tidak peduli dia pindah kelas)
+    violations = db.relationship('Violation', backref='student', lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"Student('{self.nama}', '{self.kelas}')"
+        return f"Student('{self.name}', '{self.nis}')"
+
+class Violation(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(255), nullable=False)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    points = db.Column(db.Integer, nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+
+    def __repr__(self):
+        return f"Violation('{self.description}', '{self.points}')"
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+
+    def __repr__(self):
+        return f"User('{self.username}')"

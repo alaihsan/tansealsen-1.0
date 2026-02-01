@@ -7,9 +7,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from flask import Flask
 from my_app.config import Config
-from my_app.extensions import db
+from my_app.extensions import db, login_manager
 from my_app.routes import main
-from my_app.models import Student 
+from my_app.models import Student, User
 
 def create_app():
     # Inisialisasi aplikasi Flask
@@ -20,9 +20,16 @@ def create_app():
 
     # Inisialisasi ekstensi (seperti database)
     db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'main.login'
+    login_manager.login_message_category = 'info'
 
     # Mendaftarkan blueprint (rute-rute aplikasi)
     app.register_blueprint(main)
+    
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
     
     return app
 
@@ -35,4 +42,4 @@ if __name__ == '__main__':
         db.create_all()
     
     # Menjalankan aplikasi dalam mode debug
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5001)

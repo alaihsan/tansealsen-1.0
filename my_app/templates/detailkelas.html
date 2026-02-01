@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-primary">{{ classroom.name }}</h2>
+            <span class="badge badge-secondary">{{ classroom.students|length }} Murid Terdaftar</span>
+        </div>
+        <a href="{{ url_for('main.manage_classes') }}" class="btn btn-outline-secondary">Kembali ke Daftar Kelas</a>
+    </div>
+
+    <div class="row">
+        <!-- Kolom Kiri: Daftar Murid & Mutasi -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Daftar Murid</h5>
+                    <small class="text-muted">Centang untuk memindahkan (Mutasi)</small>
+                </div>
+                <div class="card-body">
+                    {% if classroom.students %}
+                    <form method="POST" id="mutationForm">
+                        <input type="hidden" name="mutate_students" value="true">
+                        
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                    <tr>
+                                        <th width="5%"><input type="checkbox" id="selectAll"></th>
+                                        <th>NIS</th>
+                                        <th>Nama Murid</th>
+                                        <th>Poin Pelanggaran</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in classroom.students %}
+                                    <tr>
+                                        <td><input type="checkbox" name="selected_students" value="{{ student.id }}"></td>
+                                        <td>{{ student.nis }}</td>
+                                        <td>{{ student.name }}</td>
+                                        <td>
+                                            {% set total = student.violations|sum(attribute='points') %}
+                                            {% if total > 20 %}
+                                                <span class="text-danger font-weight-bold">{{ total }}</span>
+                                            {% else %}
+                                                <span class="text-success">{{ total }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('student_history', student_id=student.id) }}" class="btn btn-xs btn-info py-0">History</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Kontrol Mutasi -->
+                        <div class="mt-3 p-3 bg-light rounded border">
+                            <label class="font-weight-bold text-danger">Mutasi Kelas (Pindah Kelas)</label>
+                            <div class="form-row align-items-center">
+                                <div class="col-auto">
+                                    <select name="target_class_id" class="form-control" required>
+                                        <option value="" selected disabled>-- Pilih Kelas Tujuan --</option>
+                                        {% for cls in all_classes %}
+                                            <option value="{{ cls.id }}">{{ cls.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-warning" onclick="return confirm('Yakin ingin memindahkan siswa yang dipilih? Riwayat kasus akan tetap tersimpan.')">
+                                        <i class="fas fa-exchange-alt"></i> Proses Pindah Kelas
+                                    </button>
+                                </div>
+                            </div>
+                            <small class="text-muted d-block mt-1">*Pilih murid di tabel, pilih kelas tujuan, lalu klik Proses.</small>
+                        </div>
+                    </form>
+                    {% else %}
+                        <p class="text-center py-4 text-muted">Belum ada murid di kelas ini.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Kolom Kanan: Import Murid -->
+        <div class="col-md-4">
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-import"></i> Import Murid</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">Masukkan nama murid (satu nama per baris) untuk dimasukkan ke kelas <strong>{{ classroom.name }}</strong> secara cepat.</p>
+                    <form method="POST">
+                        <input type="hidden" name="import_students" value="true">
+                        <div class="form-group">
+                            <label for="student_names">Daftar Nama:</label>
+                            <textarea class="form-control" name="student_names" id="student_names" rows="10" placeholder="Ahmad Dani&#10;Budi Santoso&#10;Citra Lestari" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">Tambahkan ke Kelas</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Script sederhana untuk "Pilih Semua" checkbox
+    document.getElementById('selectAll').onclick = function() {
+        var checkboxes = document.querySelectorAll('input[name="selected_students"]');
+        for (var checkbox of checkboxes) {
+            checkbox.checked = this.checked;
+        }
+    }
+</script>
+{% endblock %}

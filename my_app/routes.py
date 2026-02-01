@@ -1,229 +1,254 @@
 import os
-from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, make_response, current_app
-from extensions import db
-from models import Pelanggaran
-from utils import (
-    validate_violation_data, save_uploaded_file, create_violation, get_violation_by_id,
-    get_date_filter_from_args, apply_date_filter_to_query,
-    get_global_statistics, get_filtered_statistics, get_top_violators,
-    generate_pdf_content
-)
+import secrets
+from flask import render_template, url_for, flash, redirect, request, abort, Blueprint
+from sqlalchemy.orm import joinedload
+from my_app.extensions import db, bcrypt
+from my_app.models import User, Student, Violation, Classroom
+from flask_login import login_user, current_user, logout_user, login_required
 
 main = Blueprint('main', __name__)
 
-@main.route('/')
-def index():
-    if not session.get('logged_in'):
-        flash('Anda harus login untuk mengakses halaman ini.', 'danger')
-        return redirect(url_for('main.login'))
+# --- Halaman Utama ---
+@main.route("/")
+@main.route("/home")
+@main.route("/index")
+@login_required
+def home():
+    from flask import request
     
+    # Get query parameters
     page = request.args.get('page', 1, type=int)
-    search_query = request.args.get('search', '').strip()
-    category_filter = request.args.get('category', '').strip()
-    date_range_value = request.args.get('date_range', '')
+    per_page = 10
+    search = request.args.get('search', '')
+    category = request.args.get('category', '')
+    date_range = request.args.get('date_range', '')
     
-    start_date, end_date, custom_range = get_date_filter_from_args(request.args)
+    # Build query - ensure student relationship is loaded and filter out violations without students
+    query = Violation.query.options(joinedload(Violation.student)).join(Violation.student)
     
-    base_query = Pelanggaran.query
-    if search_query:
-        base_query = base_query.filter(
-            Pelanggaran.nama_murid.ilike(f'%{search_query}%') |
-            Pelanggaran.kelas.ilike(f'%{search_query}%') |
-            Pelanggaran.pasal.ilike(f'%{search_query}%') |
-            Pelanggaran.deskripsi.ilike(f'%{search_query}%')
-        )
+    # Apply search filter
+    if search:
+        query = query.join(Student).filter(Student.name.contains(search))
     
-    base_query = apply_date_filter_to_query(base_query, start_date, end_date)
-
-    total_ringan = base_query.filter_by(kategori_pelanggaran='Ringan').count()
-    total_sedang = base_query.filter_by(kategori_pelanggaran='Sedang').count()
-    total_berat = base_query.filter_by(kategori_pelanggaran='Berat').count()
-
-    final_query = base_query
-    if category_filter in ['Ringan', 'Sedang', 'Berat']:
-        final_query = final_query.filter_by(kategori_pelanggaran=category_filter)
-
-    pelanggaran_pagination = final_query.order_by(Pelanggaran.tanggal_dicatat.desc()).paginate(
-        page=page, per_page=current_app.config['PER_PAGE']
-    )
+    # Apply category filter
+    if category:
+        if category == 'Ringan':
+            query = query.filter(Violation.points <= 10)
+        elif category == 'Sedang':
+            query = query.filter(Violation.points.between(11, 20))
+        elif category == 'Berat':
+            query = query.filter(Violation.points > 20)
     
-    start_date_str = start_date.strftime('%Y-%m-%d') if start_date else ''
-    end_date_str = end_date.strftime('%Y-%m-%d') if end_date else ''
-
-    return render_template('index.html',
+    # Apply date filter
+    if date_range:
+        from datetime import datetime, timedelta
+        today = datetime.utcnow()
+        if date_range == 'today':
+            query = query.filter(Violation.date_posted >= today.replace(hour=0, minute=0, second=0))
+        elif date_range == 'week':
+            query = query.filter(Violation.date_posted >= today - timedelta(days=7))
+        elif date_range == 'month':
+            query = query.filter(Violation.date_posted >= today - timedelta(days=30))
+    
+    # Get pagination
+    pelanggaran_pagination = query.order_by(Violation.date_posted.desc()).paginate(
+        page=page, per_page=per_page, error_out=False)
+    
+    # Dashboard stats
+    total_students = Student.query.count()
+    total_violations = Violation.query.count()
+    total_classes = Classroom.query.count()
+    recent_violations = Violation.query.order_by(Violation.date_posted.desc()).limit(5).all()
+    
+    return render_template('index.html', 
+                           total_students=total_students, 
+                           total_violations=total_violations,
+                           total_classes=total_classes,
+                           recent_violations=recent_violations,
                            pelanggaran_pagination=pelanggaran_pagination,
-                           search_query=search_query,
-                           start_date=start_date_str,
-                           end_date=end_date_str,
-                           custom_range=custom_range,
-                           date_range_value=date_range_value,
-                           category_filter=category_filter,
-                           total_ringan=total_ringan,
-                           total_sedang=total_sedang,
-                           total_berat=total_berat)
+                           search_query=search,
+                           category_filter=category,
+                           date_range_value=date_range)
 
-@main.route('/add', methods=['GET', 'POST'])
-def add_violation():
-    if not session.get('logged_in'):
-        return redirect(url_for('main.login'))
-    
+# --- MANAJEMEN KELAS (Baru) ---
+
+@main.route("/classes", methods=['GET', 'POST'])
+@login_required
+def manage_classes():
     if request.method == 'POST':
-        errors = validate_violation_data(request.form)
-        bukti_filename = None
-        if 'bukti_file' in request.files:
-            file = request.files['bukti_file']
-            if file.filename != '':
-                bukti_filename = save_uploaded_file(file)
-                if not bukti_filename:
-                    errors.append('Format file tidak didukung. Gunakan PNG, JPG, atau GIF.')
-        
-        if errors:
-            for error in errors:
-                flash(error, 'danger')
-            return render_template('add_violation.html', form_data=request.form)
-        
-        violation_data = request.form.to_dict()
-        violation_data['bukti_file'] = bukti_filename
-        
-        if create_violation(violation_data):
-            flash('Pelanggaran berhasil dicatat!', 'success')
-            return redirect(url_for('main.index'))
-        else:
-            flash('Terjadi kesalahan saat menyimpan pelanggaran.', 'danger')
-            return render_template('add_violation.html', form_data=request.form)
-            
-    return render_template('add_violation.html', form_data={})
-
-@main.route('/delete/<int:violation_id>', methods=['POST'])
-def delete_violation(violation_id):
-    if not session.get('logged_in'):
-        return redirect(url_for('main.login'))
+        class_name = request.form.get('class_name')
+        if class_name:
+            existing_class = Classroom.query.filter_by(name=class_name).first()
+            if not existing_class:
+                new_class = Classroom(name=class_name)
+                db.session.add(new_class)
+                db.session.commit()
+                flash(f'Kelas {class_name} berhasil dibuat!', 'success')
+            else:
+                flash(f'Kelas {class_name} sudah ada.', 'warning')
+        return redirect(url_for('main.manage_classes'))
     
-    pelanggaran = get_violation_by_id(violation_id)
-    if not pelanggaran:
-        return jsonify({'success': False, 'message': 'Data tidak ditemukan'}), 404
+    classes = Classroom.query.order_by(Classroom.name).all()
+    return render_template('manajemenkelas.html', classes=classes)
 
-    try:
-        if pelanggaran.bukti_file:
-            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], pelanggaran.bukti_file)
-            if os.path.exists(file_path):
-                os.remove(file_path)
-
-        db.session.delete(pelanggaran)
-        db.session.commit()
-        flash('Pelanggaran berhasil dihapus.', 'success')
-        return jsonify({'success': True, 'message': 'Pelanggaran berhasil dihapus!'})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'success': False, 'message': f'Gagal menghapus: {e}'})
-
-@main.route('/history/<string:student_name>')
-def student_history(student_name):
-    if not session.get('logged_in'):
-        return redirect(url_for('main.login'))
-    
-    violations = Pelanggaran.query.filter_by(nama_murid=student_name).order_by(Pelanggaran.tanggal_dicatat.desc()).all()
-    # Hitung statistik siswa ini
-    total_ringan = sum(1 for v in violations if v.kategori_pelanggaran == 'Ringan')
-    total_sedang = sum(1 for v in violations if v.kategori_pelanggaran == 'Sedang')
-    total_berat = sum(1 for v in violations if v.kategori_pelanggaran == 'Berat')
-
-    return render_template('student_history.html', 
-                           violations=violations, 
-                           student_name=student_name,
-                           total_ringan=total_ringan,
-                           total_sedang=total_sedang,
-                           total_berat=total_berat)
-
-@main.route('/statistics')
-def statistics():
-    if not session.get('logged_in'):
-        return redirect(url_for('main.login'))
-    
-    start_date, end_date, custom_range = get_date_filter_from_args(request.args)
-    
-    if not custom_range and not (start_date and end_date):
-        stats_data = get_global_statistics()
+@main.route("/classes/delete/<int:class_id>", methods=['POST'])
+@login_required
+def delete_class(class_id):
+    classroom = Classroom.query.get_or_404(class_id)
+    # Opsional: Cek apakah ada murid sebelum menghapus
+    if classroom.students:
+        flash('Tidak bisa menghapus kelas yang masih memiliki murid. Pindahkan atau hapus murid terlebih dahulu.', 'danger')
     else:
-        stats_data = get_filtered_statistics(start_date, end_date)
-        today_stats = get_global_statistics() # Get today stats anyway for comparison
-        stats_data['today_ringan'] = today_stats['today_ringan']
-        stats_data['today_sedang'] = today_stats['today_sedang']
-        stats_data['today_berat'] = today_stats['today_berat']
+        db.session.delete(classroom)
+        db.session.commit()
+        flash('Kelas berhasil dihapus.', 'success')
+    return redirect(url_for('main.manage_classes'))
 
-    template_data = {
-        'total': stats_data.get('total', 0),
-        'ringan': stats_data.get('ringan', 0),
-        'sedang': stats_data.get('sedang', 0),
-        'berat': stats_data.get('berat', 0),
-        'today_ringan': stats_data.get('today_ringan', 0),
-        'today_sedang': stats_data.get('today_sedang', 0),
-        'today_berat': stats_data.get('today_berat', 0),
-        'start_date': start_date.strftime('%Y-%m-%d') if start_date else '',
-        'end_date': end_date.strftime('%Y-%m-%d') if end_date else '',
-        'custom_range': custom_range,
-        'error': stats_data.get('error')
-    }
+@main.route("/classes/<int:class_id>", methods=['GET', 'POST'])
+@login_required
+def view_class(class_id):
+    classroom = Classroom.query.get_or_404(class_id)
+    all_classes = Classroom.query.filter(Classroom.id != class_id).order_by(Classroom.name).all() # Untuk dropdown mutasi
 
-    top_violators = get_top_violators()
-    
-    if template_data['error']:
-        flash(f"Terjadi kesalahan saat menghitung statistik: {template_data['error']}", 'danger')
+    # Logic Import/Tambah Murid Cepat
+    if request.method == 'POST' and 'import_students' in request.form:
+        raw_names = request.form.get('student_names')
+        if raw_names:
+            names_list = raw_names.strip().split('\n')
+            count = 0
+            for name in names_list:
+                clean_name = name.strip()
+                if clean_name:
+                    # Generate NIS dummy atau ambil dari input jika ada format khusus
+                    # Di sini kita pakai timestamp/random sederhana untuk NIS unik
+                    dummy_nis = secrets.token_hex(4) 
+                    student = Student(name=clean_name, nis=dummy_nis, classroom=classroom)
+                    db.session.add(student)
+                    count += 1
+            db.session.commit()
+            flash(f'Berhasil mengimpor {count} murid ke kelas {classroom.name}.', 'success')
+            return redirect(url_for('main.view_class', class_id=class_id))
 
-    return render_template('statistics.html', stats_data=template_data, top_violators=top_violators)
-
-@main.route('/export_violations_pdf')
-def export_violations_pdf():
-    if not session.get('logged_in'):
-        return jsonify({'error': 'Unauthorized'}), 401
-    
-    try:
-        start_date, end_date, custom_range = get_date_filter_from_args(request.args)
-        query = apply_date_filter_to_query(Pelanggaran.query, start_date, end_date)
-        violations = query.order_by(Pelanggaran.tanggal_dicatat.desc()).all()
+    # Logic Mutasi (Pindah Kelas)
+    if request.method == 'POST' and 'mutate_students' in request.form:
+        target_class_id = request.form.get('target_class_id')
+        selected_student_ids = request.form.getlist('selected_students')
         
-        pdf_content = generate_pdf_content(violations, start_date, end_date, custom_range)
-        response = make_response(pdf_content)
+        if target_class_id and selected_student_ids:
+            target_class = Classroom.query.get(target_class_id)
+            if target_class:
+                for stud_id in selected_student_ids:
+                    student = Student.query.get(stud_id)
+                    if student:
+                        student.classroom = target_class # Update kelas (Mutasi)
+                        # Catatan: History violation TETAP tersimpan di student.violations
+                
+                db.session.commit()
+                flash(f'{len(selected_student_ids)} murid berhasil dipindahkan ke {target_class.name}.', 'success')
+            else:
+                flash('Kelas tujuan tidak valid.', 'danger')
+        else:
+            flash('Pilih kelas tujuan dan minimal satu murid.', 'warning')
         
-        filename_date = datetime.now().strftime("%Y%m%d")
-        response.headers['Content-Type'] = 'application/pdf'
-        response.headers['Content-Disposition'] = f'attachment; filename=laporan_pelanggaran_{filename_date}.pdf'
-        return response
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return redirect(url_for('main.view_class', class_id=class_id))
 
-@main.route('/login', methods=['GET', 'POST'])
+    return render_template('detailkelas.html', classroom=classroom, all_classes=all_classes)
+
+
+# --- FITUR PELANGGARAN (Existing, Adjusted) ---
+
+@main.route("/add_violation", methods=['GET', 'POST'])
+@login_required
+def add_violation():
+    # Mengambil semua siswa untuk dropdown pencarian
+    students = Student.query.all()
+    if request.method == 'POST':
+        student_id = request.form.get('student_id')
+        description = request.form.get('description')
+        points = request.form.get('points')
+
+        if student_id and description and points:
+            violation = Violation(description=description, points=int(points), student_id=student_id)
+            db.session.add(violation)
+            db.session.commit()
+            flash('Pelanggaran berhasil dicatat!', 'success')
+            return redirect(url_for('main.home'))
+        else:
+            flash('Mohon lengkapi semua form.', 'danger')
+            
+    return render_template('add_violation.html', students=students, form_data={})
+
+@main.route("/student/<int:student_id>")
+@login_required
+def student_history(student_id):
+    student = Student.query.get_or_404(student_id)
+    # Menghitung total poin
+    total_points = sum(v.points for v in student.violations)
+    return render_template('student_history.html', student=student, total_points=total_points)
+
+# --- AUTHENTICATION ---
+
+@main.route("/login", methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.home'))
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        if username == 'admin' and password == 'admin':
-            session['logged_in'] = True
-            session['username'] = username
-            flash('Login berhasil!', 'success')
-            return redirect(url_for('main.index'))
+        user = User.query.filter_by(username=username).first()
+        if user and bcrypt.check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('main.home'))
         else:
-            flash('Username atau password salah!', 'danger')
+            flash('Login Gagal. Cek username dan password', 'danger')
     return render_template('login.html')
 
-@main.route('/logout')
+@main.route("/logout")
 def logout():
-    session.clear()
-    flash('Anda telah logout!', 'info')
+    logout_user()
     return redirect(url_for('main.login'))
 
-@main.route('/api/today_stats')
-def api_today_stats():
-    if not session.get('logged_in'):
-        return jsonify({'error': 'Unauthorized'}), 401
-    try:
-        today_stats = get_global_statistics()
-        return jsonify({
-            'ringan': today_stats['today_ringan'],
-            'sedang': today_stats['today_sedang'],
-            'berat': today_stats['today_berat'],
-            'total': today_stats['total_today']
-        })
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+@main.route("/statistics")
+@login_required
+def statistics():
+    # Get query parameters
+    custom_range = request.args.get('custom_range', '')
+    
+    # Basic stats
+    total_violations = Violation.query.count()
+    total_students = Student.query.count()
+    
+    # Category stats
+    ringan_violations = Violation.query.filter(Violation.points <= 10).count()
+    sedang_violations = Violation.query.filter(Violation.points.between(11, 20)).count()
+    berat_violations = Violation.query.filter(Violation.points > 20).count()
+    
+    # Today's stats
+    from datetime import datetime, timedelta
+    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_violations = Violation.query.filter(Violation.date_posted >= today).all()
+    today_ringan = len([v for v in today_violations if v.points <= 10])
+    today_sedang = len([v for v in today_violations if 11 <= v.points <= 20])
+    today_berat = len([v for v in today_violations if v.points > 20])
+    
+    # Top violators
+    top_violators = db.session.query(
+        Student.id.label('student_id'),
+        Student.name,
+        db.func.count(Violation.id).label('violation_count'),
+        db.func.sum(Violation.points).label('total_points')
+    ).join(Violation).group_by(Student.id, Student.name).order_by(db.func.sum(Violation.points).desc()).limit(10).all()
+    
+    stats_data = {
+        'total_violations': total_violations,
+        'total_students': total_students,
+        'ringan_violations': ringan_violations,
+        'sedang_violations': sedang_violations,
+        'berat_violations': berat_violations,
+        'today_ringan': today_ringan,
+        'today_sedang': today_sedang,
+        'today_berat': today_berat,
+        'custom_range': custom_range
+    }
+    
+    return render_template('statistics.html', stats_data=stats_data, top_violators=top_violators)
