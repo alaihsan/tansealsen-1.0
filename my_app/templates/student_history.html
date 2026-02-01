@@ -118,7 +118,7 @@
                 <div class="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center backdrop-blur-sm">
                     <h2 class="text-lg font-bold text-gray-900 flex items-center">
                         <i class="fas fa-history text-gray-400 mr-3"></i> 
-                        Riwayat Pelanggaran
+                        Kronologis Pelanggaran
                     </h2>
                     <span class="text-xs text-gray-500 bg-white border border-gray-200 px-3 py-1 rounded-full shadow-sm">
                         Terurut dari terbaru
@@ -183,14 +183,14 @@
                                         </div>
                                         
                                         {% if v.bukti_file %}
-                                        <button onclick='openEvidenceModal(
-                                            {{ {"url": url_for("static", filename="uploads/" + v.bukti_file), 
-                                                "desc": v.description, 
-                                                "date": v.tanggal_dicatat.strftime("%d %B %Y"), 
-                                                "category": v.kategori_pelanggaran, 
-                                                "reporter": v.di_input_oleh}|tojson }}
-                                        )' 
-                                        class="inline-flex items-center px-4 py-2 bg-white text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-50 hover:text-blue-700 shadow-sm transition-all border border-blue-100 group-hover:border-blue-200">
+                                        <button 
+                                            data-evidence="{{ {'url': url_for('static', filename='uploads/' + v.bukti_file), 
+                                                'desc': v.description, 
+                                                'date': v.tanggal_dicatat.strftime('%d %B %Y'), 
+                                                'category': v.kategori_pelanggaran, 
+                                                'reporter': v.di_input_oleh}|tojson|forceescape }}"
+                                            onclick="openEvidenceModal(JSON.parse(this.dataset.evidence))" 
+                                            class="inline-flex items-center px-4 py-2 bg-white text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-50 hover:text-blue-700 shadow-sm transition-all border border-blue-100 group-hover:border-blue-200">
                                             <i class="fas fa-camera mr-2"></i> Lihat Bukti
                                         </button>
                                         {% endif %}

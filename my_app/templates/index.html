@@ -1,1611 +1,410 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TANSE APP - Daftar Pelanggaran</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#667eea',
-                        secondary: '#764ba2',
-                        success: '#48bb78',
-                        danger: '#f56565',
-                        warning: '#ed8936'
-                    }
-                }
-            }
-        }
-    </script>
-</head>
-<body class="bg-gray-50 font-sans">
-    <div class="min-h-screen flex flex-col h-screen">
-        <!-- Top Navigation Bar -->
-        <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-            <div class="px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <!-- Logo -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header & Stats -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Dashboard Kedisiplinan</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Stat 1: Link ke Manajemen Kelas -->
+            <a href="{{ url_for('main.manage_classes') }}" class="block group">
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500 group-hover:shadow-md transition-shadow">
                     <div class="flex items-center">
-                        <h1 class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                            TANSE APP
-                        </h1>
-                    </div>
-
-                    <!-- Top Action Buttons -->
-                    <div class="flex items-center space-x-3">
-                        <a href="{{ url_for('main.add_violation') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-success to-green-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
-                            <i class="fas fa-plus mr-2"></i>
-                            Tambah Pelanggaran
-                        </a>
-                        <a href="{{ url_for('main.statistics') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
-                            <i class="fas fa-chart-line mr-2"></i>
-                            Statistik
-                        </a>
-                        <a href="https://tanse-rules.netlify.app/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
-                            <i class="fas fa-book mr-2"></i>
-                            Tata Tertib
-                        </a>
-                        <div class="flex items-center border-l border-gray-300 pl-3">
-                            <div class="flex items-center bg-gray-100 rounded-lg p-1">
-                                <button id="view-card-btn" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-white bg-primary transition-all duration-200" title="Tampilan Kartu">
-                                    <i class="fas fa-th-large"></i>
-                                </button>
-                                <button id="view-list-btn" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 transition-all duration-200" title="Tampilan Daftar">
-                                    <i class="fas fa-list"></i>
-                                </button>
-                            </div>
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4 group-hover:bg-blue-200 transition-colors">
+                            <i class="fas fa-users text-xl"></i>
                         </div>
-                        <a href="{{ url_for('main.logout') }}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-danger to-red-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all duration-200 hover:scale-105">
-                            <i class="fas fa-sign-out-alt mr-2"></i>
-                            Logout
-                        </a>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Total Siswa</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_students }}</p>
+                        </div>
+                        <div class="ml-auto text-gray-300">
+                            <i class="fas fa-chevron-right text-sm"></i>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </header>
+            </a>
+            
+            <!-- Stat 2: Link ke Statistik -->
+            <a href="{{ url_for('main.statistics') }}" class="block group">
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-500 group-hover:shadow-md transition-shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-red-100 text-red-500 mr-4 group-hover:bg-red-200 transition-colors">
+                            <i class="fas fa-exclamation-triangle text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Total Pelanggaran</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_violations }}</p>
+                        </div>
+                        <div class="ml-auto text-gray-300">
+                            <i class="fas fa-chevron-right text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Stat 3: Link ke Manajemen Kelas -->
+            <a href="{{ url_for('main.manage_classes') }}" class="block group">
+                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500 group-hover:shadow-md transition-shadow">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4 group-hover:bg-green-200 transition-colors">
+                            <i class="fas fa-school text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Total Kelas</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ total_classes }}</p>
+                        </div>
+                        <div class="ml-auto text-gray-300">
+                            <i class="fas fa-chevron-right text-sm"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
 
-        <!-- Main Content Area -->
-        <div class="flex flex-1 overflow-hidden">
-            <!-- Left Sidebar -->
-            <aside class="w-96 bg-white shadow-lg border-r border-gray-200 flex flex-col z-30">
-                <div class="flex-1 overflow-y-auto p-6">
-                    <div class="space-y-6">
+    <!-- Filters & Actions -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="p-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <h2 class="text-lg font-semibold text-gray-800">Daftar Pelanggaran Terbaru</h2>
+            
+            <form action="{{ url_for('main.home') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="Cari nama siswa..." 
+                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
+                </div>
+                
+                <select name="category" onchange="this.form.submit()" class="py-2 pl-3 pr-8 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Semua Kategori</option>
+                    <option value="Ringan" {% if category_filter == 'Ringan' %}selected{% endif %}>Ringan</option>
+                    <option value="Sedang" {% if category_filter == 'Sedang' %}selected{% endif %}>Sedang</option>
+                    <option value="Berat" {% if category_filter == 'Berat' %}selected{% endif %}>Berat</option>
+                </select>
+
+                <select name="date_range" onchange="this.form.submit()" class="py-2 pl-3 pr-8 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Semua Waktu</option>
+                    <option value="today" {% if date_range_value == 'today' %}selected{% endif %}>Hari Ini</option>
+                    <option value="week" {% if date_range_value == 'week' %}selected{% endif %}>Minggu Ini</option>
+                    <option value="month" {% if date_range_value == 'month' %}selected{% endif %}>Bulan Ini</option>
+                </select>
+                
+                <a href="{{ url_for('main.add_violation') }}" class="inline-flex justify-center items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i> Input
+                </a>
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pelanggaran</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
+                        <!-- [REMOVED] Kolom Poin -->
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for p in pelanggaran_pagination.items %}
+                    <tr class="hover:bg-gray-50 transition-colors group">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ p.tanggal_kejadian }}
+                            <div class="text-xs text-gray-400 mt-1">{{ p.date_posted.strftime('%H:%M') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs mr-3">
+                                    {{ p.student.name[:2] }}
+                                </div>
+                                <div>
+                                    <!-- LINK KE RIWAYAT SISWA -->
+                                    <a href="{{ url_for('main.student_history', student_id=p.student.id) }}" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
+                                        {{ p.student.name }}
+                                    </a>
+                                    <div class="text-xs text-gray-500">{{ p.student.classroom.name }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-900">{{ p.description }}</div>
+                            {% if p.di_input_oleh %}
+                            <div class="text-xs text-gray-400 mt-1">
+                                <i class="fas fa-user-edit mr-1"></i> {{ p.di_input_oleh }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            {% if p.points <= 10 %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Ringan</span>
+                            {% elif p.points <= 20 %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Sedang</span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Berat</span>
+                            {% endif %}
+                        </td>
+                        <!-- [REMOVED] Data Poin -->
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            {% if p.bukti_file %}
+                                <button 
+                                    data-evidence="{{ {'url': url_for('static', filename='uploads/' + p.bukti_file),
+                                        'student_name': p.student.name,
+                                        'class_name': p.student.classroom.name,
+                                        'desc': p.description, 
+                                        'date': p.date_posted.strftime('%d %B %Y'), 
+                                        'category': p.kategori_pelanggaran, 
+                                        'reporter': p.di_input_oleh}|tojson|forceescape }}"
+                                    onclick="openEvidenceModal(JSON.parse(this.dataset.evidence))" 
+                                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                                    <i class="fas fa-image mr-1.5"></i> Lihat
+                                </button>
+                            {% else %}
+                                <span class="text-gray-300 text-xs italic">Tidak ada</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="fas fa-folder-open text-4xl text-gray-300 mb-3"></i>
+                                <p>Belum ada data pelanggaran yang sesuai filter.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Menampilkan <span class="font-medium">{{ pelanggaran_pagination.items|length }}</span> dari <span class="font-medium">{{ pelanggaran_pagination.total }}</span> data
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if pelanggaran_pagination.has_prev %}
+                            <a href="{{ url_for('main.home', page=pelanggaran_pagination.prev_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Previous</span>
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        {% endif %}
                         
-                        <!-- Filter & Search Panel -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center">
-                                    <i class="fas fa-search mr-2"></i>
-                                    Pencarian & Filter
-                                </h3>
-                            </div>
-                            <div class="p-4 space-y-4">
-                                <!-- Search Input -->
-                                <div class="relative group">
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Kata Kunci</label>
-                                    <div class="relative">
-                                        <input type="text" id="searchInput" placeholder="Cari siswa, kelas, pasal..." 
-                                            class="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 text-sm">
-                                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors"></i>
-                                    </div>
-                                </div>
-
-                                <!-- Date Filter Form -->
-                                <form method="GET" action="{{ url_for('main.home') }}" class="space-y-3">
-                                    <div class="relative group">
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Rentang Waktu</label>
-                                        <div class="relative">
-                                            <input type="text" id="dateFilterInput" name="date_range" 
-                                                placeholder="Pilih tanggal..." value="{{ date_range_value or '' }}"
-                                                class="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200 text-sm">
-                                            <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors"></i>
-                                        </div>
-                                    </div>
-                                    
-                                </form>
-                            </div>
-                        </div>
-
-                        <!-- Statistics Panel -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
-                                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center">
-                                    <i class="fas fa-chart-pie mr-2"></i>
-                                    Ringkasan Data
-                                </h3>
-                                <button id="toggleStats" class="text-xs text-primary hover:text-secondary font-medium transition-colors focus:outline-none" title="Ganti Mode Statistik">
-                                    <i class="fas fa-globe mr-1"></i>
-                                    <span id="statsMode">Global</span>
-                                </button>
-                            </div>
-                            
-                            <div class="p-4 space-y-4">
-                                <!-- Stats Numbers -->
-                                <div class="grid grid-cols-2 gap-4 text-sm border-b border-gray-100 pb-3">
-                                    <div>
-                                        <p class="text-xs text-gray-500">Total Data</p>
-                                        <p class="font-bold text-gray-900 text-lg">{{ pelanggaran_pagination.total if pelanggaran_pagination else 0 }}</p>
-                                    </div>
-                                    <div class="text-right">
-                                        <p class="text-xs text-gray-500">Halaman</p>
-                                        <p class="font-bold text-gray-900 text-lg">{{ pelanggaran_pagination.page if pelanggaran_pagination else 1 }} <span class="text-sm font-normal text-gray-400">/ {{ pelanggaran_pagination.pages if pelanggaran_pagination else 1 }}</span></p>
-                                    </div>
-                                </div>
-
-                                <!-- Category Stats Container -->
-                                <div class="pt-2">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h4 class="text-xs font-semibold text-gray-700 flex items-center">
-                                            <i class="fas fa-layer-group mr-1 text-primary"></i>
-                                            Kategori Pelanggaran
-                                        </h4>
-                                        <!-- Tombol Hapus Filter Kategori (Muncul jika ada filter) -->
-                                        {% if category_filter %}
-                                        <a href="{{ url_for('main.home', search=search_query, date_range=date_range_value) }}" class="text-xs text-red-500 hover:text-red-700 transition-colors" title="Hapus Filter Kategori">
-                                            <i class="fas fa-times mr-1"></i>Reset
-                                        </a>
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <!-- Global Statistics Links -->
-                                    <div id="globalStats" class="space-y-2">
-                                        <!-- Ringan -->
-                                        <a href="{{ url_for('main.home', category='Ringan', search=search_query, date_range=date_range_value) }}" 
-                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Ringan' %}bg-white shadow-sm border-green-200{% endif %}">
-                                            <div class="flex items-center">
-                                                <span class="w-2.5 h-2.5 bg-green-500 rounded-full mr-2 shadow-sm"></span>
-                                                <span class="{% if category_filter == 'Ringan' %}text-green-700 font-semibold{% else %}text-gray-600{% endif %}">Ringan</span>
-                                            </div>
-                                            <span class="font-semibold text-xs px-2 py-0.5 rounded-full {% if category_filter == 'Ringan' %}bg-green-100 text-green-700{% else %}bg-gray-100 text-gray-700{% endif %}" id="global-ringan">
-                                                {{ total_ringan if total_ringan is defined else 0 }}
-                                            </span>
-                                        </a>
-
-                                        <!-- Sedang -->
-                                        <a href="{{ url_for('main.home', category='Sedang', search=search_query, date_range=date_range_value) }}" 
-                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Sedang' %}bg-white shadow-sm border-orange-200{% endif %}">
-                                            <div class="flex items-center">
-                                                <span class="w-2.5 h-2.5 bg-orange-500 rounded-full mr-2 shadow-sm"></span>
-                                                <span class="{% if category_filter == 'Sedang' %}text-orange-700 font-semibold{% else %}text-gray-600{% endif %}">Sedang</span>
-                                            </div>
-                                            <span class="font-semibold text-xs px-2 py-0.5 rounded-full {% if category_filter == 'Sedang' %}bg-orange-100 text-orange-700{% else %}bg-gray-100 text-gray-700{% endif %}" id="global-sedang">
-                                                {{ total_sedang if total_sedang is defined else 0 }}
-                                            </span>
-                                        </a>
-
-                                        <!-- Berat -->
-                                        <a href="{{ url_for('main.home', category='Berat', search=search_query, date_range=date_range_value) }}" 
-                                           class="flex justify-between items-center p-2 rounded-lg transition-all duration-200 hover:bg-gray-50 hover:shadow-sm cursor-pointer border border-transparent {% if category_filter == 'Berat' %}bg-white shadow-sm border-red-200{% endif %}">
-                                            <div class="flex items-center">
-                                                <span class="w-2.5 h-2.5 bg-red-700 rounded-full mr-2 shadow-sm"></span>
-                                                <span class="{% if category_filter == 'Berat' %}text-red-700 font-semibold{% else %}text-gray-600{% endif %}">Berat</span>
-                                            </div>
-                                            <span class="font-semibold text-xs px-2 py-0.5 rounded-full {% if category_filter == 'Berat' %}bg-red-100 text-red-700{% else %}bg-gray-100 text-gray-700{% endif %}" id="global-berat">
-                                                {{ total_berat if total_berat is defined else 0 }}
-                                            </span>
-                                        </a>
-                                    </div>
-                                    
-                                    <!-- Current Page Statistics (Hidden by default) -->
-                                    <div id="currentStats" class="space-y-2 hidden">
-                                        <div class="flex justify-between items-center text-sm">
-                                            <div class="flex items-center">
-                                                <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                                                <span class="text-gray-600">Ringan</span>
-                                            </div>
-                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="current-ringan">0</span>
-                                        </div>
-                                        <div class="flex justify-between items-center text-sm">
-                                            <div class="flex items-center">
-                                                <div class="w-2 h-2 rounded-full bg-orange-500 mr-2"></div>
-                                                <span class="text-gray-600">Sedang</span>
-                                            </div>
-                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="current-sedang">0</span>
-                                        </div>
-                                        <div class="flex justify-between items-center text-sm">
-                                            <div class="flex items-center">
-                                                <div class="w-2 h-2 rounded-full bg-red-600 mr-2"></div>
-                                                <span class="text-gray-600">Berat</span>
-                                            </div>
-                                            <span class="font-semibold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-xs" id="current-berat">0</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Visual Progress Bar -->
-                                <div class="pt-1">
-                                    <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden flex" id="category-progress">
-                                        <div class="h-full transition-all duration-500 flex-shrink-0" id="progress-ringan" style="width: 33%; background-color: #22c55e;"></div>
-                                        <div class="h-full transition-all duration-500 flex-shrink-0" id="progress-sedang" style="width: 33%; background-color: #f97316;"></div>
-                                        <div class="h-full transition-all duration-500 flex-shrink-0" id="progress-berat" style="width: 34%; background-color: #dc2626;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Extra spacing -->
-                        <div class="h-20"></div>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Main Content - Scrollable Area -->
-            <main class="flex-1 overflow-y-auto p-6">
-
-                <!-- Flash Messages -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        <div class="mb-6 space-y-2">
-                            {% for category, message in messages %}
-                                <div class="alert 
-                                    {% if category == 'success' %}bg-green-100 border-green-400 text-green-700{% endif %}
-                                    {% if category == 'error' %}bg-red-100 border-red-400 text-red-700{% endif %}
-                                    {% if category == 'warning' %}bg-yellow-100 border-yellow-400 text-yellow-700{% endif %}
-                                    px-4 py-3 rounded-lg border flex items-center" role="alert">
-                                    <i class="fas 
-                                        {% if category == 'success' %}fa-check-circle{% endif %}
-                                        {% if category == 'error' %}fa-exclamation-circle{% endif %}
-                                        {% if category == 'warning' %}fa-exclamation-triangle{% endif %}
-                                        mr-3"></i>
-                                    <span>{{ message }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                {% endwith %}
-
-                <!-- No Results Message -->
-                <div id="no-results-message" class="hidden text-center py-12">
-                    <div class="bg-white rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4 shadow-sm">
-                        <i class="fas fa-search text-3xl text-gray-300"></i>
-                    </div>
-                    <h3 class="text-lg font-medium text-gray-900">Tidak ditemukan</h3>
-                    <p class="text-gray-500 mt-1">Coba kata kunci atau filter tanggal yang berbeda.</p>
-                </div>
-
-                <!-- Violation List -->
-                {% if pelanggaran_pagination.items %}
-                    <!-- Card View -->
-                    <div id="violation-container-card" class="violation-list card-view grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {% for p in pelanggaran_pagination.items %}
-                             <div class="violation-item bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 group" 
-                                  data-id="{{ p.id }}"
-                                  data-nama_murid="{{ p.student.name }}"
-                                  data-kelas="{{ p.student.classroom.name if p.student.classroom else 'Tidak ada' }}"
-                                  data-kategori="{{ p.kategori_pelanggaran }}"
-                                  data-pasal="{{ p.pasal }}"
-                                  data-di_input_oleh="{{ p.di_input_oleh }}"
-                                  data-tanggal="{{ p.tanggal_kejadian|replace('/', '-')|replace('/', '-') }}">
-                                <!-- Action Buttons (Visible on Hover) -->
-                                <div class="absolute top-3 right-3 flex space-x-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                    <button class="action-icon-btn print-btn w-8 h-8 flex items-center justify-center bg-white text-blue-600 rounded-lg shadow-md hover:bg-blue-50 transition-colors" 
-                                            title="Cetak Data"
-                                            onclick="printViolation('{{ p.id }}', '{{ p.student.name }}')">
-                                        <i class="fas fa-print text-sm"></i>
-                                    </button>
-                                    <button class="action-icon-btn delete-btn w-8 h-8 flex items-center justify-center bg-white text-red-600 rounded-lg shadow-md hover:bg-red-50 transition-colors" 
-                                            title="Hapus Data"
-                                            onclick="deleteViolation('{{ p.id }}', '{{ p.student.name }}')">
-                                        <i class="fas fa-trash-alt text-sm"></i>
-                                    </button>
-                                </div>
-
-                                <!-- Image -->
-                                <div class="h-48 bg-gray-100 overflow-hidden relative">
-                                    {% if p.bukti_file %}
-                                        <a href="#" class="image-thumbnail block h-full" data-full-image="{{ url_for('static', filename='uploads/' + p.bukti_file) }}">
-                                            <img src="{{ url_for('static', filename='uploads/' + p.bukti_file) }}" alt="Bukti Pelanggaran" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                        </a>
-                                    {% else %}
-                                        <div class="w-full h-full flex flex-col items-center justify-center text-gray-300">
-                                            <i class="fas fa-image text-4xl mb-2"></i>
-                                            <span class="text-xs">Tidak ada foto</span>
-                                        </div>
-                                    {% endif %}
-                                    
-                                    <!-- Category Badge Overlay -->
-                                    <div class="absolute top-3 left-3">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shadow-sm backdrop-blur-sm bg-white/90
-                                            {% if p.kategori_pelanggaran == 'Ringan' %}text-green-700 border border-green-200{% endif %}
-                                            {% if p.kategori_pelanggaran == 'Sedang' %}text-orange-700 border border-orange-200{% endif %}
-                                            {% if p.kategori_pelanggaran == 'Berat' %}text-red-700 border border-red-200{% endif %}">
-                                            {% if p.kategori_pelanggaran == 'Ringan' %}<div class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></div>{% endif %}
-                                            {% if p.kategori_pelanggaran == 'Sedang' %}<div class="w-1.5 h-1.5 rounded-full bg-orange-500 mr-1.5"></div>{% endif %}
-                                            {% if p.kategori_pelanggaran == 'Berat' %}<div class="w-1.5 h-1.5 rounded-full bg-red-600 mr-1.5"></div>{% endif %}
-                                            {{ p.kategori_pelanggaran }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Details -->
-                                <div class="p-4">
-                                    <div class="mb-3">
-                                        <a href="{{ url_for('main.student_history', student_id=p.student.id) }}" class="student-link text-lg font-bold text-gray-900 hover:text-primary transition-colors line-clamp-1" title="{{ p.student.name }}">
-                                            {{ p.student.name }}
-                                        </a>
-                                        <p class="text-xs text-gray-500 font-medium mt-0.5">Kelas {{ p.student.classroom.name if p.student.classroom else 'Tidak ada' }}</p>
-                                    </div>
-
-                                    <div class="space-y-2.5">
-                                        <div class="flex items-start text-sm text-gray-600">
-                                            <i class="fas fa-gavel w-5 mt-0.5 text-gray-400"></i>
-                                            <span class="line-clamp-2" title="{{ p.pasal }}">{{ p.pasal }}</span>
-                                        </div>
-
-                                        <div class="flex items-center text-sm text-gray-600">
-                                            <i class="fas fa-calendar-day w-5 text-gray-400"></i>
-                                            <span data-date="{{ p.tanggal_kejadian }}">{{ p.tanggal_kejadian }}</span>
-                                        </div>
-
-                                        {% if p.deskripsi %}
-                                        <div class="flex items-start text-sm text-gray-600">
-                                            <i class="fas fa-align-left w-5 mt-0.5 text-gray-400"></i>
-                                            <p class="line-clamp-2 text-xs italic">{{ p.deskripsi }}</p>
-                                        </div>
-                                        {% endif %}
-                                    </div>
-
-                                    <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                                        <span class="flex items-center" title="Diinput oleh {{ p.di_input_oleh }}">
-                                            <i class="fas fa-user-edit mr-1.5 text-gray-400"></i>
-                                            {{ p.di_input_oleh.split(' ')[0] }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-
-                    <!-- List View (Mac Finder Style) -->
-                    <div id="violation-container-list" class="violation-list list-view hidden">
-                        <!-- Finder-style Container -->
-                        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-                            <!-- Finder-style Header -->
-                            <div class="bg-gray-50 border-b border-gray-200 px-2 py-2">
-                                <div class="flex items-center text-xs font-medium text-gray-600">
-                                    <div class="flex items-center w-8 px-1">
-                                        <input type="checkbox" id="selectAll" class="rounded border-gray-300 hover:border-primary focus:ring-primary">
-                                    </div>
-                                    <div class="flex-1 px-2">
-                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="nama_murid">
-                                            Nama Murid
-                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
-                                        </button>
-                                    </div>
-                                    <div class="w-24 px-2">
-                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="kelas">
-                                            Kelas
-                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
-                                        </button>
-                                    </div>
-                                    <div class="w-28 px-2">
-                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="kategori_pelanggaran">
-                                            Kategori
-                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
-                                        </button>
-                                    </div>
-                                <div class="w-32 px-2">
-                                    <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="tanggal">
-                                        Tanggal
-                                        <i class="fas fa-sort ml-1 text-gray-400"></i>
-                                    </button>
-                                </div>
-                                    <div class="w-48 px-2">
-                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="pasal">
-                                            Pasal
-                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
-                                        </button>
-                                    </div>
-                                    <div class="w-40 px-2">
-                                        <button class="sort-btn flex items-center hover:text-gray-900 hover:bg-gray-100 px-1 py-0.5 rounded transition-colors duration-150" data-sort="di_input_oleh">
-                                            Di Input Oleh
-                                            <i class="fas fa-sort ml-1 text-gray-400"></i>
-                                        </button>
-                                    </div>
-                                    <div class="w-20 px-2 text-center text-gray-500">Aksi</div>
-                                </div>
-                            </div>
-
-                            <!-- Finder-style List Items -->
-                            <div class="max-h-96 overflow-y-auto">
-                                {% for p in pelanggaran_pagination.items %}
-                                    <div class="violation-row flex items-center px-2 py-2 hover:bg-blue-50 border-b border-gray-50 last:border-b-0 transition-colors duration-150 cursor-pointer group" 
-                                         data-id="{{ p.id }}"
-                                         data-nama_murid="{{ p.student.name }}"
-                                         data-kelas="{{ p.student.classroom.name if p.student.classroom else 'Tidak ada' }}"
-                                         data-kategori="{{ p.kategori_pelanggaran }}"
-                                         data-tanggal="{{ p.tanggal_kejadian|replace('/', '-')|replace('/', '-') }}"
-                                         data-pasal="{{ p.pasal }}"
-                                         data-di_input_oleh="{{ p.di_input_oleh }}">
-                                        <div class="flex items-center w-8 px-1">
-                                            <input type="checkbox" class="item-checkbox rounded border-gray-300 hover:border-primary focus:ring-primary group-hover:border-primary">
-                                        </div>
-                                        <div class="flex-1 px-2">
-                                            <a href="{{ url_for('main.student_history', student_id=p.student.id) }}" 
-                                               class="text-primary font-medium hover:text-primary/80 transition-colors duration-200 flex items-center group-hover:text-blue-600">
-                                                {% if p.bukti_file %}
-                                                    <i class="fas fa-image text-gray-400 mr-2 text-sm group-hover:text-blue-400"></i>
-                                                {% else %}
-                                                    <i class="fas fa-user text-gray-300 mr-2 text-sm group-hover:text-blue-400"></i>
-                                                {% endif %}
-                                                <span class="truncate">{{ p.student.name }}</span>
-                                            </a>
-                                        </div>
-                                        <div class="w-24 px-2 text-sm text-gray-700 group-hover:text-gray-900">{{ p.student.classroom.name if p.student.classroom else 'Tidak ada' }}</div>
-                                        <div class="w-28 px-2">
-                                            <span class="inline-block px-2 py-0.5 text-xs font-medium rounded-full
-                                                {% if p.kategori_pelanggaran == 'Ringan' %}bg-green-100 text-green-800 group-hover:bg-green-200{% endif %}
-                                                {% if p.kategori_pelanggaran == 'Sedang' %}bg-orange-100 text-orange-800 group-hover:bg-orange-200{% endif %}
-                                                {% if p.kategori_pelanggaran == 'Berat' %}bg-red-100 text-red-900 group-hover:bg-red-200{% endif %}
-                                                transition-colors duration-150">
-                                                {{ p.kategori_pelanggaran }}
-                                            </span>
-                                        </div>
-                                        <div class="w-32 px-2 text-sm text-gray-700 group-hover:text-gray-900">{{ p.tanggal_kejadian }}</div>
-                                        <div class="w-48 px-2 text-sm text-gray-700 group-hover:text-gray-900 truncate" title="{{ p.pasal }}">{{ p.pasal }}</div>
-                                        <div class="w-40 px-2 text-sm text-gray-700 group-hover:text-gray-900 truncate" title="{{ p.di_input_oleh }}">{{ p.di_input_oleh }}</div>
-                                        <div class="w-20 px-2 flex justify-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                                            {% if p.bukti_file %}
-                                                <a href="#" class="image-thumbnail text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1 rounded transition-colors duration-200" 
-                                                   data-full-image="{{ url_for('static', filename='uploads/' + p.bukti_file) }}" title="Lihat Gambar">
-                                                    <i class="fas fa-image text-sm"></i>
-                                                </a>
-                                            {% endif %}
-                                            <button class="print-btn text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1 rounded transition-colors duration-200" 
-                                                    title="Cetak"
-                                                    onclick="printViolation('{{ p.id }}', '{{ p.student.name }}')">
-                                                <i class="fas fa-print text-sm"></i>
-                                            </button>
-                                            <button class="delete-btn text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded transition-colors duration-200" 
-                                                    title="Hapus"
-                                                    onclick="deleteViolation('{{ p.id }}', '{{ p.student.name }}')">
-                                                <i class="fas fa-trash-alt text-sm"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <div class="text-center py-16">
-                        <i class="fas fa-clipboard-list text-6xl text-gray-300 mb-4"></i>
-                        <p class="text-gray-500 text-lg">Belum ada pelanggaran yang tercatat.</p>
-                    </div>
-                {% endif %}
-
-                <!-- Pagination -->
-                {% if pelanggaran_pagination.pages > 1 %}
-                <div class="mt-8 flex justify-center">
-                    <nav class="pagination-nav">
-                        <ul class="flex items-center space-x-2">
-                            <li class="page-item">
-                                <a class="page-link px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-l-lg hover:bg-gray-50 {% if not pelanggaran_pagination.has_prev %}cursor-not-allowed opacity-50{% endif %}" 
-                                   href="{{ url_for('main.home', page=pelanggaran_pagination.prev_num, date_range=date_range_value) if pelanggaran_pagination.has_prev else '#' }}"
-                                   data-preserve-view="true">
-                                    <i class="fas fa-chevron-left"></i>
-                                </a>
-                            </li>
-                            {% for page_num in pelanggaran_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-                                {% if page_num %}
-                                    <li class="page-item">
-                                        <a class="page-link px-4 py-2 text-sm font-medium {% if page_num == pelanggaran_pagination.page %}bg-primary text-white border-primary{% else %}text-gray-700 bg-white border-gray-300 hover:bg-gray-50{% endif %} border rounded-lg transition-colors duration-200" 
-                                           href="{{ url_for('main.home', page=page_num, date_range=date_range_value) }}"
-                                           data-preserve-view="true">{{ page_num }}</a>
-                                    </li>
+                        {% for page_num in pelanggaran_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                            {% if page_num %}
+                                {% if pelanggaran_pagination.page == page_num %}
+                                    <span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">
+                                        {{ page_num }}
+                                    </span>
                                 {% else %}
-                                    <li class="page-item">
-                                        <span class="px-4 py-2 text-gray-500">...</span>
-                                    </li>
+                                    <a href="{{ url_for('main.home', page=page_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                        {{ page_num }}
+                                    </a>
                                 {% endif %}
-                            {% endfor %}
-                            <li class="page-item">
-                                <a class="page-link px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-r-lg hover:bg-gray-50 {% if not pelanggaran_pagination.has_next %}cursor-not-allowed opacity-50{% endif %}" 
-                                   href="{{ url_for('main.home', page=pelanggaran_pagination.next_num, date_range=date_range_value) if pelanggaran_pagination.has_next else '#' }}"
-                                   data-preserve-view="true">
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
-                            </li>
-                        </ul>
+                            {% else %}
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if pelanggaran_pagination.has_next %}
+                            <a href="{{ url_for('main.home', page=pelanggaran_pagination.next_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Next</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
                     </nav>
                 </div>
-                {% endif %}
-            </main>
-        </div>
-
-        <!-- Footer -->
-        <footer class="bg-white border-t border-gray-200 py-3 px-6">
-            <div class="text-center">
-                <p class="text-gray-600 flex items-center justify-center text-sm">
-                    <span class="mr-2">✨</span>
-                    Dibuat dengan ❤️ oleh Tim IT Alsen 22 &copy; 2025
-                    <span class="ml-2">✨</span>
-                </p>
-            </div>
-        </footer>
-    </div>
-
-    <!-- Modals -->
-    <!-- Fullscreen Image Modal -->
-    <div id="fullscreenModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center">
-        <button class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 transition-colors duration-200" onclick="closeImageModal()">
-            <i class="fas fa-times"></i>
-        </button>
-        <img class="modal-content max-w-4xl max-h-4xl rounded-lg shadow-2xl" id="fullImage">
-        <div class="modal-caption text-white text-center mt-4" id="caption"></div>
-        <a id="downloadButton" class="download-button fixed bottom-4 right-4 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors duration-200" download>
-            <i class="fas fa-download mr-2"></i>Unduh Gambar
-        </a>
-    </div>
-
-    <!-- Bulk Actions Modal -->
-    <div id="bulkActionsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 transform transition-all duration-300 scale-95 opacity-0" id="bulkActionsModalContent">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                    <i class="fas fa-tasks text-blue-600 text-xl"></i>
-                </div>
-                <h2 class="text-xl font-bold text-gray-900">Aksi Massal</h2>
-            </div>
-            <p class="text-gray-600 mb-6">Pilih beberapa pelanggaran untuk melakukan aksi massal:</p>
-            
-            <div class="space-y-3 mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih semua</label>
-                    <div class="flex items-center space-x-2">
-                        <input type="checkbox" id="selectAllBulk" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        <span class="text-sm text-gray-600">Total dipilih: <span id="bulkSelectedCount">0</span></span>
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pencetan Massal</label>
-                    <select id="bulkPrintFormat" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                        <option value="individual">Cetak Satu Per Satu</option>
-                        <option value="summary">Ringkasan Pelanggaran</option>
-                        <option value="export">Export untuk Pencetan</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Aksi pada yang dipilih:</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="bulkPrint()" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all duration-200">
-                            <i class="fas fa-print mr-2"></i>Cetak
-                        </button>
-                        <button onclick="bulkExport()" class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:shadow-lg transition-all duration-200">
-                            <i class="fas fa-download mr-2"></i>Export
-                        </button>
-                        <button onclick="bulkDelete()" class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:shadow-lg transition-all duration-200">
-                            <i class="fas fa-trash mr-2"></i>Hapus
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="modal-buttons flex space-x-3 mt-6">
-                <button onclick="closeBulkActionsModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium">
-                    <i class="fas fa-times mr-2"></i>Tutup
-                </button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Export Modal -->
-    <div id="exportModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 transform transition-all duration-300 scale-95 opacity-0" id="exportModalContent">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-3">
-                    <i class="fas fa-download text-green-600 text-xl"></i>
-                </div>
-                <h2 class="text-xl font-bold text-gray-900">Export Data Pelanggaran</h2>
-            </div>
-            <p class="text-gray-600 mb-6">Pilih format export untuk data pelanggaran yang dipilih:</p>
+<!-- ELEGANT EVIDENCE MODAL (Updated) -->
+<div id="evidenceModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
+    <!-- Backdrop with Blur -->
+    <div class="absolute inset-0 bg-gray-900/90 backdrop-blur-md transition-opacity duration-300 ease-out opacity-0" id="modalBackdrop" onclick="closeEvidenceModal()"></div>
+    
+    <!-- Modal Card (Centered) -->
+    <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+        <div class="bg-white w-full max-w-4xl h-[80vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto" id="modalContent">
             
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Format Export</label>
-                    <select id="exportFormat" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">
-                        <option value="excel">Excel (.xlsx)</option>
-                        <option value="csv">CSV (.csv)</option>
-                        <option value="pdf">PDF (.pdf)</option>
-                        <option value="json">JSON (.json)</option>
-                    </select>
-                </div>
+            <!-- Left: Image Area (Dark) -->
+            <div class="md:w-7/12 h-1/2 md:h-full bg-black relative flex items-center justify-center group overflow-hidden">
+                <div class="absolute inset-0 bg-cover bg-center opacity-30 blur-2xl transform scale-110" id="modalBgBlur"></div>
+                <img id="modalImg" src="" alt="Bukti Pelanggaran" class="relative max-h-full max-w-full object-contain z-10 transition-transform duration-500 shadow-2xl">
                 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Opsi Tambahan</label>
-                    <div class="space-y-2">
-                        <label class="flex items-center">
-                            <input type="checkbox" id="includeImages" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2">
-                            <span class="text-sm text-gray-600">Sertakan gambar bukti (jika ada)</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" id="includeStatistics" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2">
-                            <span class="text-sm text-gray-600">Sertakan statistik ringkasan</span>
-                        </label>
-                    </div>
+                <!-- Zoom Hint -->
+                <div class="absolute bottom-6 right-6 bg-black/40 text-white/80 text-xs px-3 py-1.5 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity border border-white/10">
+                    <i class="fas fa-search-plus mr-1"></i> Zoom
                 </div>
             </div>
-            
-            <div class="modal-buttons flex space-x-3 mt-6">
-                <button onclick="performExport()" class="flex-1 px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium">
-                    <i class="fas fa-download mr-2"></i>Export
-                </button>
-                <button onclick="closeExportModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium">
-                    <i class="fas fa-times mr-2"></i>Batal
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Success Notification Toast -->
-    <div id="successToast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-all duration-300 z-50 hidden">
-        <div class="flex items-center">
-            <i class="fas fa-check-circle mr-2"></i>
-            <span id="successToastMessage">Aksi berhasil dilakukan!</span>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all duration-300 scale-95 opacity-0" id="deleteModalContent">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-3">
-                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
-                </div>
-                <h2 class="text-xl font-bold text-gray-900">Konfirmasi Hapus</h2>
-            </div>
-            <p class="text-gray-600 mb-4">Anda yakin ingin menghapus data pelanggaran oleh <strong id="studentNameToDelete" class="text-red-600"></strong>? Tindakan ini tidak dapat diurungkan.</p>
-            <p class="text-sm text-gray-500 mb-4">Untuk konfirmasi, ketik <strong class="confirm-text bg-red-100 text-red-700 px-2 py-1 rounded">SETUJU</strong> di bawah ini:</p>
-            <input type="text" id="deleteConfirmInput" placeholder="Ketik SETUJU" autocomplete="off" 
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200">
-            <div class="modal-buttons flex space-x-3 mt-6">
-                <button id="cancelDeleteBtn" class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200 font-medium">
-                    <i class="fas fa-times mr-2"></i>Batal
-                </button>
-                <button id="confirmDeleteBtn" class="flex-1 px-4 py-2 bg-gradient-to-r from-danger to-red-600 text-white rounded-lg hover:shadow-lg transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    <i class="fas fa-trash mr-2"></i>Hapus Data
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
-    <script>
-        // View Management
-        let currentView = localStorage.getItem('preferredView') || 'card';
-        let sortField = null;
-        let sortDirection = 'asc';
-
-        // View Switching
-        function switchView(view) {
-            const cardView = document.getElementById('violation-container-card');
-            const listView = document.getElementById('violation-container-list');
-            const cardBtn = document.getElementById('view-card-btn');
-            const listBtn = document.getElementById('view-list-btn');
-
-            if (view === 'card') {
-                cardView.classList.remove('hidden');
-                listView.classList.add('hidden');
-                cardBtn.classList.add('text-white', 'bg-primary');
-                cardBtn.classList.remove('text-gray-600', 'hover:text-gray-900');
-                listBtn.classList.remove('text-white', 'bg-primary');
-                listBtn.classList.add('text-gray-600', 'hover:text-gray-900');
-            } else {
-                cardView.classList.add('hidden');
-                listView.classList.remove('hidden');
-                listBtn.classList.add('text-white', 'bg-primary');
-                listBtn.classList.remove('text-gray-600', 'hover:text-gray-900');
-                cardBtn.classList.remove('text-white', 'bg-primary');
-                cardBtn.classList.add('text-gray-600', 'hover:text-gray-900');
-            }
-            currentView = view;
-            localStorage.setItem('preferredView', view);
-            updateCategoryStatistics();
-        }
-        
-        // Preserve view mode during pagination
-        function preserveViewMode() {
-            localStorage.setItem('preferredView', currentView);
-            // View will be restored on page load
-        }
-        
-        // Handle view preservation on links with data-preserve-view
-        document.addEventListener('click', function(e) {
-            const target = e.target.closest('[data-preserve-view="true"]');
-            if (target) {
-                e.preventDefault();
-                preserveViewMode();
-                
-                // Navigate after a short delay to ensure state is saved
-                setTimeout(() => {
-                    window.location.href = target.href;
-                }, 50);
-            }
-        });
-
-        // Date parsing helper function
-        function parseDate(dateStr) {
-            // Handle DD/MM/YYYY format
-            if (dateStr.includes('/')) {
-                const parts = dateStr.split('/');
-                if (parts.length === 3) {
-                    return new Date(parts[2], parts[1] - 1, parts[0]);
-                }
-            }
-            // Handle ISO format
-            return new Date(dateStr);
-        }
-
-        // Sorting Functionality
-        function sortList(field, direction) {
-            const container = document.getElementById('violation-container-list');
-            const rows = Array.from(container.querySelectorAll('.violation-row'));
-            
-            rows.sort((a, b) => {
-                let aVal = a.dataset[field];
-                let bVal = b.dataset[field];
-                
-                // Handle different data types
-                if (field === 'tanggal') {
-                    aVal = parseDate(aVal);
-                    bVal = parseDate(bVal);
-                }
-                
-                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
-                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
-                return 0;
-            });
-            
-            // Re-attach sorted rows
-            const listContainer = container.querySelector('.bg-white.border .max-h-96');
-            rows.forEach(row => listContainer.appendChild(row));
-        }
-
-        // Card view sorting with improved animation
-        function sortCardView(field, direction) {
-            const container = document.getElementById('violation-container-card');
-            const cards = Array.from(container.querySelectorAll('.violation-item'));
-            
-            cards.forEach(card => {
-                card.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-                card.style.transform = 'scale(0.95)';
-            });
-            
-            cards.sort((a, b) => {
-                let aVal, bVal;
-                
-                if (field === 'nama_murid') {
-                    aVal = a.querySelector('.student-link').textContent.trim().toLowerCase();
-                    bVal = b.querySelector('.student-link').textContent.trim().toLowerCase();
-                } else if (field === 'tanggal') {
-                    aVal = parseDate(a.dataset.tanggal);
-                    bVal = parseDate(b.dataset.tanggal);
-                }
-                
-                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
-                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
-                return 0;
-            });
-            
-            // Re-attach sorted cards with staggered animation
-            setTimeout(() => {
-                cards.forEach((card, index) => {
-                    setTimeout(() => {
-                        container.appendChild(card);
-                        card.style.transform = 'scale(0.8)';
-                        card.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.2)';
-                        setTimeout(() => {
-                            card.style.transform = 'scale(1)';
-                            card.style.boxShadow = '';
-                        }, 200);
-                    }, index * 30);
-                });
-            }, 100);
-        }
-
-        // Date filtering functionality
-        function filterByDateRange(startDate, endDate) {
-            const cardItems = document.querySelectorAll('#violation-container-card .violation-item');
-            const listItems = document.querySelectorAll('#violation-container-list .violation-row');
-            
-            const filterFunc = (element) => {
-                const dateStr = element.dataset.tanggal;
-                const itemDate = parseDate(dateStr);
-                
-                if (!startDate && !endDate) return true; // No filter
-                if (startDate && !endDate) return itemDate >= startDate; // From date only
-                if (!startDate && endDate) return itemDate <= endDate; // To date only
-                return itemDate >= startDate && itemDate <= endDate; // Range
-            };
-            
-            // Apply filter to both views
-            cardItems.forEach(item => {
-                item.style.display = filterFunc(item) ? '' : 'none';
-            });
-            
-            listItems.forEach(item => {
-                item.style.display = filterFunc(item) ? '' : 'none';
-            });
-            
-            // Update statistics after filtering
-            setTimeout(updateCategoryStatistics, 100);
-        }
-
-        // Print functionality
-        function printViolation(violationId, studentName) {
-            console.log('Print function called with ID:', violationId, 'Student:', studentName);
-            
-            // Create a printable version of the violation data
-            const violationItem = document.querySelector(`[data-id="${violationId}"]`);
-            
-            if (violationItem) {
-                // Get violation data
-                const name = violationItem.querySelector('.student-link')?.textContent || studentName;
-                const kelas = violationItem.querySelector('[data-kelas]')?.dataset.kelas || '';
-                const kategori = violationItem.querySelector('.bg-green-100, .bg-orange-100, .bg-red-100')?.textContent.trim() || '';
-                const pasal = violationItem.querySelector('[data-pasal]')?.dataset.pasal || '';
-                const tanggal = violationItem.querySelector('[data-tanggal]')?.dataset.tanggal || '';
-                const deskripsi = violationItem.querySelector('p')?.textContent || '';
-                const inputOleh = violationItem.querySelector('[data-di_input_oleh]')?.dataset.di_input_oleh || '';
-                
-                // Create print content
-                const printContent = `
-                    <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
-                        <h2 style="color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Data Pelanggaran</h2>
-                        <div style="margin: 20px 0;">
-                            <p><strong>Nama Murid:</strong> ${name}</p>
-                            <p><strong>Kelas:</strong> ${kelas}</p>
-                            <p><strong>Kategori:</strong> ${kategori}</p>
-                            <p><strong>Pasal:</strong> ${pasal}</p>
-                            <p><strong>Tanggal Kejadian:</strong> ${tanggal}</p>
-                            <p><strong>Di Input Oleh:</strong> ${inputOleh}</p>
-                            ${deskripsi ? `<p><strong>Deskripsi:</strong> ${deskripsi}</p>` : ''}
+            <!-- Right: Details Area -->
+            <div class="md:w-5/12 h-1/2 md:h-full bg-white flex flex-col">
+                <!-- Header -->
+                <div class="px-8 py-8 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span id="modalCategoryBadge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm">
+                                Kategori
+                            </span>
                         </div>
-                        <div style="margin-top: 30px; font-size: 12px; color: #666;">
-                            <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+                        <h2 class="text-xl font-bold text-gray-900 leading-tight">Bukti Pelanggaran</h2>
+                        <div class="flex items-center text-sm text-gray-500 mt-2">
+                            <i class="far fa-calendar-alt mr-2"></i>
+                            <span id="modalDate">Tanggal</span>
                         </div>
                     </div>
-                `;
-                
-                // Open print window
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(printContent);
-                printWindow.document.close();
-                printWindow.print();
-            }
-        }
-        
-        // Delete functionality
-        function deleteViolation(violationId, studentName) {
-            console.log('Delete function called with ID:', violationId, 'Student:', studentName);
-            
-            // Set the student name in the modal
-            document.getElementById('studentNameToDelete').textContent = studentName;
-            
-            // Show the modal
-            const modal = document.getElementById('deleteConfirmModal');
-            const modalContent = modal.querySelector('#deleteModalContent');
-            
-            modal.classList.remove('hidden');
-            modalContent.classList.remove('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modalContent.classList.add('scale-100', 'opacity-100');
-            }, 10);
-            
-            // Store the violation ID for deletion
-            window.violationToDelete = violationId;
-        }
-        
-        // Initialize date picker with enhanced functionality
-        function initializeDatePicker() {
-            const dateInput = document.getElementById('dateFilterInput');
-            
-            flatpickr(dateInput, {
-                locale: "id",
-                mode: "range",
-                dateFormat: "Y-m-d",
-                altInput: true,
-                altFormat: "d F Y",
-                theme: "light",
-                onChange: function(selectedDates, dateStr) {
-                    if (selectedDates.length === 0) {
-                        // Clear filter
-                        filterByDateRange(null, null);
-                    } else if (selectedDates.length === 1) {
-                        // Single date selected
-                        filterByDateRange(selectedDates[0], null);
-                    } else {
-                        // Date range selected
-                        filterByDateRange(selectedDates[0], selectedDates[1]);
-                    }
-                }
-            });
-        }
-        
-        // Animation helper functions
-        function animateNumberChange(elementId, targetValue) {
-            const element = document.getElementById(elementId);
-            const currentValue = parseInt(element.textContent) || 0;
-            
-            if (currentValue !== targetValue) {
-                element.style.transform = 'scale(1.2)';
-                element.style.color = '#667eea';
-                
-                setTimeout(() => {
-                    element.textContent = targetValue;
-                    element.style.transform = 'scale(1)';
-                    element.style.color = '';
-                }, 150);
-            }
-        }
-        
-        function updateBulkSelectedCount() {
-            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-            document.getElementById('bulkSelectedCount').textContent = checkboxes.length;
-            
-            // Update button states
-            const selectAllBtn = document.getElementById('selectAllBulk');
-            const bulkPrintBtn = document.querySelector('[onclick="bulkPrint()"]');
-            const bulkExportBtn = document.querySelector('[onclick="bulkExport()"]');
-            const bulkDeleteBtn = document.querySelector('[onclick="bulkDelete()"]');
-            
-            if (checkboxes.length === 0) {
-                selectAllBtn.checked = false;
-                selectAllBtn.indeterminate = false;
-                if(bulkPrintBtn) bulkPrintBtn.disabled = true;
-                if(bulkExportBtn) bulkExportBtn.disabled = true;
-                if(bulkDeleteBtn) bulkDeleteBtn.disabled = true;
-            } else if (checkboxes.length === document.querySelectorAll('.item-checkbox').length) {
-                selectAllBtn.checked = true;
-                selectAllBtn.indeterminate = false;
-                if(bulkPrintBtn) bulkPrintBtn.disabled = false;
-                if(bulkExportBtn) bulkExportBtn.disabled = false;
-                if(bulkDeleteBtn) bulkDeleteBtn.disabled = false;
-            } else {
-                selectAllBtn.checked = false;
-                selectAllBtn.indeterminate = true;
-                if(bulkPrintBtn) bulkPrintBtn.disabled = false;
-                if(bulkExportBtn) bulkExportBtn.disabled = false;
-                if(bulkDeleteBtn) bulkDeleteBtn.disabled = false;
-            }
-        }
-        
-        // Modal helper functions
-        function closeModal() {
-            const modal = document.getElementById('deleteConfirmModal');
-            const modalContent = modal.querySelector('#deleteModalContent');
-            
-            modalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 200);
-        }
+                    <button onclick="closeEvidenceModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-500 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
 
-        // Calculate category statistics
-        function updateCategoryStatistics() {
-            const selector = currentView === 'card' 
-                ? '#violation-container-card .violation-item' 
-                : '#violation-container-list .violation-row';
-            
-            const items = document.querySelectorAll(selector);
-            let ringan = 0, sedang = 0, berat = 0;
-            
-            items.forEach(item => {
-                const categoryElement = item.querySelector('.bg-green-100, .bg-orange-100, .bg-red-100');
-                if (categoryElement) {
-                    if (categoryElement.classList.contains('bg-green-100')) ringan++;
-                    else if (categoryElement.classList.contains('bg-orange-100')) sedang++;
-                    else if (categoryElement.classList.contains('bg-red-100')) berat++;
-                }
-            });
-            
-            // Get the current statistics mode
-            const isGlobal = document.getElementById('statsMode').textContent.trim() === 'Global';
-            
-            if (isGlobal) {
-                // Use global statistics from server
-                const globalRingan = parseInt(document.getElementById('global-ringan').textContent) || 0;
-                const globalSedang = parseInt(document.getElementById('global-sedang').textContent) || 0;
-                const globalBerat = parseInt(document.getElementById('global-berat').textContent) || 0;
-                
-                updateStatisticsDisplay(globalRingan, globalSedang, globalBerat);
-            } else {
-                // Use current page statistics
-                updateStatisticsDisplay(ringan, sedang, berat);
-            }
-        }
-        
-        function updateStatisticsDisplay(ringan, sedang, berat) {
-            // Update display
-            const currentRinganEl = document.getElementById('current-ringan');
-            const currentSedangEl = document.getElementById('current-sedang');
-            const currentBeratEl = document.getElementById('current-berat');
-            
-            if (currentRinganEl) currentRinganEl.textContent = ringan;
-            if (currentSedangEl) currentSedangEl.textContent = sedang;
-            if (currentBeratEl) currentBeratEl.textContent = berat;
-            
-            // Update progress bar
-            const total = ringan + sedang + berat;
-            if (total > 0) {
-                const progressRingan = (ringan / total) * 100;
-                const progressSedang = (sedang / total) * 100;
-                const progressBerat = (berat / total) * 100;
-                
-                // Create stacked progress bar
-                const progressBar = document.getElementById('category-progress');
-                if (progressBar) {
-                    progressBar.innerHTML = `
-                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressRingan}%; background-color: #22c55e;"></div>
-                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressSedang}%; background-color: #f97316;"></div>
-                        <div class="h-2 transition-all duration-500 flex-shrink-0" style="width: ${progressBerat}%; background-color: #b91c1c;"></div>
-                    `;
-                }
-            }
-        }
-        
-        // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Apply saved view mode
-            switchView(currentView);
-            
-            // Initialize date picker
-            initializeDatePicker();
-            
-            // View switching buttons with visual feedback
-            document.getElementById('view-card-btn').addEventListener('click', function() {
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    switchView('card');
-                    this.style.transform = 'scale(1)';
-                }, 100);
-            });
-            
-            document.getElementById('view-list-btn').addEventListener('click', function() {
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    switchView('list');
-                    this.style.transform = 'scale(1)';
-                }, 100);
-            });
-            
-            // Sorting buttons with visual feedback
-            document.querySelectorAll('.sort-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        const field = this.dataset.sort;
-                        
-                        // Update sort direction
-                        if (sortField === field) {
-                            sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-                        } else {
-                            sortField = field;
-                            sortDirection = 'asc';
-                        }
-                        
-                        // Update icons
-                        document.querySelectorAll('.sort-btn i').forEach(icon => {
-                            icon.className = 'fas fa-sort ml-1 text-gray-400';
-                        });
-                        
-                        const icon = this.querySelector('i');
-                        icon.className = `fas fa-sort-${sortDirection === 'asc' ? 'up' : 'down'} ml-1 text-gray-600`;
-                        
-                        // Sort the list
-                        if (currentView === 'list') {
-                            sortList(field, sortDirection);
-                        }
-                        
-                        // Also sort card view by name or date if needed
-                        if (currentView === 'card' && (field === 'nama_murid' || field === 'tanggal')) {
-                            sortCardView(field, sortDirection);
-                        }
-                        
-                        this.style.transform = 'scale(1)';
-                    }, 100);
-                });
-            });
-            
-            // Enhanced select all functionality
-            document.getElementById('selectAll').addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('.item-checkbox');
-                const isChecked = this.checked;
-                
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = isChecked;
-                    
-                    // Add visual feedback to rows
-                    const row = checkbox.closest('.violation-row');
-                    if (row) {
-                        if (isChecked) {
-                            row.classList.add('bg-blue-50', 'border-blue-200');
-                        } else {
-                            row.classList.remove('bg-blue-50', 'border-blue-200');
-                        }
-                    }
-                });
-                
-                updateBulkSelectedCount();
-            });
-            
-            // Individual checkbox change listener with visual feedback
-            document.addEventListener('change', function(e) {
-                if (e.target.classList.contains('item-checkbox')) {
-                    const checkbox = e.target;
-                    const row = checkbox.closest('.violation-row');
-                    
-                    if (row) {
-                        if (checkbox.checked) {
-                            row.classList.add('bg-blue-50', 'border-blue-200');
-                        } else {
-                            row.classList.remove('bg-blue-50', 'border-blue-200');
-                        }
-                    }
-                    
-                    updateBulkSelectedCount();
-                }
-            });
-            
-            // Enhanced statistics toggle with animation
-            document.getElementById('toggleStats').addEventListener('click', function() {
-                const globalStats = document.getElementById('globalStats');
-                const currentStats = document.getElementById('currentStats');
-                const statsMode = document.getElementById('statsMode');
-                
-                // Add animation
-                this.style.transform = 'scale(0.95)';
-                
-                if (globalStats.classList.contains('hidden')) {
-                    // Show global stats with animation
-                    globalStats.classList.remove('hidden');
-                    currentStats.classList.add('hidden');
-                    statsMode.textContent = 'Global';
-                    this.querySelector('i').className = 'fas fa-globe mr-1';
-                    
-                    // Animate global numbers
-                    animateNumberChange('global-ringan', parseInt(document.getElementById('global-ringan').textContent));
-                    animateNumberChange('global-sedang', parseInt(document.getElementById('global-sedang').textContent));
-                    animateNumberChange('global-berat', parseInt(document.getElementById('global-berat').textContent));
-                } else {
-                    // Show current page stats with animation
-                    globalStats.classList.add('hidden');
-                    currentStats.classList.remove('hidden');
-                    statsMode.textContent = 'Halaman Ini';
-                    this.querySelector('i').className = 'fas fa-filter mr-1';
-                }
-                
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                    updateCategoryStatistics();
-                }, 100);
-            });
-            
-            // Enhanced date range filter with visual feedback
-            const dateInput = document.getElementById('dateFilterInput');
-            if (dateInput) {
-                dateInput.addEventListener('change', function() {
-                    // Add loading state
-                    this.classList.add('border-blue-300', 'ring-blue-100', 'ring-opacity-30');
-                    
-                    setTimeout(() => {
-                        this.classList.remove('border-blue-300', 'ring-blue-100', 'ring-opacity-30');
-                        updateCategoryStatistics();
-                    }, 1000);
-                });
-            }
-            
-            // Cancel delete button with animation
-            document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
-                closeModal();
-            });
-            
-            // Confirm delete button with animation
-            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-                confirmDelete();
-            });
-            
-            // Delete confirmation input with validation
-            document.getElementById('deleteConfirmInput').addEventListener('input', function() {
-                const input = this.value.trim();
-                const confirmBtn = document.getElementById('confirmDeleteBtn');
-                if (input === 'SETUJU') {
-                    confirmBtn.disabled = false;
-                    confirmBtn.classList.remove('disabled:opacity-50', 'disabled:cursor-not-allowed');
-                    confirmBtn.classList.add('bg-gradient-to-r', 'hover:shadow-lg');
-                } else {
-                    confirmBtn.disabled = true;
-                    confirmBtn.classList.add('disabled:opacity-50', 'disabled:cursor-not-allowed');
-                    confirmBtn.classList.remove('bg-gradient-to-r', 'hover:shadow-lg');
-                }
-            });
-            
-            // Close modal when clicking outside
-            document.getElementById('deleteConfirmModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal();
-                }
-            });
-            
-            // Initialize statistics
-            updateCategoryStatistics();
-            
-            // Re-calculate when search or filter changes with debouncing
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                let searchTimeout;
-                
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        updateCategoryStatistics();
-                        // Also trigger the search logic
-                        const searchTerm = this.value.toLowerCase();
-                        const cardItems = document.querySelectorAll('#violation-container-card .violation-item');
-                        const listItems = document.querySelectorAll('#violation-container-list .violation-row');
-                        
-                        const searchFunc = (element) => {
-                            const text = element.textContent.toLowerCase();
-                            return text.includes(searchTerm);
-                        };
-                        
-                        let visibleCount = 0;
-                        cardItems.forEach(item => {
-                            const matchesSearch = searchFunc(item);
-                            item.style.display = matchesSearch ? '' : 'none';
-                            if(matchesSearch) visibleCount++;
-                        });
-                        
-                        listItems.forEach(item => {
-                            const matchesSearch = searchFunc(item);
-                            item.style.display = matchesSearch ? '' : 'none';
-                        });
-                        
-                        const noResults = document.getElementById('no-results-message');
-                        if(noResults) noResults.style.display = (visibleCount === 0) ? 'block' : 'none';
-
-                    }, 300);
-                });
-            }
-        });
-        
-        // Bulk Actions Functions
-        function showBulkActions() {
-            const modal = document.getElementById('bulkActionsModal');
-            const modalContent = modal.querySelector('#bulkActionsModalContent');
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalContent.classList.remove('scale-95', 'opacity-0');
-                modalContent.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
-        
-        function closeBulkActionsModal() {
-            const modal = document.getElementById('bulkActionsModal');
-            const modalContent = modal.querySelector('#bulkActionsModalContent');
-            
-            modalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 200);
-        }
-        
-        function bulkPrint() {
-            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-            if (checkboxes.length === 0) {
-                showToast('Pilih setidaknya satu data untuk dicetak', 'warning');
-                return;
-            }
-            
-            const format = document.getElementById('bulkPrintFormat').value;
-            if (format === 'individual') {
-                checkboxes.forEach(checkbox => {
-                    const itemId = checkbox.closest('.violation-row').dataset.id;
-                    const studentName = checkbox.closest('.violation-row').dataset.nama_murid;
-                    printViolation(itemId, studentName);
-                });
-            } else if (format === 'summary') {
-                generatePrintSummary(checkboxes);
-            } else {
-                showToast('Format tidak tersedia', 'warning');
-            }
-            
-            closeBulkActionsModal();
-        }
-        
-        function bulkExport() {
-            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-            if (checkboxes.length === 0) {
-                showToast('Pilih setidaknya satu data untuk diekspor', 'warning');
-                return;
-            }
-            
-            showExportModal();
-            closeBulkActionsModal();
-        }
-        
-        function bulkDelete() {
-            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-            if (checkboxes.length === 0) {
-                showToast('Pilih setidaknya satu data untuk dihapus', 'warning');
-                return;
-            }
-            
-            const count = checkboxes.length;
-            
-            if (confirm(`Hapus ${count} data pelanggaran?`)) {
-                let deletedCount = 0;
-                checkboxes.forEach(checkbox => {
-                    const itemId = checkbox.closest('.violation-row').dataset.id;
-                    fetch(`/delete/${itemId}`, { method: 'POST' })
-                        .then(res => {
-                            if(res.ok) deletedCount++;
-                            if(deletedCount === count) {
-                                window.location.reload();
-                            }
-                        });
-                });
-            }
-            
-            closeBulkActionsModal();
-        }
-        
-        // Export Functions
-        function showExportModal() {
-            const modal = document.getElementById('exportModal');
-            const modalContent = modal.querySelector('#exportModalContent');
-            
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modalContent.classList.remove('scale-95', 'opacity-0');
-                modalContent.classList.add('scale-100', 'opacity-100');
-            }, 10);
-        }
-        
-        function closeExportModal() {
-            const modal = document.getElementById('exportModal');
-            const modalContent = modal.querySelector('#exportModalContent');
-            
-            modalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 200);
-        }
-        
-        function performExport() {
-            const format = document.getElementById('exportFormat').value;
-            const includeImages = document.getElementById('includeImages').checked;
-            const includeStats = document.getElementById('includeStatistics').checked;
-            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
-            
-            if (checkboxes.length === 0) {
-                showToast('Pilih setidaknya satu data untuk diekspor', 'warning');
-                return;
-            }
-            
-            const data = Array.from(checkboxes).map(checkbox => {
-                const row = checkbox.closest('.violation-row');
-                return {
-                    id: row.dataset.id,
-                    nama_murid: row.dataset.nama_murid,
-                    kelas: row.dataset.kelas,
-                    kategori: row.dataset.kategori,
-                    pasal: row.dataset.pasal,
-                    tanggal: row.dataset.tanggal,
-                    di_input_oleh: row.dataset.di_input_oleh
-                };
-            });
-            
-            // Create download
-            const filename = `pelanggaran_${new Date().toISOString().split('T')[0]}.${format}`;
-            
-            if (format === 'json') {
-                downloadJSON(data, filename, includeStats);
-            } else if (format === 'csv') {
-                downloadCSV(data, filename, includeStats);
-            } else if (format === 'excel') {
-                downloadExcel(data, filename, includeStats);
-            } else if (format === 'pdf') {
-                downloadPDF(data, filename, includeStats, includeImages);
-            }
-            
-            showToast(`Data berhasil diekspor ke ${filename}`, 'success');
-            closeExportModal();
-        }
-        
-        function generatePrintSummary(checkboxes) {
-            const data = Array.from(checkboxes).map(checkbox => {
-                const row = checkbox.closest('.violation-row');
-                return {
-                    nama_murid: row.dataset.nama_murid,
-                    kelas: row.dataset.kelas,
-                    kategori: row.dataset.kategori,
-                    pasal: row.dataset.pasal,
-                    tanggal: row.dataset.tanggal
-                };
-            });
-            
-            // Generate summary for printing
-            const summaryContent = `
-                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
-                    <h1 style="text-align: center; color: #333; margin-bottom: 30px;">Ringkasan Pelanggaran</h1>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                        ${data.map((item, index) => `
-                            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
-                                <h3 style="margin: 0 0 10px 0; color: #667eea;">${index + 1}. ${item.nama_murid}</h3>
-                                <p><strong>Kelas:</strong> ${item.kelas}</p>
-                                <p><strong>Kategori:</strong> ${item.kategori}</p>
-                                <p><strong>Pasal:</strong> ${item.pasal}</p>
-                                <p><strong>Tanggal:</strong> ${item.tanggal}</p>
+                <!-- Scrollable Content -->
+                <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                    <!-- Student Info Section (New for Index) -->
+                    <div class="mb-6 border-b border-gray-50 pb-6">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Siswa</h4>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-3 text-sm" id="modalStudentInitials">
+                                --
                             </div>
-                        `).join('')}
-                    </div>
-                    <div style="text-align: center; margin-top: 30px; color: #666;">
-                        <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
-                    </div>
-                </div>
-            `;
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(summaryContent);
-            printWindow.document.close();
-            printWindow.print();
-        }
-        
-        // Download helper functions
-        function downloadJSON(data, filename, includeStats) {
-            const exportData = {
-                data: data,
-                statistics: includeStats ? calculateStatistics(data) : null,
-                export_date: new Date().toISOString(),
-                total_records: data.length
-            };
-            
-            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-        
-        function downloadCSV(data, filename, includeStats) {
-            const headers = ['Nama Murid', 'Kelas', 'Kategori', 'Pasal', 'Tanggal Kejadian', 'Di Input Oleh'];
-            const csvContent = [
-                headers.join(','),
-                ...data.map(item => 
-                    `"${item.nama_murid}","${item.kelas}","${item.kategori}","${item.pasal}","${item.tanggal}","${item.di_input_oleh}"`
-                )
-            ].join('\n');
-            
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-        
-        function downloadExcel(data, filename, includeStats) {
-            // Simple CSV format that Excel can open
-            downloadCSV(data, filename.replace('.xlsx', '.csv'), includeStats);
-        }
-        
-        function downloadPDF(data, filename, includeStats, includeImages) {
-            // Generate PDF content
-            const pdfContent = generatePDFContent(data, includeStats, includeImages);
-            
-            const blob = new Blob([pdfContent], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-        
-        function generatePDFContent(data, includeStats, includeImages) {
-            // Simple PDF content (in real implementation, use PDF library)
-            return `
-                <div style="font-family: Arial, sans-serif; padding: 20px;">
-                    <h1>Laporan Pelanggaran</h1>
-                    ${data.map(item => `
-                        <div style="margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
-                            <h3>${item.nama_murid}</h3>
-                            <p><strong>Kelas:</strong> ${item.kelas}</p>
-                            <p><strong>Kategori:</strong> ${item.kategori}</p>
-                            <p><strong>Pasal:</strong> ${item.pasal}</p>
-                            <p><strong>Tanggal:</strong> ${item.tanggal}</p>
+                            <div>
+                                <h3 class="font-bold text-gray-900" id="modalStudentName">Nama Siswa</h3>
+                                <p class="text-xs text-gray-500" id="modalClassName">Kelas</p>
+                            </div>
                         </div>
-                    `).join('')}
+                    </div>
+
+                    <div class="mb-8">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Kronologis Kejadian</h4>
+                        <div class="relative">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-full"></div>
+                            <p id="modalDesc" class="text-gray-800 text-sm leading-relaxed pl-5">
+                                Deskripsi kejadian...
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 rounded-2xl p-5 border border-blue-100">
+                        <div class="flex items-center mb-1">
+                            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-2 text-xs">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <span class="text-xs font-bold text-blue-800 uppercase tracking-wide">Pelapor</span>
+                        </div>
+                        <div id="modalReporter" class="text-sm font-bold text-gray-900 pl-8">Nama</div>
+                    </div>
                 </div>
-            `;
-        }
+
+                <!-- Footer Actions -->
+                <div class="p-8 border-t border-gray-100">
+                    <a id="modalDownload" href="#" download class="flex items-center justify-center w-full py-3.5 px-6 bg-gray-900 text-white rounded-xl font-semibold hover:bg-black transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
+                        <i class="fas fa-download mr-2"></i> Download Bukti Foto
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 20px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #94a3b8;
+    }
+</style>
+
+<script>
+    const modal = document.getElementById('evidenceModal');
+    const backdrop = document.getElementById('modalBackdrop');
+    const content = document.getElementById('modalContent');
+    
+    // UI Elements
+    const mImg = document.getElementById('modalImg');
+    const mBg = document.getElementById('modalBgBlur');
+    const mDesc = document.getElementById('modalDesc');
+    const mDate = document.getElementById('modalDate');
+    const mReporter = document.getElementById('modalReporter');
+    const mDownload = document.getElementById('modalDownload');
+    const mBadge = document.getElementById('modalCategoryBadge');
+    
+    // New Elements for Index
+    const mStudentName = document.getElementById('modalStudentName');
+    const mClassName = document.getElementById('modalClassName');
+    const mInitials = document.getElementById('modalStudentInitials');
+
+    function openEvidenceModal(data) {
+        // Populate Data
+        mImg.src = data.url;
+        mBg.style.backgroundImage = `url('${data.url}')`;
+        mDesc.textContent = data.desc;
+        mDate.textContent = data.date;
+        mReporter.textContent = data.reporter || "Admin";
+        mDownload.href = data.url;
         
-        function calculateStatistics(data) {
-            const stats = {
-                total: data.length,
-                ringan: data.filter(item => item.kategori === 'Ringan').length,
-                sedang: data.filter(item => item.kategori === 'Sedang').length,
-                berat: data.filter(item => item.kategori === 'Berat').length
-            };
-            return stats;
+        // Populate Student Info
+        if(mStudentName) mStudentName.textContent = data.student_name;
+        if(mClassName) mClassName.textContent = "Kelas " + data.class_name;
+        if(mInitials && data.student_name) mInitials.textContent = data.student_name.substring(0,2).toUpperCase();
+
+        // Styling Badge
+        mBadge.textContent = data.category || "Umum";
+        if (data.category === 'Ringan') {
+            mBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm bg-green-50 text-green-700 border-green-200";
+        } else if (data.category === 'Sedang') {
+            mBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm bg-yellow-50 text-yellow-700 border-yellow-200";
+        } else {
+            mBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm bg-red-50 text-red-700 border-red-200";
         }
+
+        // Show Animation
+        modal.classList.remove('hidden');
+        requestAnimationFrame(() => {
+            backdrop.classList.remove('opacity-0');
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
+        });
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeEvidenceModal() {
+        backdrop.classList.add('opacity-0');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
         
-        // Toast notification
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('successToast');
-            const messageEl = document.getElementById('successToastMessage');
-            
-            messageEl.textContent = message;
-            
-            // Update toast styling based on type
-            toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-50`;
-            if (type === 'success') {
-                toast.className += ' bg-green-500 text-white';
-            } else if (type === 'warning') {
-                toast.className += ' bg-yellow-500 text-white';
-            } else if (type === 'error') {
-                toast.className += ' bg-red-500 text-white';
-            }
-            
-            toast.classList.remove('hidden', 'translate-x-full');
-            
-            // Auto-hide after 3 seconds
-            setTimeout(() => {
-                toast.classList.add('translate-x-full');
-                setTimeout(() => {
-                    toast.classList.add('hidden');
-                }, 300);
-            }, 3000);
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            mImg.src = '';
+        }, 300);
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape" && !modal.classList.contains('hidden')) {
+            closeEvidenceModal();
         }
-        
-        // Modal helper functions
-        function closeModal() {
-            const modal = document.getElementById('deleteConfirmModal');
-            const modalContent = modal.querySelector('#deleteModalContent');
-            
-            modalContent.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 200);
-        }
-        
-        function confirmDelete() {
-            if (window.violationToDelete) {
-                // Create and submit form
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/delete/${window.violationToDelete}`;
-                
-                // Add CSRF token (if needed)
-                const csrfToken = document.querySelector('meta[name="csrf-token"]');
-                if (csrfToken) {
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = 'csrf_token';
-                    csrfInput.value = csrfToken.getAttribute('content');
-                    form.appendChild(csrfInput);
-                }
-                
-                // Submit form
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-    </script>
-</body>
-</html>
+    });
+</script>
+{% endblock %}
