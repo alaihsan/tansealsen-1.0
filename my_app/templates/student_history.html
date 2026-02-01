@@ -1,208 +1,297 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
     <!-- Navigation Back -->
-    <div class="mb-6">
-        <a href="{{ url_for('main.home') }}" class="text-sm text-gray-500 hover:text-blue-600 transition-colors">
-            <i class="fas fa-arrow-left mr-1"></i> Kembali ke Dashboard
+    <div class="mb-8">
+        <a href="{{ url_for('main.home') }}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors group">
+            <div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center mr-3 group-hover:bg-blue-50 text-gray-400 group-hover:text-blue-600 transition-all border border-gray-200">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            Kembali ke Dashboard
         </a>
     </div>
 
-    <!-- Student Profile Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-6 text-white">
-            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold text-3xl border-4 border-white/30 shadow-md">
-                    {{ student.name[:2] }}
-                </div>
-                <div class="text-center sm:text-left flex-1">
-                    <h1 class="text-2xl font-bold">{{ student.name }}</h1>
-                    <div class="flex flex-wrap justify-center sm:justify-start gap-2 mt-2 opacity-90">
-                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
-                            <i class="fas fa-id-card mr-1"></i> NIS: {{ student.nis }}
-                        </span>
-                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-medium">
-                            <i class="fas fa-school mr-1"></i> Kelas: {{ student.classroom.name }}
-                        </span>
+    <!-- Student Profile Header (Redesigned & Elegant) -->
+    <div class="relative bg-white rounded-3xl shadow-xl overflow-hidden mb-10 group border border-gray-100">
+        <!-- Decorative Background -->
+        <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+            <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+        </div>
+        
+        <div class="px-8 pt-16 pb-8 relative">
+            <div class="flex flex-col items-center">
+                <!-- Avatar -->
+                <div class="w-32 h-32 bg-white p-2 rounded-full shadow-2xl mb-5 relative z-10 transform transition-transform group-hover:scale-105 duration-300">
+                    <div class="w-full h-full bg-gray-50 rounded-full flex items-center justify-center text-blue-600 font-bold text-5xl border border-gray-100">
+                        {{ student.name[:2] }}
                     </div>
                 </div>
-                <div class="text-center bg-white/10 rounded-lg p-3 backdrop-blur-sm min-w-[100px]">
-                    <div class="text-xs uppercase tracking-wider opacity-80 mb-1">Total Poin</div>
-                    <div class="text-3xl font-bold">{{ total_points }}</div>
+
+                <!-- Name & Class -->
+                <div class="text-center space-y-3">
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                        {{ student.name }}
+                    </h1>
+                    <div class="inline-flex items-center px-5 py-2 rounded-full bg-blue-50 text-blue-700 font-semibold text-sm border border-blue-100 shadow-sm">
+                        <i class="fas fa-graduation-cap mr-2"></i>
+                        Kelas {{ student.classroom.name }}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Layout Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        <!-- Left Column: Statistics -->
-        <div class="lg:col-span-1 space-y-6">
-            <!-- Stats Widget -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-                <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center justify-between">
-                    <div class="flex items-center">
-                        <i class="fas fa-chart-pie mr-2 text-primary"></i>
-                        Statistik
-                    </div>
-                    <button id="toggleStudentStats" class="text-xs text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 px-2 py-1 rounded" title="Ganti Mode">
-                        <i class="fas fa-globe mr-1"></i>
-                        <span id="studentStatsMode">Global</span>
-                    </button>
-                </h3>
-                
-                <div class="space-y-3 text-sm">
-                    <!-- Global Statistics (Hidden by default or toggled) -->
-                    <div id="globalStudentStats" class="space-y-2">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                <span class="text-gray-600">Ringan</span>
-                            </div>
-                            <span class="font-semibold text-gray-900">{{ total_ringan if total_ringan is defined else 0 }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                                <span class="text-gray-600">Sedang</span>
-                            </div>
-                            <span class="font-semibold text-gray-900">{{ total_sedang if total_sedang is defined else 0 }}</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                <span class="w-2 h-2 bg-red-600 rounded-full mr-2"></span>
-                                <span class="text-gray-600">Berat</span>
-                            </div>
-                            <span class="font-semibold text-gray-900">{{ total_berat if total_berat is defined else 0 }}</span>
-                        </div>
-                    </div>
+        <!-- Left Column: Statistics Widget (Lebar 4/12) -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-8">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-chart-pie mr-2 text-blue-500"></i>
+                        Ringkasan
+                    </h3>
                     
-                    <!-- Student Statistics (Calculated via JS) -->
-                    <div id="currentStudentStats" class="space-y-2 hidden">
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                <span class="text-gray-600">Ringan</span>
+                    <!-- Toggle Button -->
+                    <div class="bg-gray-100 p-1 rounded-lg flex text-xs font-medium">
+                        <button id="btnStatsGlobal" class="px-3 py-1.5 rounded-md bg-white shadow-sm text-gray-900 transition-all">
+                            Global
+                        </button>
+                        <button id="btnStatsStudent" class="px-3 py-1.5 rounded-md text-gray-500 hover:text-gray-900 transition-all">
+                            Siswa Ini
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Stats Content -->
+                <div class="space-y-4">
+                    <!-- Donut Chart Visualization (CSS Only) -->
+                    <div class="flex justify-center py-4">
+                        <div class="relative w-40 h-40">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <!-- Background Circle -->
+                                <path class="text-gray-100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+                                <!-- Dynamic Circle (Calculated via JS) -->
+                                <path id="statsCircle" class="text-blue-500 transition-all duration-1000 ease-out" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-3xl font-bold text-gray-900" id="displayTotalStats">0</span>
+                                <span class="text-xs font-semibold uppercase text-gray-400 mt-1">Kasus</span>
                             </div>
-                            <span class="font-semibold text-gray-900" id="student-stat-ringan">0</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                                <span class="text-gray-600">Sedang</span>
-                            </div>
-                            <span class="font-semibold text-gray-900" id="student-stat-sedang">0</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center">
-                                <span class="w-2 h-2 bg-red-600 rounded-full mr-2"></span>
-                                <span class="text-gray-600">Berat</span>
-                            </div>
-                            <span class="font-semibold text-gray-900" id="student-stat-berat">0</span>
                         </div>
                     </div>
 
-                    <!-- Progress Bar -->
-                    <div class="pt-2 border-t border-gray-100 mt-2">
-                        <div class="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden flex" id="student-category-progress">
-                            <div class="h-full transition-all duration-500 flex-shrink-0" style="width: 0%; background-color: #22c55e;"></div>
-                            <div class="h-full transition-all duration-500 flex-shrink-0" style="width: 0%; background-color: #f97316;"></div>
-                            <div class="h-full transition-all duration-500 flex-shrink-0" style="width: 0%; background-color: #dc2626;"></div>
+                    <!-- Legend -->
+                    <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+                        <div class="flex justify-between items-center text-sm group cursor-default">
+                            <div class="flex items-center">
+                                <span class="w-3 h-3 rounded-full bg-green-500 mr-3 shadow-sm group-hover:scale-110 transition-transform"></span>
+                                <span class="text-gray-600 font-medium">Ringan</span>
+                            </div>
+                            <span class="font-bold text-gray-900" id="stat-ringan">0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm group cursor-default">
+                            <div class="flex items-center">
+                                <span class="w-3 h-3 rounded-full bg-yellow-500 mr-3 shadow-sm group-hover:scale-110 transition-transform"></span>
+                                <span class="text-gray-600 font-medium">Sedang</span>
+                            </div>
+                            <span class="font-bold text-gray-900" id="stat-sedang">0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm group cursor-default">
+                            <div class="flex items-center">
+                                <span class="w-3 h-3 rounded-full bg-red-600 mr-3 shadow-sm group-hover:scale-110 transition-transform"></span>
+                                <span class="text-gray-600 font-medium">Berat</span>
+                            </div>
+                            <span class="font-bold text-gray-900" id="stat-berat">0</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Column: History Timeline -->
-        <div class="lg:col-span-2">
-            <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <i class="fas fa-history text-gray-400 mr-2"></i> Riwayat Pelanggaran
-            </h2>
+        <!-- Right Column: Timeline (Lebar 8/12) -->
+        <div class="lg:col-span-8">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[800px]">
+                <div class="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center backdrop-blur-sm">
+                    <h2 class="text-lg font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-history text-gray-400 mr-3"></i> 
+                        Riwayat Pelanggaran
+                    </h2>
+                    <span class="text-xs text-gray-500 bg-white border border-gray-200 px-3 py-1 rounded-full shadow-sm">
+                        Terurut dari terbaru
+                    </span>
+                </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                {% if student.violations %}
-                    <div class="flow-root">
-                        <ul role="list" class="divide-y divide-gray-200 violation-list-container">
+                <!-- Scrollable Container -->
+                <div class="overflow-y-auto flex-1 p-8 custom-scrollbar relative">
+                    {% if student.violations %}
+                        <!-- Vertical Line -->
+                        <div class="absolute left-[47px] top-8 bottom-8 w-0.5 bg-gray-200"></div>
+
+                        <div class="space-y-8 violation-list-container relative">
                             {% for v in student.violations|sort(attribute='date_posted', reverse=True) %}
-                            <li class="p-6 hover:bg-gray-50 transition-colors violation-item"
-                                data-kategori="{{ v.kategori_pelanggaran }}">
-                                <div class="flex items-start space-x-4">
-                                    <div class="flex-shrink-0 mt-1">
-                                        {% if v.points <= 10 %}
-                                            <span class="flex items-center justify-center h-8 w-8 rounded-full bg-green-100 text-green-600 category-indicator" data-type="Ringan">
-                                                <i class="fas fa-check-circle"></i>
-                                            </span>
-                                        {% elif v.points <= 20 %}
-                                            <span class="flex items-center justify-center h-8 w-8 rounded-full bg-yellow-100 text-yellow-600 category-indicator" data-type="Sedang">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                            </span>
-                                        {% else %}
-                                            <span class="flex items-center justify-center h-8 w-8 rounded-full bg-red-100 text-red-600 category-indicator" data-type="Berat">
-                                                <i class="fas fa-times-circle"></i>
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex flex-col sm:flex-row sm:justify-between mb-1">
-                                            <p class="text-sm font-medium text-gray-900 truncate">
-                                                {{ v.description }}
-                                            </p>
-                                            <div class="text-xs text-gray-500 whitespace-nowrap mt-1 sm:mt-0 flex items-center">
-                                                <i class="far fa-calendar-alt mr-1"></i>
-                                                {{ v.tanggal_dicatat.strftime('%d %B %Y, %H:%M') }}
+                            <div class="relative pl-12 violation-item group" data-kategori="{{ v.kategori_pelanggaran }}">
+                                
+                                <!-- Timeline Dot -->
+                                <div class="absolute left-0 top-1.5 w-8 h-8 rounded-full border-4 border-white shadow-md flex items-center justify-center z-10 
+                                    {% if v.points <= 10 %}bg-green-100 text-green-600
+                                    {% elif v.points <= 20 %}bg-yellow-100 text-yellow-600
+                                    {% else %}bg-red-100 text-red-600{% endif %} category-indicator" 
+                                    data-type="{{ v.kategori_pelanggaran }}">
+                                    {% if v.points <= 10 %}<i class="fas fa-check text-xs"></i>
+                                    {% elif v.points <= 20 %}<i class="fas fa-exclamation text-xs"></i>
+                                    {% else %}<i class="fas fa-times text-xs"></i>{% endif %}
+                                </div>
+
+                                <!-- Card Content -->
+                                <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:border-blue-200 group-hover:bg-blue-50/30">
+                                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
+                                        <div class="w-full">
+                                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-md border tracking-wide uppercase 
+                                                    {% if v.kategori_pelanggaran == 'Ringan' %}bg-green-50 text-green-700 border-green-200
+                                                    {% elif v.kategori_pelanggaran == 'Sedang' %}bg-yellow-50 text-yellow-700 border-yellow-200
+                                                    {% elif v.kategori_pelanggaran == 'Berat' %}bg-red-50 text-red-700 border-red-200{% endif %}">
+                                                    {{ v.kategori_pelanggaran or 'Umum' }}
+                                                </span>
+                                                <span class="text-xs text-gray-300 mx-1">|</span>
+                                                <span class="text-xs text-gray-500 font-medium flex items-center">
+                                                    <i class="far fa-calendar mr-1.5"></i>
+                                                    {{ v.tanggal_dicatat.strftime('%d %B %Y') }}
+                                                </span>
+                                                <span class="text-xs text-gray-400 flex items-center">
+                                                    <i class="far fa-clock mr-1.5"></i>
+                                                    {{ v.tanggal_dicatat.strftime('%H:%M') }} WIB
+                                                </span>
                                             </div>
+                                            <h3 class="text-gray-900 font-bold text-lg leading-snug">
+                                                {{ v.description }}
+                                            </h3>
                                         </div>
-                                        <div class="flex items-center text-sm text-gray-500 mt-2">
-                                            <span class="bg-gray-100 px-2 py-0.5 rounded text-xs font-mono mr-2">
-                                                +{{ v.points }} Poin
-                                            </span>
-                                            {% if v.kategori_pelanggaran %}
-                                            <span class="text-xs border border-gray-200 px-2 py-0.5 rounded
-                                                {% if v.kategori_pelanggaran == 'Ringan' %}bg-green-50 text-green-700 border-green-200
-                                                {% elif v.kategori_pelanggaran == 'Sedang' %}bg-yellow-50 text-yellow-700 border-yellow-200
-                                                {% elif v.kategori_pelanggaran == 'Berat' %}bg-red-50 text-red-700 border-red-200{% endif %}">
-                                                {{ v.kategori_pelanggaran }}
-                                            </span>
-                                            {% endif %}
+                                    </div>
+
+                                    <div class="flex items-center justify-between pt-4 border-t border-gray-100 mt-2">
+                                        <div class="text-xs text-gray-500 flex items-center">
+                                            <div class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center mr-2 text-gray-400">
+                                                <i class="fas fa-user text-[10px]"></i>
+                                            </div>
+                                            <span class="mr-1">Pelapor:</span> 
+                                            <span class="font-medium text-gray-700">{{ v.di_input_oleh or 'Admin' }}</span>
                                         </div>
-                                        {% if v.di_input_oleh %}
-                                        <p class="text-xs text-gray-400 mt-2">
-                                            Dicatat oleh: {{ v.di_input_oleh }}
-                                        </p>
-                                        {% endif %}
                                         
                                         {% if v.bukti_file %}
-                                        <div class="mt-3">
-                                            <a href="{{ url_for('static', filename='uploads/' + v.bukti_file) }}" target="_blank" class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800">
-                                                <i class="fas fa-paperclip mr-1"></i> Lihat Bukti Foto
-                                            </a>
-                                        </div>
+                                        <button onclick='openEvidenceModal(
+                                            {{ {"url": url_for("static", filename="uploads/" + v.bukti_file), 
+                                                "desc": v.description, 
+                                                "date": v.tanggal_dicatat.strftime("%d %B %Y"), 
+                                                "category": v.kategori_pelanggaran, 
+                                                "reporter": v.di_input_oleh}|tojson }}
+                                        )' 
+                                        class="inline-flex items-center px-4 py-2 bg-white text-blue-600 text-xs font-semibold rounded-lg hover:bg-blue-50 hover:text-blue-700 shadow-sm transition-all border border-blue-100 group-hover:border-blue-200">
+                                            <i class="fas fa-camera mr-2"></i> Lihat Bukti
+                                        </button>
                                         {% endif %}
                                     </div>
                                 </div>
-                            </li>
+                            </div>
                             {% endfor %}
-                        </ul>
-                    </div>
-                {% else %}
-                    <div class="p-12 text-center">
-                        <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                            <i class="fas fa-award text-green-600 text-xl"></i>
                         </div>
-                        <h3 class="mt-2 text-sm font-medium text-gray-900">Siswa Teladan</h3>
-                        <p class="mt-1 text-sm text-gray-500">Belum ada catatan pelanggaran untuk siswa ini.</p>
-                    </div>
-                {% endif %}
+                    {% else %}
+                        <div class="h-full flex flex-col items-center justify-center text-center p-10">
+                            <div class="w-24 h-24 bg-gradient-to-br from-green-50 to-green-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                                <i class="fas fa-award text-5xl text-green-500"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Siswa Teladan!</h3>
+                            <p class="text-gray-500 max-w-xs mx-auto">
+                                Belum ada catatan pelanggaran yang terekam dalam sistem untuk siswa ini.
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Data Passing Aman (Pattern yang diminta) -->
+<!-- ELEGANT EVIDENCE MODAL -->
+<div id="evidenceModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
+    <!-- Backdrop with Blur -->
+    <div class="absolute inset-0 bg-gray-900/90 backdrop-blur-md transition-opacity duration-300 ease-out opacity-0" id="modalBackdrop" onclick="closeEvidenceModal()"></div>
+    
+    <!-- Modal Card (Centered) -->
+    <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+        <div class="bg-white w-full max-w-4xl h-[80vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto" id="modalContent">
+            
+            <!-- Left: Image Area (Dark) -->
+            <div class="md:w-7/12 h-1/2 md:h-full bg-black relative flex items-center justify-center group overflow-hidden">
+                <div class="absolute inset-0 bg-cover bg-center opacity-30 blur-2xl transform scale-110" id="modalBgBlur"></div>
+                <img id="modalImg" src="" alt="Bukti Pelanggaran" class="relative max-h-full max-w-full object-contain z-10 transition-transform duration-500 shadow-2xl">
+                
+                <!-- Zoom Hint -->
+                <div class="absolute bottom-6 right-6 bg-black/40 text-white/80 text-xs px-3 py-1.5 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity border border-white/10">
+                    <i class="fas fa-search-plus mr-1"></i> Zoom
+                </div>
+            </div>
+
+            <!-- Right: Details Area -->
+            <div class="md:w-5/12 h-1/2 md:h-full bg-white flex flex-col">
+                <!-- Header -->
+                <div class="px-8 py-8 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span id="modalCategoryBadge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm">
+                                Kategori
+                            </span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900 leading-tight">Bukti Pelanggaran</h2>
+                        <div class="flex items-center text-sm text-gray-500 mt-2">
+                            <i class="far fa-calendar-alt mr-2"></i>
+                            <span id="modalDate">Tanggal</span>
+                        </div>
+                    </div>
+                    <button onclick="closeEvidenceModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-500 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Scrollable Content -->
+                <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                    <div class="mb-8">
+                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Kronologis Kejadian</h4>
+                        <div class="relative">
+                            <div class="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-full"></div>
+                            <p id="modalDesc" class="text-gray-800 text-base leading-relaxed pl-5">
+                                Deskripsi kejadian...
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 rounded-2xl p-5 border border-blue-100">
+                        <div class="flex items-center mb-1">
+                            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-2 text-xs">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <span class="text-xs font-bold text-blue-800 uppercase tracking-wide">Pelapor</span>
+                        </div>
+                        <div id="modalReporter" class="text-lg font-bold text-gray-900 pl-8">Nama</div>
+                    </div>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="p-8 border-t border-gray-100">
+                    <a id="modalDownload" href="#" download class="flex items-center justify-center w-full py-3.5 px-6 bg-gray-900 text-white rounded-xl font-semibold hover:bg-black transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
+                        <i class="fas fa-download mr-2"></i> Download Bukti Foto
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Sources -->
 <script id="global-stats-json" type="application/json">
 {
     "ringan": {{ total_ringan if total_ringan is defined else 0 }},
@@ -211,95 +300,154 @@
 }
 </script>
 
+<style>
+    /* Custom Scrollbar for sleek look */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1;
+        border-radius: 20px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: #94a3b8;
+    }
+</style>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // --- Helper: Parse JSON data ---
-        function getJsonData(elementId) {
-            try {
-                return JSON.parse(document.getElementById(elementId).textContent);
-            } catch (e) {
-                console.error("Error parsing JSON data", e);
-                return {ringan: 0, sedang: 0, berat: 0};
-            }
+    // --- Evidence Modal Logic ---
+    const modal = document.getElementById('evidenceModal');
+    const backdrop = document.getElementById('modalBackdrop');
+    const content = document.getElementById('modalContent');
+    
+    // UI Elements
+    const mImg = document.getElementById('modalImg');
+    const mBg = document.getElementById('modalBgBlur');
+    const mDesc = document.getElementById('modalDesc');
+    const mDate = document.getElementById('modalDate');
+    const mReporter = document.getElementById('modalReporter');
+    const mDownload = document.getElementById('modalDownload');
+    const mBadge = document.getElementById('modalCategoryBadge');
+
+    function openEvidenceModal(data) {
+        // Populate Data
+        mImg.src = data.url;
+        mBg.style.backgroundImage = `url('${data.url}')`;
+        mDesc.textContent = data.desc;
+        mDate.textContent = data.date;
+        mReporter.textContent = data.reporter || "Admin";
+        mDownload.href = data.url;
+
+        // Styling Badge
+        mBadge.textContent = data.category || "Umum";
+        if (data.category === 'Ringan') {
+            mBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm bg-green-50 text-green-700 border-green-200";
+        } else if (data.category === 'Sedang') {
+            mBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm bg-yellow-50 text-yellow-700 border-yellow-200";
+        } else {
+            mBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm bg-red-50 text-red-700 border-red-200";
         }
 
-        // --- Calculate Student specific stats from DOM elements ---
-        function calculateStudentStats() {
-            const items = document.querySelectorAll('.violation-item');
-            let stats = { ringan: 0, sedang: 0, berat: 0 };
-            
-            items.forEach(item => {
-                // Check category from data attribute or visual indicator
-                const indicator = item.querySelector('.category-indicator');
-                if (indicator) {
-                    const type = indicator.getAttribute('data-type');
-                    if (type === 'Ringan') stats.ringan++;
-                    else if (type === 'Sedang') stats.sedang++;
-                    else if (type === 'Berat') stats.berat++;
-                }
-            });
-            return stats;
-        }
-
-        // --- Update UI Display ---
-        function updateStatsDisplay(stats) {
-            document.getElementById('student-stat-ringan').textContent = stats.ringan;
-            document.getElementById('student-stat-sedang').textContent = stats.sedang;
-            document.getElementById('student-stat-berat').textContent = stats.berat;
-            
-            // Progress Bar
-            const total = stats.ringan + stats.sedang + stats.berat;
-            const container = document.getElementById('student-category-progress');
-            
-            if (total > 0 && container) {
-                const pRingan = (stats.ringan / total) * 100;
-                const pSedang = (stats.sedang / total) * 100;
-                const pBerat = (stats.berat / total) * 100;
-                
-                container.innerHTML = `
-                    <div class="h-full transition-all duration-500" style="width: ${pRingan}%; background-color: #22c55e;"></div>
-                    <div class="h-full transition-all duration-500" style="width: ${pSedang}%; background-color: #f97316;"></div>
-                    <div class="h-full transition-all duration-500" style="width: ${pBerat}%; background-color: #dc2626;"></div>
-                `;
-            }
-        }
-
-        // --- Toggle Logic ---
-        const toggleBtn = document.getElementById('toggleStudentStats');
-        const globalStatsDiv = document.getElementById('globalStudentStats');
-        const currentStatsDiv = document.getElementById('currentStudentStats');
-        const modeLabel = document.getElementById('studentStatsMode');
-        
-        // Get Data
-        const globalStats = getJsonData('global-stats-json');
-        const studentStats = calculateStudentStats();
-
-        // Initial render (if student stats view is default or pre-calculated)
-        // Note: HTML defaults to showing Global stats div.
-        
-        toggleBtn.addEventListener('click', function() {
-            // Animasi kecil
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => this.style.transform = 'scale(1)', 100);
-
-            if (globalStatsDiv.classList.contains('hidden')) {
-                // Switch to Global
-                globalStatsDiv.classList.remove('hidden');
-                currentStatsDiv.classList.add('hidden');
-                modeLabel.textContent = 'Global';
-                this.classList.replace('bg-green-50', 'bg-blue-50');
-                this.classList.replace('text-green-600', 'text-blue-600');
-            } else {
-                // Switch to Student
-                globalStatsDiv.classList.add('hidden');
-                currentStatsDiv.classList.remove('hidden');
-                modeLabel.textContent = 'Siswa Ini';
-                this.classList.replace('bg-blue-50', 'bg-green-50');
-                this.classList.replace('text-blue-600', 'text-green-600');
-                
-                updateStatsDisplay(studentStats);
-            }
+        // Show Animation
+        modal.classList.remove('hidden');
+        // Small delay for CSS transition
+        requestAnimationFrame(() => {
+            backdrop.classList.remove('opacity-0');
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
         });
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeEvidenceModal() {
+        backdrop.classList.add('opacity-0');
+        content.classList.remove('scale-100', 'opacity-100');
+        content.classList.add('scale-95', 'opacity-0');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+            mImg.src = '';
+        }, 300);
+    }
+
+    // --- Statistics Toggle Logic ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnGlobal = document.getElementById('btnStatsGlobal');
+        const btnStudent = document.getElementById('btnStatsStudent');
+        const displayTotal = document.getElementById('displayTotalStats');
+        const statsCircle = document.getElementById('statsCircle');
+        
+        // Element Angka
+        const elRingan = document.getElementById('stat-ringan');
+        const elSedang = document.getElementById('stat-sedang');
+        const elBerat = document.getElementById('stat-berat');
+
+        // Data Sources
+        function getGlobalStats() {
+            try { return JSON.parse(document.getElementById('global-stats-json').textContent); }
+            catch { return {ringan:0, sedang:0, berat:0}; }
+        }
+
+        function getStudentStats() {
+            const items = document.querySelectorAll('.violation-item');
+            let s = { ringan: 0, sedang: 0, berat: 0 };
+            items.forEach(item => {
+                const cat = item.getAttribute('data-kategori');
+                if(cat === 'Ringan') s.ringan++;
+                else if(cat === 'Sedang') s.sedang++;
+                else if(cat === 'Berat') s.berat++;
+            });
+            return s;
+        }
+
+        const globalData = getGlobalStats();
+        const studentData = getStudentStats();
+
+        function updateUI(data, isGlobal) {
+            // Update Text
+            elRingan.textContent = data.ringan;
+            elSedang.textContent = data.sedang;
+            elBerat.textContent = data.berat;
+
+            const total = data.ringan + data.sedang + data.berat;
+            displayTotal.textContent = total;
+
+            // Simple Circle Animation (Percentage of 100 max for visual demo)
+            // In real app, maybe calculate relative to max expected
+            const percentage = Math.min((total / (isGlobal ? 1000 : 50)) * 100, 100); 
+            const dashArray = `${percentage}, 100`;
+            statsCircle.setAttribute('stroke-dasharray', dashArray);
+            
+            // Color Shift
+            if(total > 20) statsCircle.classList.replace('text-blue-500', 'text-red-500');
+            else if(total > 10) statsCircle.classList.replace('text-blue-500', 'text-yellow-500');
+            else statsCircle.classList.remove('text-red-500', 'text-yellow-500'), statsCircle.classList.add('text-blue-500');
+        }
+
+        // Init
+        updateUI(globalData, true);
+
+        // Events
+        btnGlobal.addEventListener('click', () => {
+            btnGlobal.className = "px-3 py-1.5 rounded-md bg-white shadow-sm text-gray-900 transition-all";
+            btnStudent.className = "px-3 py-1.5 rounded-md text-gray-500 hover:text-gray-900 transition-all";
+            updateUI(globalData, true);
+        });
+
+        btnStudent.addEventListener('click', () => {
+            btnStudent.className = "px-3 py-1.5 rounded-md bg-white shadow-sm text-gray-900 transition-all";
+            btnGlobal.className = "px-3 py-1.5 rounded-md text-gray-500 hover:text-gray-900 transition-all";
+            updateUI(studentData, false);
+        });
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeEvidenceModal();
     });
 </script>
 {% endblock %}
