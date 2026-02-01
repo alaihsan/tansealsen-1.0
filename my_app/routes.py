@@ -1,8 +1,9 @@
 import os
 import secrets
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import render_template, url_for, flash, redirect, request, abort, Blueprint, jsonify, current_app
 from sqlalchemy.orm import joinedload
+from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from my_app.extensions import db, bcrypt
 from my_app.models import User, Student, Violation, Classroom
@@ -41,7 +42,6 @@ def home():
     
     # Apply date filter
     if date_range:
-        from datetime import timedelta
         today = datetime.utcnow()
         if date_range == 'today':
             query = query.filter(Violation.date_posted >= today.replace(hour=0, minute=0, second=0))
@@ -153,7 +153,6 @@ def view_class(class_id):
 
 # --- FITUR PELANGGARAN ---
 
-# [FIX] API Endpoint untuk mengambil data siswa berdasarkan kelas (AJAX)
 @main.route("/api/students/<class_name>")
 @login_required
 def get_students_by_class(class_name):
@@ -164,17 +163,14 @@ def get_students_by_class(class_name):
         students.sort()
         return jsonify(students)
     else:
-        # Kelas tidak ditemukan atau kosong
         return jsonify([])
 
 @main.route("/add_violation", methods=['GET', 'POST'])
 @login_required
 def add_violation():
-    # Mengambil list kelas untuk validasi atau keperluan lain jika perlu
     classes = Classroom.query.order_by(Classroom.name).all()
     
     if request.method == 'POST':
-        # Ambil data dari form HTML yang baru
         class_name = request.form.get('kelas')
         student_name = request.form.get('nama_murid')
         description = request.form.get('deskripsi')
@@ -183,7 +179,6 @@ def add_violation():
         tanggal_str = request.form.get('tanggal_kejadian')
         di_input_oleh = request.form.get('di_input_oleh')
         
-        # Mapping Kategori ke Poin (Sesuai kesepakatan)
         points = 0
         if kategori == 'Ringan':
             points = 5
@@ -192,44 +187,35 @@ def add_violation():
         elif kategori == 'Berat':
             points = 30
             
-        # Validasi dasar
         if not (class_name and student_name and description and kategori):
             flash('Mohon lengkapi data wajib (Kelas, Nama, Kategori, Deskripsi).', 'danger')
             return redirect(url_for('main.add_violation'))
 
-        # Cari ID Siswa berdasarkan Nama dan Kelas
         classroom = Classroom.query.filter_by(name=class_name).first()
         student = None
         if classroom:
             student = Student.query.filter_by(name=student_name, classroom_id=classroom.id).first()
         
         if student:
-            # Handle Upload Bukti (Opsional)
             filename = None
             if 'bukti_file' in request.files:
                 file = request.files['bukti_file']
                 if file and file.filename:
-                    # Pastikan folder uploads ada
                     upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
                     if not os.path.exists(upload_folder):
                         os.makedirs(upload_folder)
                         
                     fname = secure_filename(file.filename)
-                    # Tambahkan timestamp agar unik
                     import time
                     timestamp = str(int(time.time()))
                     filename = f"{timestamp}_{fname}"
                     file.save(os.path.join(upload_folder, filename))
 
-            # Simpan Pelanggaran
-            
-            # Parsing tanggal kejadian
             try:
                 date_posted = datetime.strptime(tanggal_str, '%d/%m/%Y')
             except (ValueError, TypeError):
                 date_posted = datetime.utcnow()
 
-            # Create object with all fields
             violation = Violation(
                 description=description,
                 points=points,
@@ -283,42 +269,81 @@ def logout():
 @main.route("/statistics")
 @login_required
 def statistics():
-    custom_range = request.args.get('custom_range', '')
+    # 1. Penanganan Filter Waktu untuk Tren
+    trend_range = request.args.get('trend_range', '7d') # Default 7 hari
     
-    total_violations = Violation.query.count()
-    total_students = Student.query.count()
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=7) # Default
     
-    # Filter stats
-    ringan_violations = Violation.query.filter(Violation.points <= 10).count()
-    sedang_violations = Violation.query.filter(Violation.points.between(11, 20)).count()
-    berat_violations = Violation.query.filter(Violation.points > 20).count()
+    if trend_range == '30d':
+        start_date = end_date - timedelta(days=30)
+    elif trend_range == '90d':
+        start_date = end_date - timedelta(days=90)
+    elif trend_range == '180d':
+        start_date = end_date - timedelta(days=180)
     
-    # Today's stats
-    from datetime import timedelta
+    # 2. Distribusi Kategori (Pie Chart)
+    # Menghitung total per kategori tanpa filter waktu (All time)
+    # Jika ingin filter waktu juga, tambahkan .filter(Violation.date_posted >= ...)
+    cat_ringan = Violation.query.filter_by(kategori_pelanggaran='Ringan').count()
+    cat_sedang = Violation.query.filter_by(kategori_pelanggaran='Sedang').count()
+    cat_berat = Violation.query.filter_by(kategori_pelanggaran='Berat').count()
+    
+    # Handle jika tidak ada kategori spesifik (data lama)
+    cat_others = Violation.query.filter(
+        Violation.kategori_pelanggaran.notin_(['Ringan', 'Sedang', 'Berat'])
+    ).count()
+    
+    pie_data = [cat_ringan, cat_sedang, cat_berat]
+    
+    # 3. Top 5 Pelanggar HARI INI
     today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-    today_violations = Violation.query.filter(Violation.date_posted >= today).all()
-    today_ringan = len([v for v in today_violations if v.points <= 10])
-    today_sedang = len([v for v in today_violations if 11 <= v.points <= 20])
-    today_berat = len([v for v in today_violations if v.points > 20])
+    tomorrow = today + timedelta(days=1)
     
-    # Top violators
-    top_violators = db.session.query(
-        Student.id.label('student_id'),
-        Student.name,
-        db.func.count(Violation.id).label('violation_count'),
-        db.func.sum(Violation.points).label('total_points')
-    ).join(Violation).group_by(Student.id, Student.name).order_by(db.func.sum(Violation.points).desc()).limit(10).all()
+    top_today = db.session.query(
+        Student,
+        func.count(Violation.id).label('count'),
+        func.sum(Violation.points).label('total_points')
+    ).join(Violation).filter(
+        Violation.date_posted >= today,
+        Violation.date_posted < tomorrow
+    ).group_by(Student.id).order_by(func.sum(Violation.points).desc()).limit(5).all()
     
-    stats_data = {
-        'total_violations': total_violations,
-        'total_students': total_students,
-        'ringan_violations': ringan_violations,
-        'sedang_violations': sedang_violations,
-        'berat_violations': berat_violations,
-        'today_ringan': today_ringan,
-        'today_sedang': today_sedang,
-        'today_berat': today_berat,
-        'custom_range': custom_range
-    }
+    # 4. Data Tren (Line Chart)
+    # Query group by date
+    daily_stats = db.session.query(
+        func.date(Violation.date_posted).label('date'),
+        func.count(Violation.id).label('count')
+    ).filter(
+        Violation.date_posted >= start_date
+    ).group_by(
+        func.date(Violation.date_posted)
+    ).all()
     
-    return render_template('statistics.html', stats_data=stats_data, top_violators=top_violators)
+    # Konversi ke Dictionary untuk memudahkan pengisian tanggal yang kosong (0 data)
+    stats_dict = {str(stat.date): stat.count for stat in daily_stats}
+    
+    trend_labels = []
+    trend_data = []
+    
+    # Loop dari start_date sampai end_date untuk mengisi grafik
+    current_date = start_date
+    while current_date <= end_date:
+        date_str = current_date.strftime('%Y-%m-%d')
+        # Format label agar cantik (misal: 01 Feb)
+        label_str = current_date.strftime('%d %b')
+        
+        trend_labels.append(label_str)
+        trend_data.append(stats_dict.get(date_str, 0)) # Isi 0 jika tidak ada data
+        
+        current_date += timedelta(days=1)
+        
+    return render_template(
+        'statistics.html',
+        pie_data=pie_data,
+        top_today=top_today,
+        trend_labels=trend_labels,
+        trend_data=trend_data,
+        current_range=trend_range,
+        total_violations_today=sum(item.count for item in top_today) if top_today else 0
+    )

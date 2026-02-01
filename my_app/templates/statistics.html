@@ -2,447 +2,290 @@
 
 {% block title %}Statistik Pelanggaran{% endblock %}
 
-{% block head %}
-    {{ super() }}
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script> <!-- Load locale ID -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/statistics.css') }}">
-{% endblock %}
-
 {% block content %}
-<div class="stats-page">
-    <!-- Header -->
-    <header class="stats-header">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                <div class="flex items-center space-x-4">
-                    <i class="fas fa-chart-line text-3xl text-white"></i>
-                    <div>
-                        <h1 class="text-2xl font-bold text-white">Dashboard Statistik</h1>
-                        <p class="text-sm text-indigo-200">Analisis Data Pelanggaran Murid</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <a href="{{ url_for('main.home') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Kembali
-                    </a>
-                    <button onclick="exportPDF()" class="btn btn-primary">
-                        <i class="fas fa-file-pdf mr-2"></i>
-                        Export ke PDF
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
+<!-- Load Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
-        <!-- Filter Section -->
-        <div class="filter-bar">
-            <h3 class="filter-bar-title">
-                <i class="fas fa-filter mr-2"></i>
-                Filter Data
-            </h3>
-            
-            <!-- Quick Filters -->
-            <div class="quick-filters">
-                <a href="{{ url_for('main.statistics', custom_range='today') }}" class="quick-filter-btn {% if stats_data.custom_range == 'today' %}active{% endif %}">Hari Ini</a>
-                <a href="{{ url_for('main.statistics', custom_range='this_week') }}" class="quick-filter-btn {% if stats_data.custom_range == 'this_week' %}active{% endif %}">Minggu Ini</a>
-                <a href="{{ url_for('main.statistics', custom_range='this_month') }}" class="quick-filter-btn {% if stats_data.custom_range == 'this_month' %}active{% endif %}">Bulan Ini</a>
-                <a href="{{ url_for('main.statistics', custom_range='last_7_days') }}" class="quick-filter-btn {% if stats_data.custom_range == 'last_7_days' %}active{% endif %}">7 Hari Terakhir</a>
-            </div>
-
-            <!-- Custom Date Filter -->
-            <form method="GET" action="{{ url_for('main.statistics') }}" class="custom-filter-form" id="statsFilterForm">
-                <div class="date-picker-wrapper">
-                    <i class="fas fa-calendar-alt date-picker-icon"></i>
-                    <!-- Input utama untuk range picker -->
-                    <input type="text" id="date_range_picker" name="date_range" placeholder="Pilih rentang tanggal..." class="date-picker-input">
-                    
-                    <!-- Hidden inputs untuk start_date dan end_date yang akan dikirim ke server -->
-                    <input type="hidden" id="start_date" name="start_date" value="{{ stats_data.start_date }}">
-                    <input type="hidden" id="end_date" name="end_date" value="{{ stats_data.end_date }}">
-                </div>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-search"></i> Terapkan
-                </button>
-                <a href="{{ url_for('main.statistics') }}" class="btn btn-secondary">
-                    <i class="fas fa-undo"></i> Reset
-                </a>
-            </form>
-        </div>
-
-        <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Filtered Range Stats -->
-            <div class="stat-card blue">
-                <div class="stat-card-header">
-                    <i class="fas fa-calendar-check stat-card-icon"></i>
-                    <div class="text-right">
-                        <p class="stat-card-title">Total (Filter)</p>
-                        <p class="stat-card-value">{{ stats_data.total }}</p>
-                    </div>
-                </div>
-                <div class="stat-card-body">
-                    <div class="stat-item"><span class="font-bold text-green-500">{{ stats_data.ringan }}</span> Ringan</div>
-                    <div class="stat-item"><span class="font-bold text-yellow-500">{{ stats_data.sedang }}</span> Sedang</div>
-                    <div class="stat-item"><span class="font-bold text-red-500">{{ stats_data.berat }}</span> Berat</div>
-                </div>
-            </div>
-
-            <!-- Today's Stats -->
-            <div class="stat-card green">
-                <div class="stat-card-header">
-                    <i class="fas fa-calendar-day stat-card-icon"></i>
-                    <div class="text-right">
-                        <p class="stat-card-title">Total (Hari Ini)</p>
-                        <p class="stat-card-value">{{ stats_data.today_ringan + stats_data.today_sedang + stats_data.today_berat }}</p>
-                    </div>
-                </div>
-                <div class="stat-card-body">
-                    <div class="stat-item"><span class="font-bold text-green-600">{{ stats_data.today_ringan }}</span> Ringan</div>
-                    <div class="stat-item"><span class="font-bold text-yellow-600">{{ stats_data.today_sedang }}</span> Sedang</div>
-                    <div class="stat-item"><span class="font-bold text-red-600">{{ stats_data.today_berat }}</span> Berat</div>
-                </div>
-            </div>
-
-            <!-- Top Violators -->
-            <div class="col-span-1 md:col-span-2 lg:col-span-2 bg-white rounded-xl shadow-md p-6">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-trophy text-yellow-500 mr-3"></i>
-                    Top 5 Pelanggar Bulan Ini
-                </h3>
-                <div class="space-y-3">
-                    {% if top_violators %}
-                        {% for violator in top_violators %}
-                        <a href="{{ url_for('main.student_history', student_id=violator.student_id) }}" class="violator-item-link">
-                            <div class="violator-item">
-                                <span class="violator-rank">#{{ loop.index }}</span>
-                                <div class="flex-grow">
-                                    <p class="violator-name">{{ violator.nama_murid }}</p>
-                                    <p class="violator-count">{{ violator.count }} Pelanggaran</p>
-                                </div>
-                                {% if violator.latest_date %}
-                                <span class="violator-date">{{ violator.latest_date.strftime('%d %b %Y') }}</span>
-                                {% endif %}
-                            </div>
-                        </a>
-                        {% endfor %}
-                    {% else %}
-                        <div class="text-center py-8 text-gray-500">
-                            <i class="fas fa-check-circle text-4xl text-gray-300 mb-3"></i>
-                            <p>Tidak ada data pelanggaran bulan ini.</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- Pie Chart -->
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-chart-pie text-blue-500 mr-3"></i>
-                    Distribusi Pelanggaran (Filter Aktif)
-                </h3>
-                <div class="relative h-64">
-                    <canvas id="pieChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Bar Chart -->
-            <div class="bg-white rounded-xl shadow-md p-6">
-                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                    <i class="fas fa-chart-bar text-green-500 mr-3"></i>
-                    Perbandingan Hari Ini vs Filter
-                </h3>
-                <div class="relative h-64">
-                    <canvas id="barChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Trend Chart -->
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-chart-line text-purple-500 mr-3"></i>
-                Tren Pelanggaran 7 Hari Terakhir
-            </h3>
-            <div class="relative h-80">
-                <canvas id="trendChart"></canvas>
-            </div>
-        </div>
-    </main>
-</div>
-{% endblock %}
-
-{% block scripts %}
-    {{ super() }}
-    <script src="{{ url_for('static', filename='js/statistics.js') }}"></script>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     
-    <!-- Embed data securely to avoid syntax errors in editors -->
-    <script id="stats-data-json" type="application/json">
-        {{ stats_data | tojson | safe }}
-    </script>
+    <!-- Header Navigation -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Analitik & Statistik</h1>
+            <p class="text-gray-500 text-sm mt-1">Pemantauan data pelanggaran secara real-time</p>
+        </div>
+        <a href="{{ url_for('main.home') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors">
+            <i class="fas fa-arrow-left mr-2"></i> Kembali ke Dashboard
+        </a>
+    </div>
 
-    <script>
-        // Parse the JSON data from the script tag
-        let statsData = {};
-        try {
-            const jsonElement = document.getElementById('stats-data-json');
-            if (jsonElement) {
-                statsData = JSON.parse(jsonElement.textContent);
-            }
-        } catch (e) {
-            console.error("Error parsing stats data:", e);
-            // Default fallback
-            statsData = {
-                total: 0, ringan: 0, sedang: 0, berat: 0,
-                today_ringan: 0, today_sedang: 0, today_berat: 0,
-                start_date: '', end_date: ''
-            };
-        }
-
-        // Initialize charts and datepicker when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeCharts();
-            initializeDateRangePicker();
-        });
-
-        function initializeDateRangePicker() {
-            // Konfigurasi Flatpickr agar sesuai dengan format server (d/m/Y)
-            flatpickr("#date_range_picker", {
-                mode: "range",
-                locale: "id",
-                dateFormat: "d/m/Y", // Format yang dikirim ke server (Wajib d/m/Y)
-                altInput: true,
-                altFormat: "d F Y",  // Format tampilan user friendly
-                theme: "light",
-                defaultDate: [
-                    statsData.start_date ? formatDateForFlatpickr(statsData.start_date) : null, 
-                    statsData.end_date ? formatDateForFlatpickr(statsData.end_date) : null
-                ],
-                onChange: function(selectedDates, dateStr, instance) {
-                    // Update hidden inputs ketika tanggal berubah
-                    if (selectedDates.length === 2) {
-                        // Format ke string YYYY-MM-DD untuk hidden input jika backend utils.py mengharapkannya
-                        // TAPI, berdasarkan utils.py:
-                        // get_date_filter_from_args membaca 'date_range' langsung atau 'start_date'/'end_date'.
-                        // Jika 'date_range' formatnya "d/m/Y to d/m/Y", kita harus sesuaikan di utils.py atau
-                        // pastikan formatnya konsisten.
-                        // Di sini kita biarkan 'date_range' input text mengirim nilai sesuai dateFormat (d/m/Y).
-                        // Jadi server akan menerima "31/01/2025 to 02/02/2025".
-                        
-                        // KITA PERLU UPDATE utils.py AGAR MENERIMA d/m/Y JUGA DI date_range_str
-                        // ATAU KITA UBAH HIDDEN INPUTS.
-                        
-                        // Strategi paling aman tanpa ubah banyak backend:
-                        // Biarkan form submit 'date_range' string. Backend utils.py harus parse string itu.
-                        // Saat ini utils.py parse '%Y-%m-%d'.
-                        // Jadi kita harus ubah dateFormat Flatpickr di sini ke 'Y-m-d' 
-                        // ATAU ubah utils.py.
-                        
-                        // Permintaan user: "samain deh dengan sistem date di sisi server"
-                        // Server (models.py) pakai DD/MM/YYYY.
-                        // TAPI utils.py _get_date_filter_from_args mencoba parse YYYY-MM-DD.
-                        
-                        // SOLUSI:
-                        // Kita set dateFormat Flatpickr ini ke 'Y-m-d' agar utils.py (yang sudah ada) bisa baca.
-                        // TAPI user minta "samain". 
-                        // Jika backend mengharapkan DD/MM/YYYY untuk penyimpanan, tapi YYYY-MM-DD untuk filtering,
-                        // maka kita ikuti cara filtering.
-                        
-                        // Mari kita lihat utils.py di history:
-                        // if " to " in date_range_str: parts = date_range_str.split(" to "); datetime.strptime(parts[0], '%Y-%m-%d')
-                        
-                        // Jadi Utils mengharapkan Y-m-d.
-                        // TAPI user komplain "Format tanggal tidak valid. Gunakan format DD/MM/YYYY" di Add Violation.
-                        // Di Statistics, ini hanya filter.
-                        
-                        // Mari kita set hidden inputs dengan format Y-m-d untuk backend processing yang mudah,
-                        // tapi visual input tetap user friendly.
-                        
-                        document.getElementById('start_date').value = instance.formatDate(selectedDates[0], "Y-m-d");
-                        document.getElementById('end_date').value = instance.formatDate(selectedDates[1], "Y-m-d");
-                    }
-                }
-            });
-        }
+    <!-- ROW 1: Top 5 Hari Ini & Distribusi Kategori -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         
-        // Helper untuk ubah YYYY-MM-DD (dari server stats_data) ke format Date object
-        function formatDateForFlatpickr(dateStr) {
-            if (!dateStr) return null;
-            // Asumsi dateStr dari server formatnya YYYY-MM-DD (standard SQL date string)
-            return dateStr; 
+        <!-- KOLOM KIRI: Top 5 Pelanggar Hari Ini (Lebar 2) -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-red-50 to-white flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-calendar-day text-red-500 mr-2"></i> 
+                    Top 5 Pelanggar Hari Ini
+                </h3>
+                <span class="text-xs font-medium bg-red-100 text-red-700 px-2 py-1 rounded-full">
+                    {{ total_violations_today }} Kasus Tercatat
+                </span>
+            </div>
+            
+            <div class="p-0 overflow-x-auto flex-grow">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jml Kasus</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori (Hari Ini)</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% if top_today %}
+                            {% for item in top_today %}
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs mr-3">
+                                            {{ item.Student.name[:2] }}
+                                        </div>
+                                        <div class="text-sm font-medium text-gray-900">{{ item.Student.name }}</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ item.Student.classroom.name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        {{ item.count }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <!-- PERUBAHAN: Menampilkan Badge Kategori berdasarkan Total Poin -->
+                                    {% if item.total_points <= 10 %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                            Ringan
+                                        </span>
+                                    {% elif item.total_points <= 20 %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                            Sedang
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                                            Berat
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="{{ url_for('main.student_history', student_id=item.Student.id) }}" class="text-blue-600 hover:text-blue-900">
+                                        <i class="fas fa-external-link-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <i class="fas fa-check-circle text-4xl text-green-200 mb-3"></i>
+                                        <p class="font-medium">Belum ada pelanggaran hari ini.</p>
+                                        <p class="text-xs text-gray-400">Luar biasa! Pertahankan kedisiplinan.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- KOLOM KANAN: Distribusi Kategori (Lebar 1) -->
+        <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800">Distribusi Kategori</h3>
+            </div>
+            <div class="p-6 flex-grow flex flex-col items-center justify-center">
+                <div class="relative h-64 w-full">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <!-- Custom Legend -->
+                <div class="mt-4 grid grid-cols-3 gap-2 w-full text-center text-xs text-gray-600">
+                    <div class="flex flex-col items-center">
+                        <span class="block w-3 h-3 rounded-full bg-green-500 mb-1"></span>
+                        <span>Ringan</span>
+                        <span class="font-bold text-gray-900">{{ pie_data[0] }}</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <span class="block w-3 h-3 rounded-full bg-yellow-500 mb-1"></span>
+                        <span>Sedang</span>
+                        <span class="font-bold text-gray-900">{{ pie_data[1] }}</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <span class="block w-3 h-3 rounded-full bg-red-500 mb-1"></span>
+                        <span>Berat</span>
+                        <span class="font-bold text-gray-900">{{ pie_data[2] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROW 2: Tren Pelanggaran -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800">Tren Pelanggaran</h3>
+                <p class="text-sm text-gray-500">Jumlah kasus per hari dalam periode waktu terpilih.</p>
+            </div>
+            
+            <!-- Filter Buttons -->
+            <div class="inline-flex bg-gray-100 p-1 rounded-lg">
+                <a href="{{ url_for('main.statistics', trend_range='7d') }}" 
+                   class="px-3 py-1.5 rounded-md text-xs font-medium transition-all {{ 'bg-white text-blue-600 shadow-sm' if current_range == '7d' else 'text-gray-500 hover:text-gray-700' }}">
+                   7 Hari
+                </a>
+                <a href="{{ url_for('main.statistics', trend_range='30d') }}" 
+                   class="px-3 py-1.5 rounded-md text-xs font-medium transition-all {{ 'bg-white text-blue-600 shadow-sm' if current_range == '30d' else 'text-gray-500 hover:text-gray-700' }}">
+                   1 Bulan
+                </a>
+                <a href="{{ url_for('main.statistics', trend_range='90d') }}" 
+                   class="px-3 py-1.5 rounded-md text-xs font-medium transition-all {{ 'bg-white text-blue-600 shadow-sm' if current_range == '90d' else 'text-gray-500 hover:text-gray-700' }}">
+                   3 Bulan
+                </a>
+                <a href="{{ url_for('main.statistics', trend_range='180d') }}" 
+                   class="px-3 py-1.5 rounded-md text-xs font-medium transition-all {{ 'bg-white text-blue-600 shadow-sm' if current_range == '180d' else 'text-gray-500 hover:text-gray-700' }}">
+                   6 Bulan
+                </a>
+            </div>
+        </div>
+        
+        <div class="relative h-80 w-full">
+            <canvas id="trendChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- DATA CONTAINERS: Pattern Aman untuk Data JavaScript -->
+<script id="pie-data-json" type="application/json">{{ pie_data | tojson }}</script>
+<script id="trend-labels-json" type="application/json">{{ trend_labels | tojson }}</script>
+<script id="trend-data-json" type="application/json">{{ trend_data | tojson }}</script>
+
+<script>
+    // --- Data Parsing Helper ---
+    function getJsonData(elementId) {
+        try {
+            return JSON.parse(document.getElementById(elementId).textContent);
+        } catch (e) {
+            console.error("Error parsing JSON data for " + elementId, e);
+            return [];
         }
+    }
 
-        function initializeCharts() {
-            // Pie Chart - Distribution of violations
-            const pieCtx = document.getElementById('pieChart').getContext('2d');
-            new Chart(pieCtx, {
-                type: 'pie',
-                data: {
-                    labels: ['Ringan', 'Sedang', 'Berat'],
-                    datasets: [{
-                        data: [statsData.ringan, statsData.sedang, statsData.berat],
-                        backgroundColor: [
-                            'rgba(34, 197, 94, 0.8)',
-                            'rgba(250, 204, 21, 0.8)',
-                            'rgba(239, 68, 68, 0.8)'
-                        ],
-                        borderColor: [
-                            'rgba(34, 197, 94, 1)',
-                            'rgba(250, 204, 21, 1)',
-                            'rgba(239, 68, 68, 1)'
-                        ],
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
-                            }
+    // --- 1. Category Chart (Pie/Doughnut) ---
+    const ctxPie = document.getElementById('categoryChart').getContext('2d');
+    const pieDataRaw = getJsonData('pie-data-json'); // [Ringan, Sedang, Berat]
+    
+    // Check if empty
+    const totalData = pieDataRaw.reduce((a, b) => a + b, 0);
+    const pieData = totalData === 0 ? [0, 0, 0] : pieDataRaw;
+
+    new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+            labels: ['Ringan', 'Sedang', 'Berat'],
+            datasets: [{
+                data: pieData,
+                backgroundColor: [
+                    '#10B981', // Green-500
+                    '#F59E0B', // Yellow-500
+                    '#EF4444'  // Red-500
+                ],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: { display: false }, // Use custom legend
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' ' + context.label + ': ' + context.raw + ' Kasus';
                         }
                     }
                 }
-            });
-
-            // Bar Chart - Comparison between today and filter
-            const barCtx = document.getElementById('barChart').getContext('2d');
-            new Chart(barCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Ringan', 'Sedang', 'Berat'],
-                    datasets: [
-                        {
-                            label: 'Filter Aktif',
-                            data: [statsData.ringan, statsData.sedang, statsData.berat],
-                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 2
-                        },
-                        {
-                            label: 'Hari Ini',
-                            data: [statsData.today_ringan, statsData.today_sedang, statsData.today_berat],
-                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                            borderColor: 'rgba(16, 185, 129, 1)',
-                            borderWidth: 2
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                padding: 15,
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Trend Chart - Last 7 days trend
-            const trendCtx = document.getElementById('trendChart').getContext('2d');
-            new Chart(trendCtx, {
-                type: 'line',
-                data: {
-                    labels: ['6 hari lalu', '5 hari lalu', '4 hari lalu', '3 hari lalu', '2 hari lalu', 'Kemarin', 'Hari Ini'],
-                    datasets: [
-                        {
-                            label: 'Ringan',
-                            data: [2, 3, 1, 4, 2, 3, statsData.today_ringan],
-                            borderColor: 'rgba(34, 197, 94, 1)',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        },
-                        {
-                            label: 'Sedang',
-                            data: [1, 2, 3, 2, 1, 2, statsData.today_sedang],
-                            borderColor: 'rgba(250, 204, 21, 1)',
-                            backgroundColor: 'rgba(250, 204, 21, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        },
-                        {
-                            label: 'Berat',
-                            data: [0, 1, 0, 1, 0, 1, statsData.today_berat],
-                            borderColor: 'rgba(239, 68, 68, 1)',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                padding: 15,
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
-                    },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
-                    }
-                }
-            });
+            }
         }
-    </script>
+    });
+
+    // --- 2. Trend Chart (Line) ---
+    const ctxTrend = document.getElementById('trendChart').getContext('2d');
+    const trendLabels = getJsonData('trend-labels-json');
+    const trendData = getJsonData('trend-data-json');
+
+    new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: trendLabels,
+            datasets: [{
+                label: 'Jumlah Pelanggaran',
+                data: trendData,
+                borderColor: '#3B82F6', // Blue-500
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderWidth: 2,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#3B82F6',
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.3 // Smooth curves
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1, // Ensure integer steps
+                        precision: 0
+                    },
+                    grid: {
+                        borderDash: [2, 4],
+                        color: '#E5E7EB'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                    titleColor: '#F3F4F6',
+                    bodyColor: '#F3F4F6',
+                    padding: 10,
+                    cornerRadius: 8,
+                    displayColors: false
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}
