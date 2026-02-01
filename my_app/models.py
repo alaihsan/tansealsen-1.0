@@ -6,7 +6,6 @@ from datetime import datetime
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
-    # KEMBALI KE 'password' AGAR ROUTES.PY TIDAK ERROR
     password = db.Column(db.String(150), nullable=False)
     
     # role = db.Column(db.String(50)) 
@@ -20,7 +19,6 @@ class User(db.Model, UserMixin):
 class Classroom(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False, unique=True)
-    # Uncomment baris di bawah ini agar relasi backref 'classroom' tersedia di Student
     students = db.relationship('Student', backref='classroom', lazy=True)
 
 class Student(db.Model):
@@ -28,7 +26,6 @@ class Student(db.Model):
     name = db.Column(db.String(100), nullable=False)
     nis = db.Column(db.String(20), unique=True, nullable=False)
     
-    # Uncomment baris di bawah ini agar kolom classroom_id tersedia di database
     classroom_id = db.Column(db.Integer, db.ForeignKey('classroom.id'))
     rombel = db.Column(db.String(50)) 
 
@@ -40,6 +37,25 @@ class Violation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String(255), nullable=False)
     points = db.Column(db.Integer, nullable=False)
-    # PERBAIKAN: Ganti 'date' menjadi 'date_posted' agar sesuai dengan routes.py
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+
+    # Kolom Tambahan
+    pasal = db.Column(db.String(50), nullable=True)
+    kategori_pelanggaran = db.Column(db.String(50), nullable=True)
+    di_input_oleh = db.Column(db.String(100), nullable=True)
+    bukti_file = db.Column(db.String(255), nullable=True)
+
+    # --- PERBAIKAN DISINI ---
+    # Property Helper agar 'p.tanggal_kejadian' di HTML bisa membaca 'date_posted'
+    @property
+    def tanggal_kejadian(self):
+        # Mengembalikan tanggal dalam format string "DD/MM/YYYY" (contoh: 01/02/2026)
+        if self.date_posted:
+            return self.date_posted.strftime('%d/%m/%Y')
+        return "-"
+
+    @property
+    def tanggal_dicatat(self):
+        # Helper untuk student_history.html yang membutuhkan object datetime asli
+        return self.date_posted

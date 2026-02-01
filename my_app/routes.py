@@ -1,7 +1,9 @@
 import os
 import secrets
-from flask import render_template, url_for, flash, redirect, request, abort, Blueprint
+from datetime import datetime
+from flask import render_template, url_for, flash, redirect, request, abort, Blueprint, jsonify, current_app
 from sqlalchemy.orm import joinedload
+from werkzeug.utils import secure_filename
 from my_app.extensions import db, bcrypt
 from my_app.models import User, Student, Violation, Classroom
 from flask_login import login_user, current_user, logout_user, login_required
@@ -14,8 +16,6 @@ main = Blueprint('main', __name__)
 @main.route("/index")
 @login_required
 def home():
-    from flask import request
-    
     # Get query parameters
     page = request.args.get('page', 1, type=int)
     per_page = 10
@@ -41,7 +41,7 @@ def home():
     
     # Apply date filter
     if date_range:
-        from datetime import datetime, timedelta
+        from datetime import timedelta
         today = datetime.utcnow()
         if date_range == 'today':
             query = query.filter(Violation.date_posted >= today.replace(hour=0, minute=0, second=0))
@@ -70,7 +70,7 @@ def home():
                            category_filter=category,
                            date_range_value=date_range)
 
-# --- MANAJEMEN KELAS (Baru) ---
+# --- MANAJEMEN KELAS ---
 
 @main.route("/classes", methods=['GET', 'POST'])
 @login_required
@@ -95,7 +95,6 @@ def manage_classes():
 @login_required
 def delete_class(class_id):
     classroom = Classroom.query.get_or_404(class_id)
-    # Opsional: Cek apakah ada murid sebelum menghapus
     if classroom.students:
         flash('Tidak bisa menghapus kelas yang masih memiliki murid. Pindahkan atau hapus murid terlebih dahulu.', 'danger')
     else:
@@ -108,7 +107,7 @@ def delete_class(class_id):
 @login_required
 def view_class(class_id):
     classroom = Classroom.query.get_or_404(class_id)
-    all_classes = Classroom.query.filter(Classroom.id != class_id).order_by(Classroom.name).all() # Untuk dropdown mutasi
+    all_classes = Classroom.query.filter(Classroom.id != class_id).order_by(Classroom.name).all()
 
     # Logic Import/Tambah Murid Cepat
     if request.method == 'POST' and 'import_students' in request.form:
@@ -119,8 +118,6 @@ def view_class(class_id):
             for name in names_list:
                 clean_name = name.strip()
                 if clean_name:
-                    # Generate NIS dummy atau ambil dari input jika ada format khusus
-                    # Di sini kita pakai timestamp/random sederhana untuk NIS unik
                     dummy_nis = secrets.token_hex(4) 
                     student = Student(name=clean_name, nis=dummy_nis, classroom=classroom)
                     db.session.add(student)
@@ -140,8 +137,7 @@ def view_class(class_id):
                 for stud_id in selected_student_ids:
                     student = Student.query.get(stud_id)
                     if student:
-                        student.classroom = target_class # Update kelas (Mutasi)
-                        # Catatan: History violation TETAP tersimpan di student.violations
+                        student.classroom = target_class
                 
                 db.session.commit()
                 flash(f'{len(selected_student_ids)} murid berhasil dipindahkan ke {target_class.name}.', 'success')
@@ -155,34 +151,110 @@ def view_class(class_id):
     return render_template('detailkelas.html', classroom=classroom, all_classes=all_classes)
 
 
-# --- FITUR PELANGGARAN (Existing, Adjusted) ---
+# --- FITUR PELANGGARAN ---
+
+# [FIX] API Endpoint untuk mengambil data siswa berdasarkan kelas (AJAX)
+@main.route("/api/students/<class_name>")
+@login_required
+def get_students_by_class(class_name):
+    classroom = Classroom.query.filter_by(name=class_name).first()
+    if classroom:
+        # Mengambil nama siswa dan mengurutkannya
+        students = [student.name for student in classroom.students]
+        students.sort()
+        return jsonify(students)
+    else:
+        # Kelas tidak ditemukan atau kosong
+        return jsonify([])
 
 @main.route("/add_violation", methods=['GET', 'POST'])
 @login_required
 def add_violation():
-    # Mengambil semua siswa untuk dropdown pencarian
-    students = Student.query.all()
+    # Mengambil list kelas untuk validasi atau keperluan lain jika perlu
+    classes = Classroom.query.order_by(Classroom.name).all()
+    
     if request.method == 'POST':
-        student_id = request.form.get('student_id')
-        description = request.form.get('description')
-        points = request.form.get('points')
+        # Ambil data dari form HTML yang baru
+        class_name = request.form.get('kelas')
+        student_name = request.form.get('nama_murid')
+        description = request.form.get('deskripsi')
+        pasal = request.form.get('pasal')
+        kategori = request.form.get('kategori_pelanggaran')
+        tanggal_str = request.form.get('tanggal_kejadian')
+        di_input_oleh = request.form.get('di_input_oleh')
+        
+        # Mapping Kategori ke Poin (Sesuai kesepakatan)
+        points = 0
+        if kategori == 'Ringan':
+            points = 5
+        elif kategori == 'Sedang':
+            points = 15
+        elif kategori == 'Berat':
+            points = 30
+            
+        # Validasi dasar
+        if not (class_name and student_name and description and kategori):
+            flash('Mohon lengkapi data wajib (Kelas, Nama, Kategori, Deskripsi).', 'danger')
+            return redirect(url_for('main.add_violation'))
 
-        if student_id and description and points:
-            violation = Violation(description=description, points=int(points), student_id=student_id)
+        # Cari ID Siswa berdasarkan Nama dan Kelas
+        classroom = Classroom.query.filter_by(name=class_name).first()
+        student = None
+        if classroom:
+            student = Student.query.filter_by(name=student_name, classroom_id=classroom.id).first()
+        
+        if student:
+            # Handle Upload Bukti (Opsional)
+            filename = None
+            if 'bukti_file' in request.files:
+                file = request.files['bukti_file']
+                if file and file.filename:
+                    # Pastikan folder uploads ada
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+                    if not os.path.exists(upload_folder):
+                        os.makedirs(upload_folder)
+                        
+                    fname = secure_filename(file.filename)
+                    # Tambahkan timestamp agar unik
+                    import time
+                    timestamp = str(int(time.time()))
+                    filename = f"{timestamp}_{fname}"
+                    file.save(os.path.join(upload_folder, filename))
+
+            # Simpan Pelanggaran
+            
+            # Parsing tanggal kejadian
+            try:
+                date_posted = datetime.strptime(tanggal_str, '%d/%m/%Y')
+            except (ValueError, TypeError):
+                date_posted = datetime.utcnow()
+
+            # Create object with all fields
+            violation = Violation(
+                description=description,
+                points=points,
+                date_posted=date_posted,
+                student_id=student.id,
+                pasal=pasal,
+                kategori_pelanggaran=kategori,
+                di_input_oleh=di_input_oleh,
+                bukti_file=filename
+            )
+            
             db.session.add(violation)
             db.session.commit()
+            
             flash('Pelanggaran berhasil dicatat!', 'success')
             return redirect(url_for('main.home'))
         else:
-            flash('Mohon lengkapi semua form.', 'danger')
-            
-    return render_template('add_violation.html', students=students, form_data={})
+            flash(f'Siswa "{student_name}" tidak ditemukan di kelas {class_name}.', 'danger')
+
+    return render_template('add_violation.html', form_data={}, classes=classes)
 
 @main.route("/student/<int:student_id>")
 @login_required
 def student_history(student_id):
     student = Student.query.get_or_404(student_id)
-    # Menghitung total poin
     total_points = sum(v.points for v in student.violations)
     return render_template('student_history.html', student=student, total_points=total_points)
 
@@ -211,20 +283,18 @@ def logout():
 @main.route("/statistics")
 @login_required
 def statistics():
-    # Get query parameters
     custom_range = request.args.get('custom_range', '')
     
-    # Basic stats
     total_violations = Violation.query.count()
     total_students = Student.query.count()
     
-    # Category stats
+    # Filter stats
     ringan_violations = Violation.query.filter(Violation.points <= 10).count()
     sedang_violations = Violation.query.filter(Violation.points.between(11, 20)).count()
     berat_violations = Violation.query.filter(Violation.points > 20).count()
     
     # Today's stats
-    from datetime import datetime, timedelta
+    from datetime import timedelta
     today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     today_violations = Violation.query.filter(Violation.date_posted >= today).all()
     today_ringan = len([v for v in today_violations if v.points <= 10])
