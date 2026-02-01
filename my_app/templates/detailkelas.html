@@ -57,9 +57,9 @@
                                                 <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer">
                                             </div>
                                         </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">NIS</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID Murid</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Murid</th>
-                                        <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Poin</th>
+                                        <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Pelanggaran</th>
                                         <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
@@ -72,20 +72,10 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{{ student.nis }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 group-hover:text-primary transition-colors">{{ student.name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                            {% set total = student.violations|sum(attribute='points') %}
-                                            {% if total > 50 %}
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    {{ total }}
-                                                </span>
-                                            {% elif total > 20 %}
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                    {{ total }}
-                                                </span>
-                                            {% else %}
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    {{ total }}
-                                                </span>
-                                            {% endif %}
+                                            {% set violation_count = student.violations|length %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if violation_count > 0 %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                                {{ violation_count }} Kasus
+                                            </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ url_for('main.student_history', student_id=student.id) }}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition-colors">
