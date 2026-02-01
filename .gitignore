@@ -14,6 +14,8 @@ my_app/static/uploads/
 # Python cache
 __pycache__/
 *.pyc
+*.py[cod]
+*$py.class
 
 # Database files
 *.db
