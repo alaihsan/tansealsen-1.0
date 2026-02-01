@@ -1,54 +1,150 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h2>Manajemen Kelas</h2>
-            <p class="text-muted">Buat dan kelola daftar kelas sekolah.</p>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header Section -->
+    <div class="md:flex md:items-center md:justify-between mb-8">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                Manajemen Kelas
+            </h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Kelola daftar kelas dan pantau jumlah murid di setiap kelas.
+            </p>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4">
+            <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-primary to-secondary hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 transform hover:scale-105">
+                <i class="fas fa-plus mr-2"></i>
+                Buat Kelas Baru
+            </button>
         </div>
     </div>
 
-    <!-- Form Tambah Kelas -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">+ Buat Kelas Baru</h5>
-        </div>
-        <div class="card-body">
-            <form method="POST" action="{{ url_for('main.manage_classes') }}" class="form-inline">
-                <div class="form-group mb-2 mr-2">
-                    <label for="class_name" class="sr-only">Nama Kelas</label>
-                    <input type="text" class="form-control" id="class_name" name="class_name" placeholder="Contoh: X IPA 1" required>
-                </div>
-                <button type="submit" class="btn btn-success mb-2">Simpan Kelas</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Daftar Kelas -->
-    <div class="row">
+    <!-- Class Grid -->
+    {% if classes %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {% for classroom in classes %}
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 border-left-primary shadow-sm">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h4 class="card-title text-dark font-weight-bold">{{ classroom.name }}</h4>
-                        <p class="card-text text-muted">{{ classroom.students|length }} Murid</p>
-                        <a href="{{ url_for('main.view_class', class_id=classroom.id) }}" class="btn btn-sm btn-outline-primary">Lihat Detail & Murid</a>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 overflow-hidden group">
+            <!-- Card Header -->
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-lg bg-blue-50 text-primary flex items-center justify-center text-xl font-bold group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+                        {{ classroom.name[:1] }}
                     </div>
-                    
-                    <!-- Tombol Hapus (Hanya jika kosong disarankan) -->
-                    <form action="{{ url_for('main.delete_class', class_id=classroom.id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus kelas ini?');">
-                        <button type="submit" class="btn btn-sm btn-danger" title="Hapus Kelas"><i class="fas fa-trash"></i> X</button>
-                    </form>
+                    <div class="relative">
+                        <!-- Dropdown Menu for Delete (Optional, or direct button) -->
+                         <form action="{{ url_for('main.delete_class', class_id=classroom.id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus kelas {{ classroom.name }}? Data murid di dalamnya harus kosong atau dipindahkan terlebih dahulu.');">
+                            <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-red-50" title="Hapus Kelas">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
+                
+                <h3 class="text-lg font-bold text-gray-900 mb-1">{{ classroom.name }}</h3>
+                <div class="flex items-center text-sm text-gray-500 mb-4">
+                    <i class="fas fa-users mr-2 text-gray-400"></i>
+                    <span>{{ classroom.students|length }} Murid Terdaftar</span>
+                </div>
+
+                <div class="w-full bg-gray-100 rounded-full h-1.5 mb-4">
+                    <!-- Visual bar (dummy percentage based on simple logic, e.g. max 40 students) -->
+                    {% set width = (classroom.students|length / 40 * 100) if (classroom.students|length / 40 * 100) <= 100 else 100 %}
+                    <div class="bg-primary h-1.5 rounded-full" style="width: {{ width }}%"></div>
+                </div>
+
+                <a href="{{ url_for('main.view_class', class_id=classroom.id) }}" class="block w-full text-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">
+                    Lihat Detail & Murid
+                    <i class="fas fa-arrow-right ml-1"></i>
+                </a>
             </div>
-        </div>
-        {% else %}
-        <div class="col-12">
-            <div class="alert alert-info">Belum ada kelas yang dibuat.</div>
         </div>
         {% endfor %}
     </div>
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
+        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-school text-4xl text-gray-400"></i>
+        </div>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">Belum ada kelas</h3>
+        <p class="mt-1 text-sm text-gray-500">Mulai dengan membuat kelas baru untuk sekolah Anda.</p>
+        <div class="mt-6">
+            <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                <i class="fas fa-plus mr-2"></i>
+                Buat Kelas Pertama
+            </button>
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<!-- Add Class Modal -->
+<div id="addClassModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeAddModal()"></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+            <form method="POST" action="{{ url_for('main.manage_classes') }}">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-chalkboard text-blue-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Tambah Kelas Baru
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500 mb-4">
+                                    Masukkan nama kelas yang ingin ditambahkan ke dalam sistem.
+                                </p>
+                                <div>
+                                    <label for="class_name" class="block text-sm font-medium text-gray-700 mb-1">Nama Kelas</label>
+                                    <input type="text" name="class_name" id="class_name" required placeholder="Contoh: IX A, 7 B, X IPA 1" 
+                                           class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md py-2 px-3 border">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:ml-3 sm:w-auto sm:text-sm">
+                        Simpan
+                    </button>
+                    <button type="button" onclick="closeAddModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openAddModal() {
+        const modal = document.getElementById('addClassModal');
+        modal.classList.remove('hidden');
+        // Focus on input
+        setTimeout(() => {
+            document.getElementById('class_name').focus();
+        }, 100);
+    }
+
+    function closeAddModal() {
+        const modal = document.getElementById('addClassModal');
+        modal.classList.add('hidden');
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            closeAddModal();
+        }
+    });
+</script>
 {% endblock %}
