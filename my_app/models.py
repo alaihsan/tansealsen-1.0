@@ -11,7 +11,8 @@ class User(db.Model, UserMixin):
     # role = db.Column(db.String(50)) 
 
     def set_password(self, password):
-        self.password = generate_password_hash(password)
+        # Fix: Explicitly use pbkdf2:sha256 to avoid hashlib.scrypt AttributeError
+        self.password = generate_password_hash(password, method='pbkdf2:sha256')
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
@@ -35,7 +36,8 @@ class Student(db.Model):
 
 class Violation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String(255), nullable=False)
+    # PERUBAHAN: Meningkatkan batas karakter deskripsi menjadi 2000
+    description = db.Column(db.String(2000), nullable=False)
     points = db.Column(db.Integer, nullable=False)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
@@ -46,7 +48,6 @@ class Violation(db.Model):
     di_input_oleh = db.Column(db.String(100), nullable=True)
     bukti_file = db.Column(db.String(255), nullable=True)
 
-    # --- PERBAIKAN DISINI ---
     # Property Helper agar 'p.tanggal_kejadian' di HTML bisa membaca 'date_posted'
     @property
     def tanggal_kejadian(self):

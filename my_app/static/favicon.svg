@@ -1,0 +1,7 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <!-- Latar Belakang Biru (Rounded Square - mirip bg-blue-600) -->
+    <rect width="512" height="512" rx="100" fill="#2563EB"/>
+    
+    <!-- Ikon Perisai Putih (Mirip fa-shield-alt) -->
+    <path d="M256 64L64 144V248C64 358.3 141.6 460.5 256 496C370.4 460.5 448 358.3 448 248V144L256 64Z" fill="white"/>
+</svg>
