@@ -35,7 +35,8 @@ Sangat disarankan untuk menggunakan *virtual environment* (vEnv) agar dependensi
 # 1. Buat vEnv (cukup sekali)
 python -m venv .venv
 
-# 2. Aktifkan vEnv (lakukan setiap kali Anda ingin menjalankan proyek)
+# 2. Aktifkan vEnv di MacOS(lakukan setiap kali Anda ingin menjalankan proyek)
+source ./venv/bin/activate
 
 # Jika Anda menggunakan PowerShell (Windows)
 .\.venv\Scripts\Activate.ps1
@@ -45,10 +46,10 @@ python -m venv .venv
 
 ### 3\. Install Dependensi
 
-Setelah vEnv aktif, install library Python yang diperlukan (`Flask` dan `Flask-SQLAlchemy`).
+Setelah vEnv aktif, install library Python yang diperlukan (`requirements.txt`).
 
 ```bash
-pip install Flask Flask-SQLAlchemy
+pip install requirements.txt
 ```
 
 ## Cara Menjalankan Aplikasi
