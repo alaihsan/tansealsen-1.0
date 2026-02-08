@@ -4,20 +4,21 @@ class Config:
     # Direktori dasar aplikasi
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'kunci_rahasia_yang_sangat_sulit_ditebak_ini_harus_panjang'
+    SECRET_KEY = 'kunci_rahasia_yang_sangat_sulit_ditebak_ini_harus_panjang'
     
-    DB_USERNAME = os.environ.get('DB_USER') or 'root'
-    DB_PASSWORD = os.environ.get('DB_PASS') or 'B1smillah#1'        
-    DB_HOST = os.environ.get('DB_HOST') or 'localhost'
-    DB_NAME = os.environ.get('DB_NAME') or 'tanse_db'
+    # --- KONFIGURASI MYSQL ---
+    # Sesuaikan dengan setting MySQL Workbench Anda
+    DB_USERNAME = 'root'         # Default XAMPP/MySQL biasanya 'root'
+    DB_PASSWORD = 'B1smillah#1'             # Default XAMPP biasanya kosong, sesuaikan jika ada password
+    DB_HOST = 'localhost'        # Server lokal
+    DB_NAME = 'tanse_db'         # Nama database yang baru saja Anda buat
     
-    # Format Connection String untuk MySQL
-    # mysql+pymysql://username:password@host/databasename
+    # Connection String untuk MySQL
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Konfigurasi engine MySQL untuk memastikan support karakter utf8mb4 (emoji, dll)
+    # Opsi tambahan agar koneksi stabil
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_recycle': 280,
         'pool_pre_ping': True,

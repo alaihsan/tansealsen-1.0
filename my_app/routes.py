@@ -5,7 +5,10 @@ from flask import render_template, url_for, flash, redirect, request, abort, Blu
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from werkzeug.utils import secure_filename
-from my_app.extensions import db, bcrypt
+from my_app.extensions import db
+# Hapus 'bcrypt' jika tidak ada di extensions.py, atau pastikan extensions.py mengekspornya.
+# Jika error ImportError, hapus ', bcrypt' di bawah ini:
+from my_app.extensions import db 
 from my_app.models import User, Student, Violation, Classroom
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -226,6 +229,9 @@ def add_violation():
                 di_input_oleh=di_input_oleh,
                 bukti_file=filename
             )
+            
+            # Kurangi Poin Siswa (jika diperlukan)
+            # student.poin -= points
             
             db.session.add(violation)
             db.session.commit()
