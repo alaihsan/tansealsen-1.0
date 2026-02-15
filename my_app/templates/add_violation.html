@@ -6,21 +6,23 @@
 <!-- 1. CSS Langsung di dalam Content agar pasti termuat -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
-<div class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
-    <!-- Page Header -->
-    <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900 flex items-center">
-                <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center mr-3 text-primary">
-                    <i class="fas fa-plus-circle text-xl"></i>
-                </div>
-                Tambah Pelanggaran
-            </h1>
-            <p class="text-gray-500 mt-2 ml-14">Formulir pencatatan kedisiplinan siswa</p>
+<div class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 w-full">
+    <!-- Page Header (Dioptimalkan untuk Mobile) -->
+    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex items-start">
+            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3 text-blue-600 shrink-0 mt-1 sm:mt-0">
+                <i class="fas fa-plus-circle text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl sm:text-3xl font-bold text-gray-900 leading-tight">
+                    Tambah Pelanggaran
+                </h1>
+                <p class="text-gray-500 mt-1 text-xs sm:text-base">Formulir pencatatan kedisiplinan siswa</p>
+            </div>
         </div>
-        <div class="mt-4 sm:mt-0 ml-14 sm:ml-0">
-            <a href="{{ url_for('main.home') }}" class="text-gray-500 hover:text-gray-700 font-medium transition-colors text-sm flex items-center">
-                <i class="fas fa-arrow-left mr-2"></i> Kembali ke Dashboard
+        <div>
+            <a href="{{ url_for('main.home') }}" class="inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm w-full sm:w-auto">
+                <i class="fas fa-arrow-left mr-2"></i> Kembali
             </a>
         </div>
     </div>
@@ -30,12 +32,12 @@
         {% if messages %}
             <div class="mb-6 space-y-2">
                 {% for category, message in messages %}
-                    <div class="p-4 rounded-lg flex items-center justify-between {{ 'bg-green-100 text-green-700 border border-green-200' if category == 'success' else 'bg-red-100 text-red-700 border border-red-200' }}">
-                        <div class="flex items-center">
-                            <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }} mr-3 text-xl"></i>
-                            <span>{{ message }}</span>
+                    <div class="p-4 rounded-lg flex items-start sm:items-center justify-between {{ 'bg-green-50 text-green-700 border border-green-200' if category == 'success' else 'bg-red-50 text-red-700 border border-red-200' }}">
+                        <div class="flex items-start sm:items-center">
+                            <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }} mr-3 text-lg sm:text-xl mt-0.5 sm:mt-0 shrink-0"></i>
+                            <span class="text-sm sm:text-base">{{ message }}</span>
                         </div>
-                        <button onclick="this.parentElement.remove()" class="text-gray-500 hover:text-gray-700">
+                        <button onclick="this.parentElement.remove()" class="text-gray-500 hover:text-gray-700 ml-4 shrink-0">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
@@ -44,37 +46,36 @@
         {% endif %}
     {% endwith %}
 
-    <form method="POST" action="{{ url_for('main.add_violation') }}" enctype="multipart/form-data" id="violationForm" class="space-y-8">
+    <form method="POST" action="{{ url_for('main.add_violation') }}" enctype="multipart/form-data" id="violationForm" class="space-y-6 sm:space-y-8">
         
         <!-- SECTION 1: Informasi Umum (Siswa & Waktu) -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-visible">
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
-                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-user-clock mr-3 text-blue-600"></i>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50">
+                <h2 class="text-base sm:text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-user-clock mr-3 text-blue-600 shrink-0"></i>
                     Informasi Umum
                 </h2>
             </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <!-- Tanggal Kejadian -->
                 <div>
-                    <label for="tanggal_kejadian" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="tanggal_kejadian" class="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                         Tanggal Kejadian <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-calendar-alt text-gray-400"></i>
                         </div>
-                        <!-- Perhatikan value di sini diisi oleh Jinja -->
                         <input type="text" id="tanggal_kejadian" name="tanggal_kejadian" required
                                value="{{ form_data.get('tanggal_kejadian', '') }}"
-                               class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                               class="w-full pl-10 pr-4 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
                                placeholder="Pilih tanggal...">
                     </div>
                 </div>
 
                 <!-- Di Input Oleh -->
                 <div>
-                    <label for="di_input_oleh" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="di_input_oleh" class="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                         Di Input Oleh <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
@@ -82,7 +83,7 @@
                             <i class="fas fa-user-edit text-gray-400"></i>
                         </div>
                         <select id="di_input_oleh" name="di_input_oleh" required
-                                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white appearance-none">
+                                class="w-full pl-10 pr-4 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white appearance-none">
                             <option value="">Pilih Guru / Staff</option>
                             {% set selected_input = form_data.get('di_input_oleh', '') %}
                             <option value="Maylinda Puspita Sari" {% if selected_input == 'Maylinda Puspita Sari' %}selected{% endif %}>Maylinda Puspita Sari</option>
@@ -103,7 +104,7 @@
 
                 <!-- Kelas -->
                 <div>
-                    <label for="kelas" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="kelas" class="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                         Kelas <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
@@ -111,7 +112,7 @@
                             <i class="fas fa-school text-gray-400"></i>
                         </div>
                         <select id="kelas" name="kelas" required
-                                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white appearance-none">
+                                class="w-full pl-10 pr-4 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white appearance-none">
                             <option value="">Pilih Kelas</option>
                             {% set selected_kelas = form_data.get('kelas', '') %}
                             
@@ -120,7 +121,6 @@
                                     <option value="{{ cls.name }}" {% if selected_kelas == cls.name %}selected{% endif %}>{{ cls.name }}</option>
                                 {% endfor %}
                             {% else %}
-                                <!-- Fallback jika classes tidak terload -->
                                 <optgroup label="Kelas 7">
                                     <option value="7A" {% if selected_kelas == '7A' %}selected{% endif %}>7A</option>
                                     <option value="7B" {% if selected_kelas == '7B' %}selected{% endif %}>7B</option>
@@ -149,7 +149,7 @@
 
                 <!-- Nama Murid -->
                 <div class="relative">
-                    <label for="nama_murid" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="nama_murid" class="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                         Nama Siswa <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
@@ -159,7 +159,7 @@
                         <input type="hidden" id="saved_nama_murid" value="{{ form_data.get('nama_murid', '') }}">
                         
                         <select id="nama_murid" name="nama_murid" required disabled
-                                class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-100 appearance-none cursor-not-allowed">
+                                class="w-full pl-10 pr-4 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-100 appearance-none cursor-not-allowed">
                             <option value="">Pilih Kelas Terlebih Dahulu</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -175,18 +175,18 @@
         </div>
 
         <!-- SECTION 2: Detail Pelanggaran -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
-                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-exclamation-triangle mr-3 text-orange-600"></i>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50">
+                <h2 class="text-base sm:text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-3 text-orange-600 shrink-0"></i>
                     Detail Pelanggaran
                 </h2>
             </div>
-            <div class="p-6 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                     <!-- Pasal -->
                     <div class="md:col-span-2">
-                        <label for="pasal" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="pasal" class="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                             Pasal Pelanggaran <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
@@ -194,7 +194,7 @@
                                 <i class="fas fa-book-open text-gray-400"></i>
                             </div>
                             <select id="pasal" name="pasal" required
-                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white appearance-none">
+                                    class="w-full pl-10 pr-4 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white appearance-none">
                                 <option value="">Pilih Pasal Tata Tertib</option>
                                 {% set selected_pasal = form_data.get('pasal', '') %}
                                 <option value="Pasal 1 - Pakaian Seragam Sekolah" {% if selected_pasal == 'Pasal 1 - Pakaian Seragam Sekolah' %}selected{% endif %}>Pasal 1 - Pakaian Seragam Sekolah</option>
@@ -213,7 +213,7 @@
 
                     <!-- Kategori -->
                     <div>
-                        <label for="kategori_pelanggaran" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="kategori_pelanggaran" class="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                             Kategori <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
@@ -221,12 +221,12 @@
                                 <i class="fas fa-tag text-gray-400"></i>
                             </div>
                             <select id="kategori_pelanggaran" name="kategori_pelanggaran" required
-                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white appearance-none">
+                                    class="w-full pl-10 pr-4 py-2.5 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 bg-white appearance-none">
                                 <option value="">Pilih Tingkat</option>
                                 {% set selected_kat = form_data.get('kategori_pelanggaran', '') %}
-                                <option value="Ringan" {% if selected_kat == 'Ringan' %}selected{% endif %}>🟢 Ringan</option>
-                                <option value="Sedang" {% if selected_kat == 'Sedang' %}selected{% endif %}>🟠 Sedang</option>
-                                <option value="Berat" {% if selected_kat == 'Berat' %}selected{% endif %}>🔴 Berat</option>
+                                <option value="Ringan" {% if selected_kat == 'Ringan' %}selected{% endif %}>Ringan</option>
+                                <option value="Sedang" {% if selected_kat == 'Sedang' %}selected{% endif %}>Sedang</option>
+                                <option value="Berat" {% if selected_kat == 'Berat' %}selected{% endif %}>Berat</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
@@ -237,11 +237,11 @@
 
                 <!-- Deskripsi -->
                 <div>
-                    <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                         Kronologi / Deskripsi Kejadian
                     </label>
                     <textarea id="deskripsi" name="deskripsi" rows="4"
-                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 resize-none placeholder-gray-400"
+                              class="w-full px-4 py-3 text-base sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 resize-none placeholder-gray-400"
                               placeholder="Ceritakan detail kejadian secara singkat dan jelas...">{{ form_data.get('deskripsi', '') }}</textarea>
                     <p class="text-xs text-gray-500 mt-1 text-right">Maksimal 500 karakter</p>
                 </div>
@@ -249,54 +249,54 @@
         </div>
 
         <!-- SECTION 3: Bukti Pendukung -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
-                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
-                    <i class="fas fa-camera mr-3 text-purple-600"></i>
-                    Bukti Pendukung <span class="ml-2 text-xs font-normal text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">Opsional</span>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50">
+                <h2 class="text-base sm:text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-camera mr-3 text-purple-600 shrink-0"></i>
+                    Bukti Pendukung <span class="ml-2 text-[10px] sm:text-xs font-normal text-gray-500 bg-gray-200 px-2 py-0.5 rounded-full">Opsional</span>
                 </h2>
             </div>
-            <div class="p-6">
-                <div class="flex flex-col md:flex-row gap-6 items-start justify-center">
+            <div class="p-4 sm:p-6">
+                <div class="flex flex-col md:flex-row gap-4 sm:gap-6 items-start justify-center">
                     <!-- Upload Area -->
                     <div class="w-full md:w-1/2">
                         <label class="block w-full cursor-pointer group">
                             <input type="file" id="bukti_file" name="bukti_file" 
                                    accept="image/png, image/jpeg, image/gif"
                                    class="hidden">
-                            <div class="flex flex-col items-center justify-center w-full h-40 border-2 border-purple-200 border-dashed rounded-xl bg-purple-50/50 group-hover:bg-purple-50 transition-colors duration-200">
-                                <div class="w-12 h-12 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
-                                    <i class="fas fa-cloud-upload-alt text-xl"></i>
+                            <div class="flex flex-col items-center justify-center w-full h-32 sm:h-40 border-2 border-purple-200 border-dashed rounded-xl bg-purple-50 group-hover:bg-purple-100 transition-colors duration-200">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-200 text-purple-700 flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-200">
+                                    <i class="fas fa-cloud-upload-alt text-lg sm:text-xl"></i>
                                 </div>
-                                <p class="text-sm font-medium text-purple-900">Klik untuk upload foto</p>
-                                <p class="text-xs text-purple-500 mt-1">PNG, JPG, atau GIF (Max. 5MB)</p>
+                                <p class="text-xs sm:text-sm font-medium text-purple-900">Klik untuk upload foto</p>
+                                <p class="text-[10px] sm:text-xs text-purple-500 mt-1">PNG, JPG, atau GIF (Max. 5MB)</p>
                             </div>
                         </label>
                     </div>
 
                     <!-- Preview Area -->
                     <div id="filePreview" class="hidden w-full md:w-1/2 border border-gray-200 rounded-xl p-3 bg-gray-50 relative">
-                        <button type="button" onclick="clearFile()" class="absolute top-2 right-2 bg-white rounded-full p-1 shadow-sm text-gray-400 hover:text-red-500 transition-colors">
-                            <i class="fas fa-times-circle"></i>
+                        <button type="button" onclick="clearFile()" class="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-md text-gray-400 hover:text-red-500 transition-colors z-10">
+                            <i class="fas fa-times-circle text-lg"></i>
                         </button>
                         <div class="aspect-video w-full rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
                             <img id="previewImage" class="max-w-full max-h-full object-contain">
                         </div>
-                        <p id="fileName" class="text-xs text-gray-600 mt-2 truncate font-medium text-center"></p>
+                        <p id="fileName" class="text-[10px] sm:text-xs text-gray-600 mt-2 truncate font-medium text-center px-2"></p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-4 border-t border-gray-200">
+        <div class="flex flex-col sm:flex-row justify-end items-stretch sm:items-center gap-3 sm:gap-4 pt-2 sm:pt-4 border-t border-gray-200">
             <button type="button" onclick="clearForm()" 
-                    class="w-full sm:w-auto px-6 py-3 text-gray-600 bg-white border border-gray-300 font-medium rounded-lg hover:bg-gray-50 hover:text-gray-800 transition-all duration-200 flex items-center justify-center">
+                    class="w-full sm:w-auto px-6 py-3 sm:py-2.5 text-gray-700 bg-white border border-gray-300 font-medium rounded-lg hover:bg-gray-100 transition-all duration-200 flex items-center justify-center">
                 <i class="fas fa-undo-alt mr-2"></i>
                 Reset
             </button>
             <button type="button" onclick="validateAndSubmit()" 
-                    class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center transform hover:-translate-y-0.5">
+                    class="w-full sm:w-auto px-8 py-3 sm:py-2.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center transform hover:-translate-y-0.5">
                 <i class="fas fa-save mr-2"></i>
                 Simpan Data
             </button>
@@ -305,49 +305,46 @@
 </div>
 
 <!-- Success Modal -->
-<div id="successModal" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all duration-300 scale-95 opacity-0">
+<div id="successModal" class="fixed inset-0 bg-gray-900/60 z-50 hidden backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm sm:max-w-md w-full p-6 sm:p-8 transform transition-all duration-300 scale-95 opacity-0">
         <div class="text-center">
-            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-check text-4xl text-green-600"></i>
+            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <i class="fas fa-check text-3xl sm:text-4xl text-green-600"></i>
             </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Berhasil Disimpan!</h2>
-            <p class="text-gray-600">Data pelanggaran siswa telah berhasil dicatat ke dalam sistem.</p>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Berhasil Disimpan!</h2>
+            <p class="text-sm sm:text-base text-gray-600">Data pelanggaran siswa telah berhasil dicatat ke dalam sistem.</p>
         </div>
-        <div class="flex flex-col sm:flex-row gap-3 mt-8">
-            <button onclick="closeSuccessModal()" class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 font-medium">
+        <div class="flex flex-col sm:flex-row gap-3 mt-6 sm:mt-8">
+            <button onclick="closeSuccessModal()" class="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors duration-200 font-medium text-sm sm:text-base">
                 Input Lagi
             </button>
-            <button onclick="window.location.href='{{ url_for('main.home') }}'" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 font-medium">
+            <button onclick="window.location.href='{{ url_for('main.home') }}'" class="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors duration-200 font-medium text-sm sm:text-base">
                 Lihat Daftar
             </button>
         </div>
     </div>
 </div>
 
-<!-- 2. JAVASCRIPT Langsung di dalam Content agar pasti tereksekusi -->
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
 
 <script>
-    // Gunakan DOMContentLoaded untuk memastikan elemen HTML sudah siap sebelum script jalan
     document.addEventListener('DOMContentLoaded', function() {
         
         // 1. Initialize Flatpickr (Kalender)
         try {
-            // PERBAIKAN: Ambil nilai awal dari elemen HTML input secara langsung
-            // Ini menghindari penggunaan sintaks Jinja {{ ... }} di dalam blok JavaScript yang menyebabkan error linter
             const dateInput = document.getElementById('tanggal_kejadian');
             const initialDate = dateInput ? dateInput.value : null;
 
             flatpickr("#tanggal_kejadian", {
                 locale: "id",
-                dateFormat: "d/m/Y", // format ke server
-                altInput: true,      // tampilan user friendly
+                dateFormat: "d/m/Y", 
+                altInput: true,      
                 altFormat: "d F Y",
                 theme: "light",
                 defaultDate: initialDate || "today",
-                maxDate: "today"
+                maxDate: "today",
+                disableMobile: "true"
             });
         } catch (e) {
             console.error("Gagal load flatpickr:", e);
@@ -360,7 +357,6 @@
                 loadStudents(this.value);
             });
             
-            // Cek jika ada nilai tersimpan (misal kembali dari error validasi)
             const savedClass = classSelect.value;
             const savedStudent = document.getElementById('saved_nama_murid').value;
             
@@ -400,26 +396,21 @@
 
     // --- GLOBAL FUNCTIONS ---
 
-    // Logic Load Student
     function loadStudents(className, selectedStudent = null) {
         const studentSelect = document.getElementById('nama_murid');
         const loadingIndicator = document.getElementById('loadingStudent');
         
-        // Reset Dropdown
         studentSelect.innerHTML = '<option value="">Pilih Siswa</option>';
         studentSelect.disabled = true;
         studentSelect.classList.add('bg-gray-100', 'cursor-not-allowed');
         studentSelect.classList.remove('bg-white');
         
         if (className) {
-            // Show loading
             if(loadingIndicator) loadingIndicator.classList.remove('hidden');
             
-            // Fetch data
             fetch(`/api/students/${encodeURIComponent(className)}`)
                 .then(response => response.json())
                 .then(data => {
-                    // Bersihkan opsi lagi untuk memastikan
                     studentSelect.innerHTML = '<option value="">Pilih Siswa</option>';
                     
                     if (data && data.length > 0) {
@@ -465,16 +456,13 @@
         if (form) form.reset();
         clearFile();
         
-        // Reset selects
         document.querySelectorAll('select').forEach(select => select.value = "");
         
-        // Reset dropdown siswa
         const studentSelect = document.getElementById('nama_murid');
         studentSelect.innerHTML = '<option value="">Pilih Kelas Terlebih Dahulu</option>';
         studentSelect.disabled = true;
         studentSelect.classList.add('bg-gray-100', 'cursor-not-allowed');
         
-        // Clear Validations
         document.querySelectorAll('.border-red-500').forEach(el => el.classList.remove('border-red-500', 'ring-2', 'ring-red-200'));
     }
 
@@ -484,7 +472,6 @@
         let isValid = true;
         let firstErrorField = null;
         
-        // Clear previous errors
         required.forEach(function(field) {
             const element = document.getElementById(field);
             if (element) element.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
@@ -539,8 +526,8 @@
         else if (type === 'warning') iconClass = 'fa-exclamation-triangle';
 
         const toast = document.createElement('div');
-        toast.className = 'notification-toast fixed top-4 right-4 px-6 py-4 rounded-xl shadow-2xl z-[60] flex items-center space-x-3 transition-all duration-300 ease-in-out translate-x-10 opacity-0 ' + colorClass;
-        toast.innerHTML = '<i class="fas ' + iconClass + ' text-xl"></i><span class="font-medium">' + message + '</span>';
+        toast.className = 'notification-toast fixed top-4 right-4 px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-2xl z-[60] flex items-start sm:items-center space-x-3 transition-all duration-300 ease-in-out translate-x-10 opacity-0 w-[90%] max-w-sm sm:max-w-md ' + colorClass;
+        toast.innerHTML = '<i class="fas ' + iconClass + ' text-lg sm:text-xl mt-0.5 sm:mt-0 shrink-0"></i><span class="font-medium text-sm sm:text-base">' + message + '</span>';
         document.body.appendChild(toast);
         
         requestAnimationFrame(() => toast.classList.remove('translate-x-10', 'opacity-0'));

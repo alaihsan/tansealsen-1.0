@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full">
     
     <!-- Header & Stats -->
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-900 mb-6">Dashboard Kedisiplinan</h1>
+    <div class="mb-6 sm:mb-8">
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Dashboard Kedisiplinan</h1>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
             <!-- Stat 1: Link ke Manajemen Kelas -->
             <a href="{{ url_for('main.manage_classes') }}" class="block group">
-                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500 group-hover:shadow-md transition-shadow">
+                <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 border-l-4 border-blue-500 group-hover:shadow-md transition-shadow">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4 group-hover:bg-blue-200 transition-colors">
-                            <i class="fas fa-users text-xl"></i>
+                        <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4 group-hover:bg-blue-200 transition-colors shrink-0">
+                            <i class="fas fa-users text-lg sm:text-xl"></i>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500 font-medium">Total Siswa</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ total_students }}</p>
+                            <p class="text-xs sm:text-sm text-gray-500 font-medium">Total Siswa</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ total_students }}</p>
                         </div>
                         <div class="ml-auto text-gray-300">
                             <i class="fas fa-chevron-right text-sm"></i>
@@ -28,14 +28,14 @@
             
             <!-- Stat 2: Link ke Statistik -->
             <a href="{{ url_for('main.statistics') }}" class="block group">
-                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-red-500 group-hover:shadow-md transition-shadow">
+                <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 border-l-4 border-red-500 group-hover:shadow-md transition-shadow">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-red-100 text-red-500 mr-4 group-hover:bg-red-200 transition-colors">
-                            <i class="fas fa-exclamation-triangle text-xl"></i>
+                        <div class="p-3 rounded-full bg-red-100 text-red-500 mr-4 group-hover:bg-red-200 transition-colors shrink-0">
+                            <i class="fas fa-exclamation-triangle text-lg sm:text-xl"></i>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500 font-medium">Total Pelanggaran</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ total_violations }}</p>
+                            <p class="text-xs sm:text-sm text-gray-500 font-medium">Total Pelanggaran</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ total_violations }}</p>
                         </div>
                         <div class="ml-auto text-gray-300">
                             <i class="fas fa-chevron-right text-sm"></i>
@@ -46,14 +46,14 @@
             
             <!-- Stat 3: Link ke Manajemen Kelas -->
             <a href="{{ url_for('main.manage_classes') }}" class="block group">
-                <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500 group-hover:shadow-md transition-shadow">
+                <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 border-l-4 border-green-500 group-hover:shadow-md transition-shadow">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4 group-hover:bg-green-200 transition-colors">
-                            <i class="fas fa-school text-xl"></i>
+                        <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4 group-hover:bg-green-200 transition-colors shrink-0">
+                            <i class="fas fa-school text-lg sm:text-xl"></i>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500 font-medium">Total Kelas</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ total_classes }}</p>
+                            <p class="text-xs sm:text-sm text-gray-500 font-medium">Total Kelas</p>
+                            <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ total_classes }}</p>
                         </div>
                         <div class="ml-auto text-gray-300">
                             <i class="fas fa-chevron-right text-sm"></i>
@@ -65,41 +65,44 @@
     </div>
 
     <!-- Filters & Actions -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
-        <div class="p-4 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+        <div class="p-4 sm:p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h2 class="text-lg font-semibold text-gray-800">Daftar Pelanggaran Terbaru</h2>
             
-            <form action="{{ url_for('main.home') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
-                <div class="relative">
+            <form action="{{ url_for('main.home') }}" method="GET" class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <div class="relative w-full sm:w-auto">
                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <i class="fas fa-search"></i>
                     </span>
+                    <!-- PERBAIKAN: Gunakan text-base di mobile agar form tidak auto-zoom di iOS -->
                     <input type="text" name="search" value="{{ search_query }}" placeholder="Cari nama siswa..." 
-                        class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
+                        class="pl-10 pr-4 py-2.5 sm:py-2 border border-gray-300 rounded-lg text-base sm:text-sm focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
                 </div>
                 
-                <select name="category" onchange="this.form.submit()" class="py-2 pl-3 pr-8 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
+                <!-- PERBAIKAN: Gunakan text-base di mobile -->
+                <select name="category" onchange="this.form.submit()" class="w-full sm:w-auto py-2.5 sm:py-2 pl-3 pr-8 border border-gray-300 rounded-lg text-base sm:text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
                     <option value="">Semua Kategori</option>
                     <option value="Ringan" {% if category_filter == 'Ringan' %}selected{% endif %}>Ringan</option>
                     <option value="Sedang" {% if category_filter == 'Sedang' %}selected{% endif %}>Sedang</option>
                     <option value="Berat" {% if category_filter == 'Berat' %}selected{% endif %}>Berat</option>
                 </select>
 
-                <select name="date_range" onchange="this.form.submit()" class="py-2 pl-3 pr-8 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500">
+                <!-- PERBAIKAN: Gunakan text-base di mobile -->
+                <select name="date_range" onchange="this.form.submit()" class="w-full sm:w-auto py-2.5 sm:py-2 pl-3 pr-8 border border-gray-300 rounded-lg text-base sm:text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
                     <option value="">Semua Waktu</option>
                     <option value="today" {% if date_range_value == 'today' %}selected{% endif %}>Hari Ini</option>
                     <option value="week" {% if date_range_value == 'week' %}selected{% endif %}>Minggu Ini</option>
                     <option value="month" {% if date_range_value == 'month' %}selected{% endif %}>Bulan Ini</option>
                 </select>
                 
-                <a href="{{ url_for('main.add_violation') }}" class="inline-flex justify-center items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                <a href="{{ url_for('main.add_violation') }}" class="inline-flex justify-center items-center w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg text-base sm:text-sm font-medium hover:bg-blue-700 transition-colors">
                     <i class="fas fa-plus mr-2"></i> Input
                 </a>
             </form>
         </div>
 
-        <!-- Table -->
-        <div class="overflow-x-auto">
+        <!-- Table (Terkurung rapi oleh overflow-hidden di parent-nya) -->
+        <div class="overflow-x-auto w-full">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -107,7 +110,6 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pelanggaran</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-                        <!-- [REMOVED] Kolom Poin -->
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti</th>
                     </tr>
                 </thead>
@@ -120,7 +122,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs mr-3">
+                                <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs mr-3 shrink-0">
                                     {{ p.student.name[:2] }}
                                 </div>
                                 <div>
@@ -149,7 +151,6 @@
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Berat</span>
                             {% endif %}
                         </td>
-                        <!-- [REMOVED] Data Poin -->
                         <td class="px-6 py-4 whitespace-nowrap text-center">
                             {% if p.bukti_file %}
                                 <button 
@@ -185,6 +186,31 @@
 
         <!-- Pagination -->
         <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            
+            <!-- MOBILE PAGINATION -->
+            <div class="flex flex-1 justify-between sm:hidden w-full">
+                {% if pelanggaran_pagination.has_prev %}
+                    <a href="{{ url_for('main.home', page=pelanggaran_pagination.prev_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Sebelumnya
+                    </a>
+                {% else %}
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
+                        Sebelumnya
+                    </span>
+                {% endif %}
+                
+                {% if pelanggaran_pagination.has_next %}
+                    <a href="{{ url_for('main.home', page=pelanggaran_pagination.next_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ml-3">
+                        Selanjutnya
+                    </a>
+                {% else %}
+                     <span class="relative inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed ml-3">
+                        Selanjutnya
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- DESKTOP PAGINATION -->
             <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
                     <p class="text-sm text-gray-700">
@@ -229,7 +255,7 @@
     </div>
 </div>
 
-<!-- ELEGANT EVIDENCE MODAL (Updated) -->
+<!-- ELEGANT EVIDENCE MODAL -->
 <div id="evidenceModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
     <!-- Backdrop with Blur -->
     <div class="absolute inset-0 bg-gray-900/90 backdrop-blur-md transition-opacity duration-300 ease-out opacity-0" id="modalBackdrop" onclick="closeEvidenceModal()"></div>
@@ -244,7 +270,7 @@
                 <img id="modalImg" src="" alt="Bukti Pelanggaran" class="relative max-h-full max-w-full object-contain z-10 transition-transform duration-500 shadow-2xl">
                 
                 <!-- Zoom Hint -->
-                <div class="absolute bottom-6 right-6 bg-black/40 text-white/80 text-xs px-3 py-1.5 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity border border-white/10">
+                <div class="absolute bottom-6 right-6 bg-black/40 text-white/80 text-xs px-3 py-1.5 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity border border-white/10 hidden sm:block">
                     <i class="fas fa-search-plus mr-1"></i> Zoom
                 </div>
             </div>
@@ -252,65 +278,65 @@
             <!-- Right: Details Area -->
             <div class="md:w-5/12 h-1/2 md:h-full bg-white flex flex-col">
                 <!-- Header -->
-                <div class="px-8 py-8 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
+                <div class="px-6 py-6 sm:px-8 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
                     <div>
-                        <div class="flex items-center gap-2 mb-3">
+                        <div class="flex items-center gap-2 mb-2 sm:mb-3">
                             <span id="modalCategoryBadge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm">
                                 Kategori
                             </span>
                         </div>
-                        <h2 class="text-xl font-bold text-gray-900 leading-tight">Bukti Pelanggaran</h2>
-                        <div class="flex items-center text-sm text-gray-500 mt-2">
+                        <h2 class="text-lg sm:text-xl font-bold text-gray-900 leading-tight">Bukti Pelanggaran</h2>
+                        <div class="flex items-center text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2">
                             <i class="far fa-calendar-alt mr-2"></i>
                             <span id="modalDate">Tanggal</span>
                         </div>
                     </div>
-                    <button onclick="closeEvidenceModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-500 transition-colors">
+                    <button onclick="closeEvidenceModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-500 transition-colors shrink-0">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
 
                 <!-- Scrollable Content -->
-                <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
-                    <!-- Student Info Section (New for Index) -->
-                    <div class="mb-6 border-b border-gray-50 pb-6">
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Siswa</h4>
+                <div class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
+                    <!-- Student Info Section -->
+                    <div class="mb-5 sm:mb-6 border-b border-gray-50 pb-5 sm:pb-6">
+                        <h4 class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Siswa</h4>
                         <div class="flex items-center">
-                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-3 text-sm" id="modalStudentInitials">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-3 text-sm shrink-0" id="modalStudentInitials">
                                 --
                             </div>
                             <div>
-                                <h3 class="font-bold text-gray-900" id="modalStudentName">Nama Siswa</h3>
+                                <h3 class="font-bold text-gray-900 text-sm sm:text-base" id="modalStudentName">Nama Siswa</h3>
                                 <p class="text-xs text-gray-500" id="modalClassName">Kelas</p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mb-8">
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Kronologis Kejadian</h4>
+                    <div class="mb-6 sm:mb-8">
+                        <h4 class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Kronologis Kejadian</h4>
                         <div class="relative">
                             <div class="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-full"></div>
-                            <p id="modalDesc" class="text-gray-800 text-sm leading-relaxed pl-5">
+                            <p id="modalDesc" class="text-gray-800 text-xs sm:text-sm leading-relaxed pl-4 sm:pl-5">
                                 Deskripsi kejadian...
                             </p>
                         </div>
                     </div>
 
-                    <div class="bg-blue-50 rounded-2xl p-5 border border-blue-100">
+                    <div class="bg-blue-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-blue-100">
                         <div class="flex items-center mb-1">
-                            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-2 text-xs">
+                            <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-2 text-[10px] sm:text-xs shrink-0">
                                 <i class="fas fa-user-shield"></i>
                             </div>
-                            <span class="text-xs font-bold text-blue-800 uppercase tracking-wide">Pelapor</span>
+                            <span class="text-[10px] sm:text-xs font-bold text-blue-800 uppercase tracking-wide">Pelapor</span>
                         </div>
-                        <div id="modalReporter" class="text-sm font-bold text-gray-900 pl-8">Nama</div>
+                        <div id="modalReporter" class="text-xs sm:text-sm font-bold text-gray-900 pl-7 sm:pl-8">Nama</div>
                     </div>
                 </div>
 
                 <!-- Footer Actions -->
-                <div class="p-8 border-t border-gray-100">
-                    <a id="modalDownload" href="#" download class="flex items-center justify-center w-full py-3.5 px-6 bg-gray-900 text-white rounded-xl font-semibold hover:bg-black transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
-                        <i class="fas fa-download mr-2"></i> Download Bukti Foto
+                <div class="p-4 sm:p-6 lg:p-8 border-t border-gray-100">
+                    <a id="modalDownload" href="#" download class="flex items-center justify-center w-full py-2.5 sm:py-3.5 px-4 sm:px-6 bg-gray-900 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-black transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
+                        <i class="fas fa-download mr-2"></i> Download Bukti
                     </a>
                 </div>
             </div>
