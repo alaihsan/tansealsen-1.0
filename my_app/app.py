@@ -1,45 +1,37 @@
 import sys
 import os
 
-# Tambahkan direktori parent ke sys.path agar bisa import 'my_app' sebagai package
-# Ini penting karena kita menggunakan absolute import (e.g. 'from my_app.routes ...')
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Add the parent directory to sys.path if running directly
+# This allows 'from my_app...' imports to work even if run as 'python app.py'
+if __name__ == "__main__":
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    sys.path.append(parent_dir)
 
 from flask import Flask
 from my_app.config import Config
-from my_app.extensions import db, login_manager
+from my_app.extensions import db, migrate
+from my_app.models import User, School, Student, Classroom, Violation  # Import models agar terdeteksi
 from my_app.routes import main
-from my_app.models import Student, User
+from flask_login import LoginManager
 
-def create_app():
-    # Inisialisasi aplikasi Flask
-    app = Flask(__name__)
-    
-    # Memuat konfigurasi dari objek Config
-    app.config.from_object(Config)
+app = Flask(__name__)
+app.config.from_object(Config)
 
-    # Inisialisasi ekstensi (seperti database)
-    db.init_app(app)
-    login_manager.init_app(app)
-    login_manager.login_view = 'main.login'
-    login_manager.login_message_category = 'info'
+# Inisialisasi Extensions
+db.init_app(app)
+migrate.init_app(app, db) # Inisialisasi Flask-Migrate
 
-    # Mendaftarkan blueprint (rute-rute aplikasi)
-    app.register_blueprint(main)
-    
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
-    
-    return app
+# Login Manager Setup
+login_manager = LoginManager()
+login_manager.login_view = 'main.login'
+login_manager.init_app(app)
 
-# Inisialisasi aplikasi
-app = create_app()
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
-if __name__ == '__main__':
-    # Membuat tabel database jika belum ada
-    with app.app_context():
-        db.create_all()
-    
-    # Menjalankan aplikasi dalam mode debug
-    app.run(debug=True, host='0.0.0.0', port=5001)
+app.register_blueprint(main)
+
+if __name__ == "__main__":
+    app.run(debug=True)

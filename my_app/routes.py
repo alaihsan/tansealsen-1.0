@@ -1,12 +1,16 @@
 import os
 import secrets
+import json
+import zipfile
+import io
 from datetime import datetime, timedelta
-from flask import render_template, url_for, flash, redirect, request, abort, Blueprint, jsonify, current_app
+from flask import render_template, url_for, flash, redirect, request, abort, Blueprint, jsonify, current_app, Response, send_file
 from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from functools import wraps
 import time
+from flask import send_from_directory
 
 from my_app.extensions import db
 from my_app.models import User, Student, Violation, Classroom, School, ViolationRule, ViolationCategory, ViolationPhoto
@@ -107,7 +111,7 @@ def logout():
     logout_user()
     return redirect(url_for('main.login'))
 
-# --- MAIN ROUTES ---
+# --- MAIN ROUTES (DASHBOARD & SISWA) ---
 
 @main.route("/")
 @main.route("/home")
@@ -221,6 +225,24 @@ def get_students_by_class(class_name):
         return jsonify(students)
     else:
         return jsonify([])
+
+@main.route("/student/delete/<int:student_id>", methods=['POST'])
+@school_admin_required
+def delete_student(student_id):
+    student = Student.query.filter_by(id=student_id, school_id=current_user.school_id).first_or_404()
+    if student.violations:
+        flash(f'Gagal menghapus siswa {student.name}. Siswa ini memiliki data pelanggaran. Hapus data pelanggarannya terlebih dahulu jika ingin menghapus siswa.', 'danger')
+        return redirect(url_for('main.view_class', class_id=student.classroom_id))
+    
+    try:
+        db.session.delete(student)
+        db.session.commit()
+        flash(f'Siswa {student.name} berhasil dihapus.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Terjadi kesalahan saat menghapus siswa: {str(e)}', 'danger')
+        
+    return redirect(url_for('main.view_class', class_id=student.classroom_id))
 
 @main.route("/add_violation", methods=['GET', 'POST'])
 @school_admin_required
@@ -513,7 +535,7 @@ def settings_categories():
     db.session.commit()
     return redirect(url_for('main.settings'))
 
-# --- PRINT ROUTES (YANG HILANG SEBELUMNYA) ---
+# --- PRINT ROUTES ---
 
 @main.route("/violation/print/<int:violation_id>")
 @school_admin_required
@@ -542,3 +564,262 @@ def print_class_report(class_id):
                          classroom=classroom, 
                          violations=violations, 
                          school=current_user.school)
+
+# --- BACKUP & RESTORE ROUTE (ZIP Format) ---
+
+@main.route("/settings/backup")
+@school_admin_required
+def backup_data():
+    school = current_user.school
+    
+    # 1. Kumpulkan Data (JSON)
+    # a. Data Siswa & Pelanggaran
+    students_data = []
+    students = Student.query.filter_by(school_id=school.id).all()
+    
+    for s in students:
+        violations_data = []
+        for v in s.violations:
+            photos_data = []
+            for p in v.photos:
+                photos_data.append(p.filename)
+                
+            violations_data.append({
+                "date": v.date_posted.isoformat(),
+                "description": v.description,
+                "points": v.points,
+                "pasal": v.pasal,
+                "kategori": v.kategori_pelanggaran,
+                "reporter": v.di_input_oleh,
+                "is_remitted": v.is_remitted,
+                "remission_reason": v.remission_reason,
+                "photos": photos_data
+            })
+            
+        students_data.append({
+            "name": s.name,
+            "nis": s.nis,
+            "classroom": s.classroom.name if s.classroom else None,
+            "violations": violations_data
+        })
+
+    # b. Data Settings (Anggota, Pasal, Kategori)
+    members_data = [{"username": u.username, "full_name": u.full_name} for u in school.users if u.role != 'super_admin']
+    rules_data = [{"code": r.code, "description": r.description} for r in school.rules]
+    categories_data = [{"name": c.name, "points": c.points} for c in school.categories]
+    classrooms_data = [{"name": c.name} for c in school.classrooms]
+
+    backup_json = {
+        "school": {
+            "name": school.name,
+            "address": school.address,
+            "logo": school.logo
+        },
+        "backup_date": datetime.now().isoformat(),
+        "settings": {
+            "members": members_data,
+            "rules": rules_data,
+            "categories": categories_data,
+            "classrooms": classrooms_data
+        },
+        "students": students_data
+    }
+    
+    # 2. Buat ZIP File
+    memory_file = io.BytesIO()
+    with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+        # a. Tulis data.json
+        zf.writestr('data.json', json.dumps(backup_json, indent=4))
+        
+        # b. Tulis Foto-foto Bukti
+        upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+        
+        # Helper to write file if exists
+        def add_file_to_zip(filename):
+            if not filename: return
+            file_path = os.path.join(upload_folder, filename)
+            if os.path.exists(file_path):
+                zf.write(file_path, arcname=filename) 
+        
+        # Foto Pelanggaran
+        for s in students_data:
+            for v in s['violations']:
+                for p_name in v['photos']:
+                    add_file_to_zip(p_name)
+        
+        # Logo Sekolah
+        add_file_to_zip(school.logo)
+
+    memory_file.seek(0)
+    
+    # Format Nama File: Backup_NamaSekolah_Tanggal_Waktu_DataPelanggaran.zip
+    date_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    clean_school_name = "".join(c for c in school.name if c.isalnum() or c in (' ', '_')).replace(' ', '_')
+    filename = f"Backup_{clean_school_name}_{date_str}_DataPelanggaran.zip"
+    
+    return send_file(
+        memory_file,
+        mimetype='application/zip',
+        as_attachment=True,
+        download_name=filename
+    )
+
+@main.route("/settings/restore", methods=['POST'])
+@school_admin_required
+def restore_data():
+    if 'backup_file' not in request.files:
+        flash('Tidak ada file yang diunggah.', 'danger')
+        return redirect(url_for('main.settings'))
+        
+    file = request.files['backup_file']
+    
+    if file.filename == '':
+        flash('Tidak ada file yang dipilih.', 'danger')
+        return redirect(url_for('main.settings'))
+
+    if file and file.filename.endswith('.zip'):
+        try:
+            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+            if not os.path.exists(upload_folder): os.makedirs(upload_folder)
+
+            with zipfile.ZipFile(file) as zf:
+                # 1. Baca data.json
+                if 'data.json' not in zf.namelist():
+                    flash('Format backup tidak valid (data.json hilang).', 'danger')
+                    return redirect(url_for('main.settings'))
+                
+                json_data = zf.read('data.json')
+                data = json.loads(json_data)
+                
+                school = current_user.school
+                
+                # 2. Restore Settings
+                if 'school' in data:
+                    school.name = data['school'].get('name', school.name)
+                    school.address = data['school'].get('address', school.address)
+                    logo_name = data['school'].get('logo')
+                    if logo_name:
+                        school.logo = logo_name
+                        # Extract logo file if in zip
+                        if logo_name in zf.namelist():
+                            with open(os.path.join(upload_folder, logo_name), 'wb') as f:
+                                f.write(zf.read(logo_name))
+
+                # Restore Rules
+                for r_data in data.get('settings', {}).get('rules', []):
+                    if not ViolationRule.query.filter_by(code=r_data['code'], school_id=school.id).first():
+                        db.session.add(ViolationRule(code=r_data['code'], description=r_data['description'], school_id=school.id))
+                
+                # Restore Categories
+                for c_data in data.get('settings', {}).get('categories', []):
+                    if not ViolationCategory.query.filter_by(name=c_data['name'], school_id=school.id).first():
+                        db.session.add(ViolationCategory(name=c_data['name'], points=c_data['points'], school_id=school.id))
+                
+                # Restore Classrooms
+                for c_data in data.get('settings', {}).get('classrooms', []):
+                    if not Classroom.query.filter_by(name=c_data['name'], school_id=school.id).first():
+                        db.session.add(Classroom(name=c_data['name'], school_id=school.id))
+                
+                # Restore Members (Users) - Password will need reset or default
+                for m_data in data.get('settings', {}).get('members', []):
+                    if not User.query.filter_by(username=m_data['username']).first():
+                        new_user = User(username=m_data['username'], full_name=m_data['full_name'], role='school_admin', school_id=school.id)
+                        new_user.set_password('guru123') # Default password for restored users
+                        db.session.add(new_user)
+
+                db.session.flush()
+
+                # 3. Restore Siswa & Pelanggaran
+                count_students = 0
+                count_violations = 0
+                
+                for s_data in data.get('students', []):
+                    # Cari Classroom ID
+                    classroom = None
+                    if s_data.get('classroom'):
+                        classroom = Classroom.query.filter_by(name=s_data['classroom'], school_id=school.id).first()
+                    
+                    # Cari atau Buat Siswa
+                    student = Student.query.filter_by(nis=s_data['nis'], school_id=school.id).first()
+                    if not student:
+                        student = Student(
+                            name=s_data['name'],
+                            nis=s_data['nis'],
+                            school_id=school.id,
+                            classroom_id=classroom.id if classroom else None
+                        )
+                        db.session.add(student)
+                        db.session.flush()
+                        count_students += 1
+                    
+                    # Restore Violations
+                    for v_data in s_data.get('violations', []):
+                        try: v_date = datetime.fromisoformat(v_data['date'])
+                        except ValueError: v_date = datetime.utcnow()
+
+                        # Cek duplikat
+                        existing = Violation.query.filter_by(
+                            student_id=student.id,
+                            date_posted=v_date,
+                            description=v_data['description']
+                        ).first()
+                        
+                        if not existing:
+                            violation = Violation(
+                                student_id=student.id,
+                                date_posted=v_date,
+                                description=v_data['description'],
+                                points=v_data['points'],
+                                pasal=v_data['pasal'],
+                                kategori_pelanggaran=v_data['kategori'],
+                                di_input_oleh=v_data['reporter'],
+                                is_remitted=v_data.get('is_remitted', False),
+                                remission_reason=v_data.get('remission_reason')
+                            )
+                            db.session.add(violation)
+                            db.session.flush()
+                            count_violations += 1
+                            
+                            # Restore Photos
+                            for p_name in v_data.get('photos', []):
+                                # Extract file
+                                if p_name in zf.namelist():
+                                    with open(os.path.join(upload_folder, p_name), 'wb') as f:
+                                        f.write(zf.read(p_name))
+                                
+                                # DB Record
+                                if not ViolationPhoto.query.filter_by(violation_id=violation.id, filename=p_name).first():
+                                    db.session.add(ViolationPhoto(filename=p_name, violation_id=violation.id))
+
+            db.session.commit()
+            flash(f'Restore Berhasil! {count_students} siswa dan {count_violations} pelanggaran dipulihkan.', 'success')
+            
+        except zipfile.BadZipFile:
+            flash('File ZIP rusak atau tidak valid.', 'danger')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Terjadi kesalahan: {str(e)}', 'danger')
+            
+    else:
+        flash('Format file harus .zip', 'danger')
+        
+    return redirect(url_for('main.settings'))
+
+@main.route('/favicon.ico')
+def favicon():
+    """
+    Menyajikan favicon dinamis:
+    1. Jika user login & sekolah punya logo -> Logo Sekolah
+    2. Jika tidak -> Default Favicon
+    """
+    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+    static_folder = os.path.join(current_app.root_path, 'static')
+    
+    if current_user.is_authenticated and current_user.school and current_user.school.logo:
+        # Cek apakah file logo benar-benar ada
+        logo_path = os.path.join(upload_folder, current_user.school.logo)
+        if os.path.exists(logo_path):
+            return send_from_directory(upload_folder, current_user.school.logo, mimetype='image/vnd.microsoft.icon')
+            
+    # Default fallback
+    return send_from_directory(static_folder, 'favicon.svg', mimetype='image/svg+xml')

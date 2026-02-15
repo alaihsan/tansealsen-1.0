@@ -10,3 +10,4 @@ pymysql>=1.1.0
 cryptography>=41.0.0
 flask-bcrypt>=1.0.1
 Pillow>=10.0.0
+Flask-Migrate>=4.0.0

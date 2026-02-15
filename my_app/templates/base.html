@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>{% block title %}Sistem Poin Pelanggaran{% endblock %}</title>
+    
+    <!-- DYNAMIC FAVICON -->
+    <link rel="icon" href="{{ url_for('main.favicon') }}">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style> 
         body { font-family: 'Inter', sans-serif; } 
         [x-cloak] { display: none !important; } 
-        /* Hide scrollbar for Chrome, Safari and Opera */
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        /* Hide scrollbar for IE, Edge and Firefox */
         .no-scrollbar { -ms-overflow-style: none;  scrollbar-width: none; }
         
-        /* Padding bawah khusus mobile agar konten tidak tertutup menu bawah */
         @media (max-width: 1023px) {
             body { padding-bottom: 5rem; } 
         }
@@ -23,7 +24,7 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen w-full overflow-x-hidden">
-
+    
     <!-- TOP NAVIGATION (Header) -->
     <nav class="bg-white border-b border-gray-200 sticky top-0 z-40 w-full">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
