@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Cetak Pelanggaran</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Times New Roman', serif; color: #000; background: #fff; }
+        @media print {
+            body { -webkit-print-color-adjust: exact; }
+            .no-print { display: none; }
+        }
+        .paper { max-width: 210mm; margin: 0 auto; padding: 10mm; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8" onload="window.print()">
+
+    
+    <div class="paper bg-white shadow-lg min-h-[297mm]">
+        <!-- KOP SURAT -->
+        <div class="flex items-center border-b-4 border-black pb-4 mb-6">
+            {% if school.logo %}
+                <img src="{{ url_for('static', filename='uploads/' + school.logo) }}" class="h-24 w-24 object-contain mr-4">
+            {% else %}
+                <div class="h-24 w-24 flex items-center justify-center bg-gray-200 text-gray-500 font-bold border">NO LOGO</div>
+            {% endif %}
+            <div class="text-center flex-grow">
+                <h2 class="text-xl font-bold uppercase tracking-wide">BERITA ACARA PELANGGARAN SISWA</h2>
+                <h1 class="text-2xl font-black uppercase">{{ school.name }}</h1>
+                <p class="text-sm">{{ school.address or 'Alamat sekolah belum diatur.' }}</p>
+            </div>
+        </div>
+
+        <!-- INFO SISWA -->
+        <table class="w-full mb-6 text-sm">
+            <tr>
+                <td class="w-32 font-bold py-1">Nama Siswa</td>
+                <td>: {{ student.name }}</td>
+                <td class="w-32 font-bold py-1">Tanggal</td>
+                <td>: {{ violation.tanggal_kejadian }}</td>
+            </tr>
+            <tr>
+                <td class="font-bold py-1">Kelas</td>
+                <td>: {{ student.classroom.name }}</td>
+                <td class="font-bold py-1">Dicatat Oleh</td>
+                <td>: {{ violation.di_input_oleh or '-' }}</td>
+            </tr>
+            <tr>
+                <td class="font-bold py-1">Status</td>
+                <td>: 
+                    {% if violation.is_remitted %}
+                        <span class="font-bold border border-black px-1">SELESAI (DIREMISI)</span>
+                    {% else %}
+                        <span class="font-bold border border-black px-1">AKTIF</span>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+
+        <!-- DETAIL PELANGGARAN -->
+        <div class="border border-black p-4 mb-6">
+            <h3 class="font-bold border-b border-black pb-2 mb-2">DETAIL PELANGGARAN</h3>
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <span class="font-bold block text-sm">Pasal / Aturan:</span>
+                    <p class="text-lg">{{ violation.pasal or '-' }}</p>
+                </div>
+                <div>
+                    <span class="font-bold block text-sm">Kategori:</span>
+                    <p>{{ violation.kategori_pelanggaran }} (Poin: {{ violation.points }})</p>
+                </div>
+                <div>
+                    <span class="font-bold block text-sm">Kronologi / Deskripsi:</span>
+                    <p class="text-justify whitespace-pre-line">{{ violation.description }}</p>
+                </div>
+                {% if violation.is_remitted %}
+                <div class="mt-2 bg-gray-100 p-2 border border-gray-300">
+                    <span class="font-bold block text-sm">Keterangan Remisi:</span>
+                    <p class="italic">{{ violation.remission_reason }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- DOKUMENTASI -->
+        <div class="mb-6">
+            <h3 class="font-bold border-b border-black pb-2 mb-4">DOKUMENTASI / BUKTI FOTO</h3>
+            {% if violation.photos|length > 0 %}
+                <div class="grid grid-cols-2 gap-4">
+                    {% for photo in violation.photos %}
+                        <div class="border border-gray-300 p-1">
+                            <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" class="w-full h-48 object-contain">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-center text-gray-500 italic py-4 border border-dashed border-gray-400">Tidak ada bukti foto dilampirkan.</p>
+            {% endif %}
+        </div>
+
+        <!-- TANDA TANGAN -->
+        <div class="grid grid-cols-3 gap-4 mt-12 text-center text-sm">
+            <div>
+                <p class="mb-16">Siswa Yang Bersangkutan</p>
+                <p class="font-bold border-t border-black inline-block px-4">({{ student.name }})</p>
+            </div>
+            <div>
+                <p class="mb-16">Mengetahui Orang Tua/Wali</p>
+                <p class="font-bold border-t border-black inline-block px-4">( ................................. )</p>
+            </div>
+            <div>
+                <p class="mb-16">Guru BK / Kesiswaan</p>
+                <p class="font-bold border-t border-black inline-block px-4">({{ violation.di_input_oleh or '.................................' }})</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

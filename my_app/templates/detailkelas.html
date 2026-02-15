@@ -1,247 +1,174 @@
 {% extends "base.html" %}
 
+{% block title %}Detail Kelas {{ classroom.name }}{% endblock %}
+
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-4 py-8" x-data="{ activeTab: 'students' }">
     
-    <!-- Header Section -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
+    <!-- HEADER SECTION -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-primary text-xl font-bold">
-                    {{ classroom.name[:2] }}
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-900">Kelas {{ classroom.name }}</h2>
-                    <div class="flex items-center text-sm text-gray-500 mt-1">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {{ classroom.students|length }} Murid
-                        </span>
-                        <span class="mx-2">•</span>
-                        <span>Tahun Ajaran Aktif</span>
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                <a href="{{ url_for('main.manage_classes') }}" class="group flex items-center hover:text-blue-600 transition-colors">
+                    <div class="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-blue-100 flex items-center justify-center mr-2 transition-colors">
+                        <i class="fas fa-arrow-left text-xs"></i>
                     </div>
-                </div>
+                    Kembali ke Kelas
+                </a>
+            </div>
+            <div class="flex items-baseline gap-3">
+                <h1 class="text-3xl font-bold text-gray-900 tracking-tight">Kelas {{ classroom.name }}</h1>
+                <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-sm font-medium border border-blue-100">
+                    {{ classroom.students|length }} Siswa
+                </span>
             </div>
         </div>
-        <a href="{{ url_for('main.manage_classes') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary transition-all duration-200 shadow-sm">
-            <i class="fas fa-arrow-left mr-2"></i> Kembali ke Daftar Kelas
-        </a>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        <!-- KOLOM KIRI: Daftar Murid & Mutasi (Lebar 2/3) -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="flex flex-wrap gap-3">
+            <!-- TOMBOL CETAK LAPORAN -->
+            <a href="{{ url_for('main.print_class_report', class_id=classroom.id) }}" target="_blank" class="bg-white text-gray-700 hover:text-gray-900 border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition-all flex items-center">
+                <i class="fas fa-print mr-2 text-gray-500"></i> Cetak Laporan
+            </a>
             
-            <!-- Card Daftar Murid -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                        <i class="fas fa-users mr-2 text-primary"></i> Daftar Murid
-                    </h3>
-                    <span class="text-xs text-gray-500 bg-white border border-gray-200 px-2 py-1 rounded">
-                        <i class="fas fa-info-circle mr-1"></i> Centang untuk memindahkan
-                    </span>
-                </div>
-
-                <div class="p-0">
-                    {% if classroom.students %}
-                    <form method="POST" id="mutationForm">
-                        <input type="hidden" name="mutate_students" value="true">
-                        
-                        <div class="overflow-x-auto max-h-[600px] overflow-y-auto custom-scrollbar">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50 sticky top-0 z-10 shadow-sm">
-                                    <tr>
-                                        <th scope="col" class="px-6 py-3 text-left">
-                                            <div class="flex items-center">
-                                                <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer">
-                                            </div>
-                                        </th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID Murid</th>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Murid</th>
-                                        <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Pelanggaran</th>
-                                        <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    {% for student in classroom.students %}
-                                    <tr class="hover:bg-gray-50 transition-colors duration-150 group">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <input type="checkbox" name="selected_students" value="{{ student.id }}" class="item-checkbox rounded border-gray-300 text-primary focus:ring-primary h-4 w-4 cursor-pointer">
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{{ student.nis }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 group-hover:text-primary transition-colors">{{ student.name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                                            {% set violation_count = student.violations|length %}
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if violation_count > 0 %}bg-red-100 text-red-800{% else %}bg-green-100 text-green-800{% endif %}">
-                                                {{ violation_count }} Kasus
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <a href="{{ url_for('main.student_history', student_id=student.id) }}" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition-colors">
-                                                <i class="fas fa-history mr-1"></i> Riwayat
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Card Footer: Mutasi Control -->
-                        <div class="bg-yellow-50 border-t border-yellow-100 p-4 sm:p-6">
-                            <h4 class="text-sm font-bold text-yellow-800 mb-3 flex items-center">
-                                <i class="fas fa-exchange-alt mr-2"></i> Mutasi Kelas (Pindah Kelas)
-                            </h4>
-                            <div class="flex flex-col sm:flex-row gap-3 items-center">
-                                <div class="w-full sm:w-auto flex-grow relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <i class="fas fa-school text-gray-400"></i>
-                                    </div>
-                                    <select name="target_class_id" class="block w-full pl-10 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-lg" required>
-                                        <option value="" selected disabled>-- Pilih Kelas Tujuan --</option>
-                                        {% for cls in all_classes %}
-                                            <option value="{{ cls.id }}">{{ cls.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <button type="submit" class="w-full sm:w-auto inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-all duration-200" onclick="return confirm('Yakin ingin memindahkan siswa yang dipilih? Riwayat pelanggaran akan tetap tersimpan.')">
-                                    Proses Pindah
-                                    <i class="fas fa-chevron-right ml-2"></i>
-                                </button>
-                            </div>
-                            <p class="text-xs text-yellow-700 mt-2">
-                                <i class="fas fa-info-circle mr-1"></i> Pilih murid di tabel atas, tentukan kelas tujuan, lalu klik tombol proses.
-                            </p>
-                        </div>
-                    </form>
-                    {% else %}
-                        <div class="text-center py-12 px-6">
-                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="fas fa-user-slash text-4xl text-gray-300"></i>
-                            </div>
-                            <h3 class="text-lg font-medium text-gray-900">Belum ada murid</h3>
-                            <p class="text-gray-500 mt-1 max-w-sm mx-auto">Kelas ini masih kosong. Gunakan form di sebelah kanan untuk menambahkan murid.</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
+            <button @click="$dispatch('open-import-modal')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow transition-all flex items-center">
+                <i class="fas fa-file-import mr-2"></i> Import Siswa
+            </button>
+            
+            <button @click="$dispatch('open-mutation-modal')" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow transition-all flex items-center">
+                <i class="fas fa-exchange-alt mr-2"></i> Mutasi
+            </button>
         </div>
-
-        <!-- KOLOM KANAN: Import / Tambah Murid (Lebar 1/3) -->
-        <div class="lg:col-span-1">
-            <div class="bg-white rounded-xl shadow-sm border border-green-200 sticky top-24 overflow-hidden">
-                <div class="px-6 py-4 bg-gradient-to-r from-green-50 to-white border-b border-green-100">
-                    <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                        <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center mr-2 text-green-600">
-                            <i class="fas fa-file-import text-sm"></i>
-                        </div>
-                        Import / Tambah Murid
-                    </h3>
-                </div>
-                
-                <div class="p-6">
-                    <div class="mb-4 bg-blue-50 rounded-lg p-3 border border-blue-100">
-                        <p class="text-xs text-blue-800 flex items-start">
-                            <i class="fas fa-lightbulb mt-0.5 mr-2 text-blue-500"></i>
-                            <span>Masukkan nama murid, <strong>satu nama per baris</strong>. Sistem akan otomatis membuatkan NIS dummy.</span>
-                        </p>
-                    </div>
-
-                    <form method="POST">
-                        <input type="hidden" name="import_students" value="true">
-                        
-                        <div class="mb-4">
-                            <label for="student_names" class="block text-sm font-medium text-gray-700 mb-2">
-                                Daftar Nama Murid
-                            </label>
-                            <div class="relative">
-                                <textarea name="student_names" id="student_names" rows="12" 
-                                    class="shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-lg p-3 font-mono text-sm leading-relaxed" 
-                                    placeholder="Contoh:
-Ahmad Dani
-Budi Santoso
-Citra Lestari
-Dewi Anggraeni" required></textarea>
-                                <div class="absolute bottom-3 right-3 text-xs text-gray-400 pointer-events-none">
-                                    Tekan Enter untuk baris baru
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 hover:shadow-lg">
-                            <i class="fas fa-plus-circle mr-2"></i>
-                            Tambahkan ke Kelas
-                        </button>
-                    </form>
-                </div>
-                <div class="bg-gray-50 px-6 py-3 border-t border-gray-100">
-                    <p class="text-xs text-center text-gray-500">
-                        Pastikan ejaan nama sudah benar sebelum disimpan.
-                    </p>
-                </div>
-            </div>
-        </div>
-
     </div>
-</div>
 
-<script>
-    // Script checkbox "Pilih Semua"
-    document.addEventListener('DOMContentLoaded', function() {
-        const selectAll = document.getElementById('selectAll');
-        const checkboxes = document.querySelectorAll('.item-checkbox');
+    <!-- CONTENT TABLE -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">No</th>
+                        <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">ID Siswa</th>
+                        <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Siswa</th>
+                        <!-- Kolom Poin disembunyikan -->
+                        <!-- <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Poin Pelanggaran</th> -->
+                        <th scope="col" class="px-6 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for student in classroom.students|sort(attribute='name') %}
+                    <tr class="hover:bg-gray-50 transition-colors group">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ loop.index }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{{ student.nis }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{{ student.name }}</td>
+                        <!-- Data Poin disembunyikan -->
+                        <!--
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% set total = student.violations|sum(attribute='points') %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-800' if total == 0 else 'bg-red-100 text-red-800' }}">
+                                {{ total }}
+                            </span>
+                        </td>
+                        -->
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="{{ url_for('main.student_history', student_id=student.id) }}" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
+                                Detail <i class="fas fa-chevron-right ml-1 text-xs transition-transform group-hover:translate-x-1"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                                    <i class="fas fa-user-slash text-gray-400"></i>
+                                </div>
+                                <p class="font-medium text-gray-900">Belum ada siswa</p>
+                                <p class="text-sm mt-1">Gunakan tombol "Import Siswa" untuk menambahkan data.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-        if(selectAll) {
-            selectAll.addEventListener('change', function() {
-                checkboxes.forEach(cb => {
-                    cb.checked = this.checked;
-                    // Visual feedback untuk baris yang dipilih
-                    const row = cb.closest('tr');
-                    if(this.checked) {
-                        row.classList.add('bg-blue-50');
-                    } else {
-                        row.classList.remove('bg-blue-50');
-                    }
-                });
-            });
-        }
+    <!-- MODAL IMPORT -->
+    <div x-data="{ open: false }" @open-import-modal.window="open = true" x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity" style="display: none;" x-cloak>
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6 relative transform transition-all" @click.outside="open = false">
+            <button @click="open = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fas fa-times text-lg"></i></button>
+            
+            <div class="mb-5">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3 text-blue-600">
+                    <i class="fas fa-file-import text-lg"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Import Data Siswa</h3>
+                <p class="text-sm text-gray-500 mt-1">Masukkan nama siswa, satu nama per baris.</p>
+            </div>
 
-        // Visual feedback individual
-        checkboxes.forEach(cb => {
-            cb.addEventListener('change', function() {
-                const row = this.closest('tr');
-                if(this.checked) {
-                    row.classList.add('bg-blue-50');
-                } else {
-                    row.classList.remove('bg-blue-50');
-                }
+            <form method="POST">
+                <input type="hidden" name="import_students" value="1">
+                <textarea name="student_names" rows="8" class="w-full border border-gray-300 rounded-lg p-3 text-sm mb-4 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow bg-gray-50 focus:bg-white" placeholder="Contoh:&#10;Andi Saputra&#10;Budi Santoso&#10;Citra Lestari" required></textarea>
                 
-                // Update state "Select All" jika ada satu yang tidak dicentang
-                if(!this.checked) {
-                    selectAll.checked = false;
-                }
-            });
-        });
-    });
-</script>
+                <div class="flex justify-end gap-3">
+                    <button type="button" @click="open = false" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm transition-colors flex items-center gap-2">
+                        <i class="fas fa-upload"></i> Mulai Import
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-<style>
-    /* Custom Scrollbar untuk tabel */
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-    }
-</style>
+    <!-- MODAL MUTASI -->
+    <div x-data="{ open: false }" @open-mutation-modal.window="open = true" x-show="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity" style="display: none;" x-cloak>
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 p-6 relative transform transition-all" @click.outside="open = false">
+            <button @click="open = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"><i class="fas fa-times text-lg"></i></button>
+            
+            <div class="mb-5">
+                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mb-3 text-orange-600">
+                    <i class="fas fa-exchange-alt text-lg"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900">Mutasi Siswa</h3>
+                <p class="text-sm text-gray-500 mt-1">Pindahkan siswa terpilih ke kelas lain.</p>
+            </div>
+
+            <form method="POST">
+                <input type="hidden" name="mutate_students" value="1">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Siswa</label>
+                    <div class="border border-gray-300 rounded-lg max-h-48 overflow-y-auto p-1 bg-gray-50">
+                        {% for student in classroom.students|sort(attribute='name') %}
+                        <label class="flex items-center p-2 hover:bg-blue-50 rounded-md cursor-pointer transition-colors group">
+                            <input type="checkbox" name="selected_students" value="{{ student.id }}" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer">
+                            <span class="ml-3 text-sm text-gray-700 group-hover:text-gray-900">{{ student.name }}</span>
+                        </label>
+                        {% else %}
+                        <div class="p-4 text-center text-sm text-gray-500 italic">Tidak ada siswa di kelas ini.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pindah ke Kelas</label>
+                    <select name="target_class_id" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-lg" required>
+                        <option value="">-- Pilih Kelas Tujuan --</option>
+                        {% for cls in all_classes %}
+                            <option value="{{ cls.id }}">{{ cls.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" @click="open = false" class="px-4 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 shadow-sm transition-colors flex items-center gap-2">
+                        <i class="fas fa-check"></i> Proses Mutasi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
 {% endblock %}

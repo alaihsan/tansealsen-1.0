@@ -533,3 +533,34 @@ def settings_categories():
         
     db.session.commit()
     return redirect(url_for('main.settings'))
+
+@main.route("/violation/print/<int:violation_id>")
+@school_admin_required
+def print_violation(violation_id):
+    # Ambil data pelanggaran spesifik
+    violation = Violation.query.join(Student).filter(
+        Violation.id == violation_id,
+        Student.school_id == current_user.school_id
+    ).first_or_404()
+    
+    return render_template('print_violation.html', 
+                         violation=violation, 
+                         student=violation.student, 
+                         school=current_user.school)
+
+@main.route("/class/print/<int:class_id>")
+@school_admin_required
+def print_class_report(class_id):
+    # Ambil data kelas
+    classroom = Classroom.query.filter_by(id=class_id, school_id=current_user.school_id).first_or_404()
+    
+    # Ambil semua pelanggaran dari siswa di kelas ini
+    violations = Violation.query.join(Student).filter(
+        Student.classroom_id == class_id,
+        Student.school_id == current_user.school_id
+    ).order_by(Violation.date_posted.desc()).all()
+    
+    return render_template('print_class_report.html', 
+                         classroom=classroom, 
+                         violations=violations, 
+                         school=current_user.school)

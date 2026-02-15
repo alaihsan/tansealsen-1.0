@@ -76,11 +76,11 @@
 
                 <!-- DINAMIS: KATEGORI -->
                 <div>
-                    <label class="block text-sm font-medium mb-1">Kategori & Poin</label>
+                    <label class="block text-sm font-medium mb-1">Kategori</label>
                     <select name="kategori_id" required class="w-full border rounded-lg px-3 py-2 bg-white">
                         <option value="">Pilih Kategori</option>
                         {% for cat in categories %}
-                            <option value="{{ cat.id }}">{{ cat.name }} ({{ cat.points }} Poin)</option>
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
                         {% endfor %}
                     </select>
                 </div>

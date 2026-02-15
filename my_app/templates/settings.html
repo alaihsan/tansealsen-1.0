@@ -6,7 +6,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Pengaturan Sekolah</h1>
-            <p class="text-sm text-gray-500">Kelola profil, anggota, dan aturan poin pelanggaran.</p>
+            <p class="text-sm text-gray-500">Kelola profil, anggota, dan aturan pelanggaran.</p>
         </div>
     </div>
 
@@ -23,7 +23,8 @@
                 <i class="fas fa-book mr-2"></i> Pasal & Aturan
             </button>
             <button @click="activeTab = 'kategori'" :class="activeTab === 'kategori' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-                <i class="fas fa-tags mr-2"></i> Kategori & Poin
+                <!-- Update Label Tab -->
+                <i class="fas fa-tags mr-2"></i> Kategori
             </button>
         </div>
     </div>
@@ -165,12 +166,13 @@
     <!-- CONTENT: KATEGORI (CATEGORIES) -->
     <div x-show="activeTab === 'kategori'" class="space-y-6">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Kategori & Poin</h2>
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Kategori Pelanggaran</h2>
             
             <form action="{{ url_for('main.settings_categories') }}" method="POST" class="flex gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
                 <input type="hidden" name="action" value="add">
-                <input type="text" name="name" placeholder="Nama Kategori (Misal: Sangat Berat)" required class="w-full px-4 py-2 border rounded-lg text-sm">
-                <input type="number" name="points" placeholder="Poin" required class="w-1/4 px-4 py-2 border rounded-lg text-sm">
+                <input type="text" name="name" placeholder="Nama Kategori (Misal: Ringan, Sedang, Berat)" required class="w-full px-4 py-2 border rounded-lg text-sm">
+                <!-- Input Poin disembunyikan dan di-set default 0 -->
+                <input type="hidden" name="points" value="0">
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap">Tambah</button>
             </form>
 
@@ -179,7 +181,7 @@
                 <div class="p-4 border rounded-xl flex justify-between items-center bg-white shadow-sm">
                     <div>
                         <p class="font-bold text-gray-800">{{ cat.name }}</p>
-                        <p class="text-sm text-gray-500">{{ cat.points }} Poin</p>
+                        <!-- Poin tidak ditampilkan di sini -->
                     </div>
                     <form action="{{ url_for('main.settings_categories') }}" method="POST">
                         <input type="hidden" name="action" value="delete">

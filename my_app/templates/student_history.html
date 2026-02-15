@@ -3,7 +3,7 @@
 {% block title %}Riwayat Pelanggaran - {{ student.name }}{% endblock %}
 
 {% block content %}
-<!-- Alpine Data Scope -->
+<!-- ... (Kode Alpine Data Scope tetap sama) ... -->
 <div class="max-w-5xl mx-auto px-4 py-8" x-data="{
     modalOpen: false,
     remissionFormOpen: false,
@@ -14,7 +14,7 @@
         this.activeViolation = violation;
         this.photoIndex = 0;
         this.modalOpen = true;
-        this.remissionFormOpen = false; // Reset form state
+        this.remissionFormOpen = false; 
         document.body.style.overflow = 'hidden';
     },
     closeModal() {
@@ -34,12 +34,11 @@
     }
 }">
 
+    <!-- ... (Header Info Siswa tetap sama) ... -->
     <div class="mb-6">
         <a href="{{ url_for('main.home') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium mb-2 inline-block">
             <i class="fas fa-arrow-left mr-1"></i> Kembali ke Dashboard
         </a>
-        
-        <!-- Header Info Siswa -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">{{ student.name }}</h1>
@@ -47,16 +46,6 @@
                     <span class="bg-gray-100 px-3 py-1 rounded-full"><i class="fas fa-door-open mr-1"></i> Kelas: {{ student.classroom.name }}</span>
                 </div>
             </div>
-            
-            <!-- TOTAL POIN AKTIF (Yang belum diremisi) - DISEMBUNYIKAN -->
-            <!--
-            <div class="text-center md:text-right bg-gray-50 p-4 rounded-lg border border-gray-100 min-w-[150px]">
-                <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Total Poin Aktif</p>
-                <span class="text-4xl font-bold {{ 'text-green-600' if total_points < 20 else 'text-yellow-600' if total_points < 50 else 'text-red-600' }}">
-                    {{ total_points }}
-                </span>
-            </div>
-            -->
         </div>
     </div>
 
@@ -68,7 +57,17 @@
         
         {% for v in student.violations|sort(attribute='date_posted', reverse=True) %}
         <!-- KARTU PELANGGARAN -->
-        <div @click="openModal({
+        <div class="bg-white p-4 sm:p-5 rounded-xl border {{ 'border-green-200 bg-green-50' if v.is_remitted else 'border-gray-200 hover:border-blue-300' }} shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+            
+            <!-- Badge status jika remisi -->
+            {% if v.is_remitted %}
+            <div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider z-10">
+                Selesai / Diremisi
+            </div>
+            {% endif %}
+
+            <!-- Klik area utama untuk membuka modal (kecuali tombol print) -->
+            <div class="cursor-pointer" @click="openModal({
                 id: {{ v.id }},
                 date: '{{ v.tanggal_kejadian }}',
                 category: '{{ v.kategori_pelanggaran }}',
@@ -83,60 +82,55 @@
                         '{{ url_for('static', filename='uploads/' + p.filename) }}'{% if not loop.last %},{% endif %}
                     {% endfor %}
                 ]
-            })" 
-            class="bg-white p-4 sm:p-5 rounded-xl border {{ 'border-green-200 bg-green-50' if v.is_remitted else 'border-gray-200 hover:border-blue-300' }} shadow-sm hover:shadow-md transition-all cursor-pointer relative overflow-hidden group">
-            
-            <!-- Badge status jika remisi -->
-            {% if v.is_remitted %}
-            <div class="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider z-10">
-                Selesai / Diremisi
-            </div>
-            {% endif %}
-
-            <div class="flex flex-col sm:flex-row sm:items-start gap-4">
-                <!-- Thumbnail -->
-                <div class="flex-shrink-0">
-                    {% if v.photos|length > 0 %}
-                        <div class="relative w-full sm:w-20 sm:h-20 h-40">
-                            <img src="{{ url_for('static', filename='uploads/' + v.photos[0].filename) }}" class="w-full h-full object-cover rounded-lg bg-gray-100 border border-gray-200 {{ 'opacity-50 grayscale' if v.is_remitted }}">
-                            {% if v.photos|length > 1 %}
-                                <div class="absolute bottom-1 right-1 bg-black bg-opacity-60 text-white text-[10px] px-1.5 py-0.5 rounded">
-                                    +{{ v.photos|length - 1 }}
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% else %}
-                        <div class="w-16 h-16 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-300 hidden sm:flex">
-                            <i class="fas fa-camera-slash text-xl"></i>
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="flex-grow">
-                    <div class="flex justify-between items-start mb-1">
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center">
-                            <i class="far fa-clock mr-1"></i> {{ v.tanggal_kejadian }}
-                        </p>
-                    </div>
-                    
-                    <h3 class="font-bold text-gray-900 text-lg mb-1 group-hover:text-blue-600 transition-colors {{ 'line-through text-gray-500' if v.is_remitted }}">
-                        {{ v.pasal }}
-                    </h3>
-                    
-                    <p class="text-sm text-gray-600 line-clamp-2">{{ v.description }}</p>
-                    
-                    <div class="mt-3 flex items-center justify-between">
-                        <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">
-                            <i class="fas fa-user-edit mr-1"></i> {{ v.di_input_oleh or 'System' }}
-                        </span>
+            })">
+                <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+                    <!-- Thumbnail -->
+                    <div class="flex-shrink-0">
                         {% if v.photos|length > 0 %}
-                            <span class="text-xs font-medium text-blue-600 flex items-center">
-                                Lihat Bukti <i class="fas fa-chevron-right ml-1 text-[10px]"></i>
-                            </span>
+                            <div class="relative w-full sm:w-20 sm:h-20 h-40">
+                                <img src="{{ url_for('static', filename='uploads/' + v.photos[0].filename) }}" class="w-full h-full object-cover rounded-lg bg-gray-100 border border-gray-200 {{ 'opacity-50 grayscale' if v.is_remitted }}">
+                                {% if v.photos|length > 1 %}
+                                    <div class="absolute bottom-1 right-1 bg-black bg-opacity-60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                                        +{{ v.photos|length - 1 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="w-16 h-16 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-300 hidden sm:flex">
+                                <i class="fas fa-camera-slash text-xl"></i>
+                            </div>
                         {% endif %}
                     </div>
+                    
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-start mb-1">
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center">
+                                <i class="far fa-clock mr-1"></i> {{ v.tanggal_kejadian }}
+                            </p>
+                        </div>
+                        
+                        <h3 class="font-bold text-gray-900 text-lg mb-1 group-hover:text-blue-600 transition-colors {{ 'line-through text-gray-500' if v.is_remitted }}">
+                            {{ v.pasal }}
+                        </h3>
+                        
+                        <p class="text-sm text-gray-600 line-clamp-2">{{ v.description }}</p>
+                        
+                        <div class="mt-3 flex items-center justify-between">
+                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded">
+                                <i class="fas fa-user-edit mr-1"></i> {{ v.di_input_oleh or 'System' }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- TOMBOL PRINT (Diluar area klik modal) -->
+            <div class="absolute bottom-4 right-4 z-20">
+                <a href="{{ url_for('main.print_violation', violation_id=v.id) }}" target="_blank" class="bg-gray-100 hover:bg-gray-200 text-gray-600 p-2 rounded-full shadow-sm transition-colors" title="Cetak Pelanggaran Ini">
+                    <i class="fas fa-print"></i>
+                </a>
+            </div>
+
         </div>
         {% else %}
         <div class="text-center py-12 text-gray-500 bg-white rounded-xl border-2 border-dashed border-gray-200">
@@ -149,22 +143,18 @@
         {% endfor %}
     </div>
 
-    <!-- MODAL DETAIL & ACTION -->
+    <!-- ... (Modal Detail & Action tetap sama) ... -->
     <div x-show="modalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4" style="display: none;" x-cloak>
         <div class="absolute inset-0 bg-black bg-opacity-95 transition-opacity backdrop-blur-sm" @click="closeModal()"></div>
-
         <div class="relative w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-6xl flex flex-col md:flex-row bg-white sm:rounded-xl overflow-hidden shadow-2xl animate-fade-in-up" @click.stop>
-            
             <button @click="closeModal()" class="absolute top-4 right-4 text-white md:hidden z-50 bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center">
                 <i class="fas fa-times"></i>
             </button>
-
             <!-- 1. AREA FOTO -->
             <div class="w-full md:w-2/3 bg-black flex items-center justify-center relative min-h-[40vh] md:min-h-[600px] group">
                 <button x-show="activeViolation && activeViolation.photos.length > 1" @click="prevPhoto()" class="absolute left-4 text-white hover:text-gray-300 p-2 z-10 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-full w-10 h-10 flex items-center justify-center transition-all">
                     <i class="fas fa-chevron-left"></i>
                 </button>
-
                 <template x-if="activeViolation && activeViolation.photos.length > 0">
                     <img :src="activeViolation.photos[photoIndex]" class="max-w-full max-h-[40vh] md:max-h-full object-contain">
                 </template>
@@ -174,7 +164,6 @@
                         <p class="text-sm opacity-50">Tidak ada bukti foto</p>
                     </div>
                 </template>
-
                 <button x-show="activeViolation && activeViolation.photos.length > 1" @click="nextPhoto()" class="absolute right-4 text-white hover:text-gray-300 p-2 z-10 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-full w-10 h-10 flex items-center justify-center transition-all">
                     <i class="fas fa-chevron-right"></i>
                 </button>
@@ -182,10 +171,8 @@
                     <span x-text="photoIndex + 1"></span> / <span x-text="activeViolation.photos.length"></span>
                 </div>
             </div>
-
             <!-- 2. AREA DETAIL & ACTION -->
             <div class="w-full md:w-1/3 bg-white flex flex-col h-full border-l border-gray-100">
-                
                 <div class="p-5 border-b border-gray-100 flex justify-between items-start bg-gray-50">
                     <div>
                         <div class="flex items-center gap-2 mb-1">
@@ -200,8 +187,6 @@
                              <span class="text-xs text-gray-500" x-text="activeViolation?.date"></span>
                         </div>
                         <h3 class="font-bold text-gray-900 text-lg leading-tight" x-text="activeViolation?.pasal || 'Detail Pelanggaran'"></h3>
-                        
-                        <!-- REMISSION INDICATOR -->
                         <div x-show="activeViolation?.is_remitted" class="mt-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded border border-green-200 inline-block">
                             <i class="fas fa-check-circle mr-1"></i> STATUS: SELESAI / DIREMISI
                         </div>
@@ -210,9 +195,7 @@
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
-
                 <div class="p-5 overflow-y-auto flex-grow space-y-6 relative">
-                    
                     <!-- Form Remisi (Overlay) -->
                     <div x-show="remissionFormOpen" class="absolute inset-0 bg-white z-20 p-5 animate-fade-in-up">
                         <div class="flex justify-between items-center mb-4">
@@ -220,7 +203,7 @@
                             <button @click="remissionFormOpen = false" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
                         </div>
                         <p class="text-sm text-gray-600 mb-4">
-                            Pelanggaran ini akan ditandai <strong>SELESAI</strong>. Poin akan dihapus dari akumulasi siswa, namun catatan tetap ada di arsip.
+                            Pelanggaran ini akan ditandai <strong>SELESAI</strong>.
                         </p>
                         <form :action="'/violation/remit/' + activeViolation?.id" method="POST">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan Remisi (Wajib)</label>
@@ -230,19 +213,16 @@
                             </button>
                         </form>
                     </div>
-
                     <!-- Keterangan Remisi (Jika Ada) -->
                     <div x-show="activeViolation?.is_remitted" class="bg-green-50 p-4 rounded-lg border border-green-100">
                         <p class="text-xs font-bold text-green-800 uppercase mb-1">Keterangan Remisi</p>
                         <p class="text-sm text-green-900 italic" x-text="activeViolation?.remission_reason"></p>
                     </div>
-
                     <!-- Deskripsi -->
                     <div>
                         <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Kronologi / Deskripsi</h4>
                         <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line bg-gray-50 p-3 rounded-lg border border-gray-100" x-text="activeViolation?.description"></div>
                     </div>
-
                     <!-- Reporter Info -->
                     <div>
                         <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Informasi Tambahan</h4>
@@ -257,30 +237,23 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Footer Action Buttons -->
                 <div class="p-4 border-t border-gray-100 bg-gray-50 flex gap-2">
-                    
-                    <!-- Tombol Hapus (Permanen) -->
                     <form :action="'/violation/delete/' + activeViolation?.id" method="POST" class="flex-1" onsubmit="return confirm('PERINGATAN KERAS:\n\nData ini akan dihapus PERMANEN dan tidak bisa dikembalikan.\nApakah Anda yakin ingin menghapus data ini?')">
                         <button type="submit" class="w-full py-2.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-bold transition-colors flex items-center justify-center gap-2">
                             <i class="fas fa-trash-alt"></i> Hapus
                         </button>
                     </form>
-
-                    <!-- Tombol Remisi (Hanya jika belum diremisi) -->
                     <button x-show="!activeViolation?.is_remitted" @click="remissionFormOpen = true" class="flex-1 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm font-bold transition-colors shadow-sm flex items-center justify-center gap-2">
                         <i class="fas fa-check-circle"></i> Remisi
                     </button>
-                    
-                    <!-- Tombol Sudah Remisi (Disabled) -->
                     <button x-show="activeViolation?.is_remitted" disabled class="flex-1 py-2.5 rounded-lg bg-gray-200 text-gray-500 text-sm font-bold cursor-not-allowed flex items-center justify-center gap-2">
                         <i class="fas fa-check-double"></i> Selesai
                     </button>
                 </div>
             </div>
-
         </div>
     </div>
+
 </div>
 {% endblock %}
