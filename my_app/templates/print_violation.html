@@ -1,119 +1,248 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Cetak Pelanggaran</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Times New Roman', serif; color: #000; background: #fff; }
-        @media print {
-            body { -webkit-print-color-adjust: exact; }
-            .no-print { display: none; }
-        }
-        .paper { max-width: 210mm; margin: 0 auto; padding: 10mm; }
-    </style>
-</head>
-<body class="bg-gray-100 p-8" onload="window.print()">
+{% extends "base.html" %}
 
-    
-    <div class="paper bg-white shadow-lg min-h-[297mm]">
-        <!-- KOP SURAT -->
-        <div class="flex items-center border-b-4 border-black pb-4 mb-6">
-            {% if school.logo %}
-                <img src="{{ url_for('static', filename='uploads/' + school.logo) }}" class="h-24 w-24 object-contain mr-4">
-            {% else %}
-                <div class="h-24 w-24 flex items-center justify-center bg-gray-200 text-gray-500 font-bold border">NO LOGO</div>
-            {% endif %}
-            <div class="text-center flex-grow">
-                <h2 class="text-xl font-bold uppercase tracking-wide">BERITA ACARA PELANGGARAN SISWA</h2>
-                <h1 class="text-2xl font-black uppercase">{{ school.name }}</h1>
-                <p class="text-sm">{{ school.address or 'Alamat sekolah belum diatur.' }}</p>
-            </div>
+{% block title %}Tambah Pelanggaran Baru{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<div class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 w-full">
+    <div class="mb-6 flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Tambah Pelanggaran</h1>
+            <p class="text-sm text-gray-500 mt-1 hidden sm:block">Isi formulir berikut untuk mencatat pelanggaran siswa.</p>
         </div>
-
-        <!-- INFO SISWA -->
-        <table class="w-full mb-6 text-sm">
-            <tr>
-                <td class="w-32 font-bold py-1">Nama Siswa</td>
-                <td>: {{ student.name }}</td>
-                <td class="w-32 font-bold py-1">Tanggal</td>
-                <td>: {{ violation.tanggal_kejadian }}</td>
-            </tr>
-            <tr>
-                <td class="font-bold py-1">Kelas</td>
-                <td>: {{ student.classroom.name }}</td>
-                <td class="font-bold py-1">Dicatat Oleh</td>
-                <td>: {{ violation.di_input_oleh or '-' }}</td>
-            </tr>
-            <tr>
-                <td class="font-bold py-1">Status</td>
-                <td>: 
-                    {% if violation.is_remitted %}
-                        <span class="font-bold border border-black px-1">SELESAI (DIREMISI)</span>
-                    {% else %}
-                        <span class="font-bold border border-black px-1">AKTIF</span>
-                    {% endif %}
-                </td>
-            </tr>
-        </table>
-
-        <!-- DETAIL PELANGGARAN -->
-        <div class="border border-black p-4 mb-6">
-            <h3 class="font-bold border-b border-black pb-2 mb-2">DETAIL PELANGGARAN</h3>
-            <div class="grid grid-cols-1 gap-4">
-                <div>
-                    <span class="font-bold block text-sm">Pasal / Aturan:</span>
-                    <p class="text-lg">{{ violation.pasal or '-' }}</p>
-                </div>
-                <div>
-                    <span class="font-bold block text-sm">Kategori:</span>
-                    <p>{{ violation.kategori_pelanggaran }} (Poin: {{ violation.points }})</p>
-                </div>
-                <div>
-                    <span class="font-bold block text-sm">Kronologi / Deskripsi:</span>
-                    <p class="text-justify whitespace-pre-line">{{ violation.description }}</p>
-                </div>
-                {% if violation.is_remitted %}
-                <div class="mt-2 bg-gray-100 p-2 border border-gray-300">
-                    <span class="font-bold block text-sm">Keterangan Remisi:</span>
-                    <p class="italic">{{ violation.remission_reason }}</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- DOKUMENTASI -->
-        <div class="mb-6">
-            <h3 class="font-bold border-b border-black pb-2 mb-4">DOKUMENTASI / BUKTI FOTO</h3>
-            {% if violation.photos|length > 0 %}
-                <div class="grid grid-cols-2 gap-4">
-                    {% for photo in violation.photos %}
-                        <div class="border border-gray-300 p-1">
-                            <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" class="w-full h-48 object-contain">
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p class="text-center text-gray-500 italic py-4 border border-dashed border-gray-400">Tidak ada bukti foto dilampirkan.</p>
-            {% endif %}
-        </div>
-
-        <!-- TANDA TANGAN -->
-        <div class="grid grid-cols-3 gap-4 mt-12 text-center text-sm">
-            <div>
-                <p class="mb-16">Siswa Yang Bersangkutan</p>
-                <p class="font-bold border-t border-black inline-block px-4">({{ student.name }})</p>
-            </div>
-            <div>
-                <p class="mb-16">Mengetahui Orang Tua/Wali</p>
-                <p class="font-bold border-t border-black inline-block px-4">( ................................. )</p>
-            </div>
-            <div>
-                <p class="mb-16">Guru BK / Kesiswaan</p>
-                <p class="font-bold border-t border-black inline-block px-4">({{ violation.di_input_oleh or '.................................' }})</p>
-            </div>
-        </div>
+        <a href="{{ url_for('main.home') }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium transition-colors bg-white shadow-sm">
+            <i class="fas fa-arrow-left mr-2"></i> <span class="hidden sm:inline">Kembali</span>
+        </a>
     </div>
 
-</body>
-</html>
+    <form method="POST" action="{{ url_for('main.add_violation') }}" enctype="multipart/form-data" class="space-y-6">
+        
+        <!-- SECTION 1: Informasi Umum -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-6">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-100 pb-3">
+                <div class="bg-blue-50 text-blue-600 w-8 h-8 rounded-lg flex items-center justify-center">
+                    <i class="far fa-calendar-alt"></i>
+                </div>
+                <h2 class="text-lg font-bold text-gray-800">Informasi Umum</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Tanggal & Jam (Optimized for Mobile) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tanggal</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="far fa-calendar"></i>
+                            </span>
+                            <input type="text" id="tanggal_kejadian" name="tanggal_kejadian" required 
+                                class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-shadow" placeholder="Pilih tanggal">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Jam</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="far fa-clock"></i>
+                            </span>
+                            <input type="time" id="jam_kejadian" name="jam_kejadian" required 
+                                class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-shadow">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Di Input Oleh -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Di Input Oleh</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <i class="far fa-user"></i>
+                        </span>
+                        <select name="di_input_oleh" required class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-shadow appearance-none">
+                            <option value="">Pilih Anggota</option>
+                            {% for staff in staff_members %}
+                                <option value="{{ staff.full_name or staff.username }}">{{ staff.full_name or staff.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kelas -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kelas</label>
+                    <select id="kelas" name="kelas" required class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-shadow">
+                        <option value="">Pilih Kelas</option>
+                        {% for cls in classes %}
+                            <option value="{{ cls.name }}">{{ cls.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Nama Siswa -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Siswa</label>
+                    <select id="nama_murid" name="nama_murid" required disabled class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-500 cursor-not-allowed transition-colors">
+                        <option value="">Pilih Kelas Dulu</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: Detail Pelanggaran -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-6">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-100 pb-3">
+                <div class="bg-orange-50 text-orange-600 w-8 h-8 rounded-lg flex items-center justify-center">
+                    <i class="far fa-edit"></i>
+                </div>
+                <h2 class="text-lg font-bold text-gray-800">Detail Pelanggaran</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Pasal Pelanggaran</label>
+                    <select name="pasal" required class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-shadow">
+                        <option value="">Pilih Pasal</option>
+                        {% for rule in rules %}
+                            <option value="{{ rule.code }} - {{ rule.description }}">{{ rule.code }} - {{ rule.description }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Kategori</label>
+                    <select name="kategori_id" required class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-shadow">
+                        <option value="">Pilih Kategori</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Deskripsi / Kronologi</label>
+                    <textarea name="deskripsi" rows="3" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" placeholder="Jelaskan kronologi kejadian secara singkat..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: Bukti Foto -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-6" x-data="fileUpload()">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="bg-purple-50 text-purple-600 w-8 h-8 rounded-lg flex items-center justify-center">
+                    <i class="far fa-images"></i>
+                </div>
+                <h2 class="text-lg font-bold text-gray-800">Bukti Pendukung</h2>
+            </div>
+            <p class="text-sm text-gray-500 mb-4 ml-11">Maksimal 10 foto (JPG/PNG). Foto akan otomatis dikompres.</p>
+            
+            <div class="flex items-center justify-center w-full">
+                <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 hover:border-blue-400 transition-all group">
+                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 group-hover:text-blue-500 transition-colors mb-3"></i>
+                        <p class="text-sm text-gray-500 group-hover:text-gray-700"><span class="font-semibold text-blue-600">Klik untuk upload</span> atau drag and drop</p>
+                        <p class="text-xs text-gray-400 mt-1">PNG, JPG (Maks. 10 file)</p>
+                    </div>
+                    <input id="dropzone-file" type="file" name="bukti_file" multiple accept="image/*" class="hidden" @change="handleFiles" />
+                </label>
+            </div>
+
+            <!-- Preview Grid Responsive -->
+            <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" x-show="files.length > 0" style="display: none;">
+                <template x-for="(file, index) in files" :key="index">
+                    <div class="relative group aspect-square">
+                        <img :src="file.url" class="w-full h-full object-cover rounded-xl border border-gray-200 shadow-sm">
+                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-xl"></div>
+                        <button type="button" @click="removeFile(index)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-md hover:bg-red-600 transform scale-0 group-hover:scale-100 transition-transform">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </template>
+            </div>
+            <p x-show="files.length > 10" class="text-red-500 text-sm mt-3 font-bold flex items-center"><i class="fas fa-exclamation-triangle mr-1"></i> Maksimal 10 foto. Mohon kurangi pilihan Anda.</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4">
+            <button type="reset" class="w-full sm:w-auto px-6 py-2.5 border border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 font-medium transition-colors">Reset</button>
+            <button type="submit" class="w-full sm:w-auto px-8 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                <i class="fas fa-save mr-2"></i> Simpan Data
+            </button>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
+<script>
+    flatpickr("#tanggal_kejadian", { 
+        locale: "id", 
+        dateFormat: "d/m/Y", 
+        defaultDate: "today",
+        disableMobile: "true" // Use native date picker on mobile if preferred, or flatpickr
+    });
+    
+    // Set default jam
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('jam_kejadian').value = `${hours}:${minutes}`;
+
+    document.getElementById('kelas').addEventListener('change', function() {
+        const className = this.value;
+        const studentSelect = document.getElementById('nama_murid');
+        studentSelect.innerHTML = '<option value="">Loading...</option>';
+        studentSelect.disabled = true;
+        studentSelect.classList.add('bg-gray-50', 'cursor-not-allowed');
+        
+        if (className) {
+            fetch(`/api/students/${encodeURIComponent(className)}`)
+                .then(r => r.json())
+                .then(data => {
+                    studentSelect.innerHTML = '<option value="">Pilih Siswa</option>';
+                    data.forEach(name => {
+                        const opt = document.createElement('option');
+                        opt.value = name; opt.textContent = name;
+                        studentSelect.appendChild(opt);
+                    });
+                    studentSelect.disabled = false;
+                    studentSelect.classList.remove('bg-gray-50', 'cursor-not-allowed');
+                    studentSelect.classList.add('bg-white');
+                })
+                .catch(() => {
+                    studentSelect.innerHTML = '<option value="">Gagal memuat siswa</option>';
+                });
+        }
+    });
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('fileUpload', () => ({
+            files: [],
+            handleFiles(e) {
+                const selectedFiles = Array.from(e.target.files);
+                // Validasi size atau tipe bisa ditambahkan di sini
+                this.files = []; // Reset atau append logic
+                selectedFiles.forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.files.push({ file: file, url: e.target.result });
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            },
+            removeFile(index) {
+                this.files.splice(index, 1);
+                // Note: File input value tidak bisa dimodifikasi parsial secara programmatic dengan mudah untuk submit
+                // Solusi UX: Jika user hapus, mungkin minta re-upload atau biarkan visual preview saja
+                if (this.files.length === 0) document.getElementById('dropzone-file').value = '';
+            }
+        }));
+    });
+</script>
+{% endblock %}

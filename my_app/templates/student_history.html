@@ -3,10 +3,12 @@
 {% block title %}Riwayat Pelanggaran - {{ student.name }}{% endblock %}
 
 {% block content %}
-<!-- ... (Kode Alpine Data Scope tetap sama) ... -->
+<!-- Alpine Data Scope -->
 <div class="max-w-5xl mx-auto px-4 py-8" x-data="{
     modalOpen: false,
     remissionFormOpen: false,
+    deleteConfirmOpen: false,
+    deleteInput: '',
     activeViolation: null,
     photoIndex: 0,
     
@@ -15,6 +17,8 @@
         this.photoIndex = 0;
         this.modalOpen = true;
         this.remissionFormOpen = false; 
+        this.deleteConfirmOpen = false;
+        this.deleteInput = '';
         document.body.style.overflow = 'hidden';
     },
     closeModal() {
@@ -34,11 +38,12 @@
     }
 }">
 
-    <!-- ... (Header Info Siswa tetap sama) ... -->
     <div class="mb-6">
         <a href="{{ url_for('main.home') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium mb-2 inline-block">
             <i class="fas fa-arrow-left mr-1"></i> Kembali ke Dashboard
         </a>
+        
+        <!-- Header Info Siswa -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">{{ student.name }}</h1>
@@ -66,7 +71,7 @@
             </div>
             {% endif %}
 
-            <!-- Klik area utama untuk membuka modal (kecuali tombol print) -->
+            <!-- Klik area utama untuk membuka modal -->
             <div class="cursor-pointer" @click="openModal({
                 id: {{ v.id }},
                 date: '{{ v.tanggal_kejadian }}',
@@ -143,18 +148,22 @@
         {% endfor %}
     </div>
 
-    <!-- ... (Modal Detail & Action tetap sama) ... -->
+    <!-- MODAL DETAIL & ACTION -->
     <div x-show="modalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4" style="display: none;" x-cloak>
         <div class="absolute inset-0 bg-black bg-opacity-95 transition-opacity backdrop-blur-sm" @click="closeModal()"></div>
+
         <div class="relative w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-6xl flex flex-col md:flex-row bg-white sm:rounded-xl overflow-hidden shadow-2xl animate-fade-in-up" @click.stop>
+            
             <button @click="closeModal()" class="absolute top-4 right-4 text-white md:hidden z-50 bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center">
                 <i class="fas fa-times"></i>
             </button>
+
             <!-- 1. AREA FOTO -->
             <div class="w-full md:w-2/3 bg-black flex items-center justify-center relative min-h-[40vh] md:min-h-[600px] group">
                 <button x-show="activeViolation && activeViolation.photos.length > 1" @click="prevPhoto()" class="absolute left-4 text-white hover:text-gray-300 p-2 z-10 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-full w-10 h-10 flex items-center justify-center transition-all">
                     <i class="fas fa-chevron-left"></i>
                 </button>
+
                 <template x-if="activeViolation && activeViolation.photos.length > 0">
                     <img :src="activeViolation.photos[photoIndex]" class="max-w-full max-h-[40vh] md:max-h-full object-contain">
                 </template>
@@ -164,6 +173,7 @@
                         <p class="text-sm opacity-50">Tidak ada bukti foto</p>
                     </div>
                 </template>
+
                 <button x-show="activeViolation && activeViolation.photos.length > 1" @click="nextPhoto()" class="absolute right-4 text-white hover:text-gray-300 p-2 z-10 bg-white bg-opacity-10 hover:bg-opacity-20 rounded-full w-10 h-10 flex items-center justify-center transition-all">
                     <i class="fas fa-chevron-right"></i>
                 </button>
@@ -171,8 +181,10 @@
                     <span x-text="photoIndex + 1"></span> / <span x-text="activeViolation.photos.length"></span>
                 </div>
             </div>
+
             <!-- 2. AREA DETAIL & ACTION -->
-            <div class="w-full md:w-1/3 bg-white flex flex-col h-full border-l border-gray-100">
+            <div class="w-full md:w-1/3 bg-white flex flex-col h-full border-l border-gray-100 relative">
+                
                 <div class="p-5 border-b border-gray-100 flex justify-between items-start bg-gray-50">
                     <div>
                         <div class="flex items-center gap-2 mb-1">
@@ -187,6 +199,7 @@
                              <span class="text-xs text-gray-500" x-text="activeViolation?.date"></span>
                         </div>
                         <h3 class="font-bold text-gray-900 text-lg leading-tight" x-text="activeViolation?.pasal || 'Detail Pelanggaran'"></h3>
+                        
                         <div x-show="activeViolation?.is_remitted" class="mt-2 bg-green-100 text-green-800 text-xs px-2 py-1 rounded border border-green-200 inline-block">
                             <i class="fas fa-check-circle mr-1"></i> STATUS: SELESAI / DIREMISI
                         </div>
@@ -195,40 +208,78 @@
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>
+
                 <div class="p-5 overflow-y-auto flex-grow space-y-6 relative">
-                    <!-- Form Remisi (Overlay) -->
-                    <div x-show="remissionFormOpen" class="absolute inset-0 bg-white z-20 p-5 animate-fade-in-up">
+                    
+                    <!-- OVERLAY: FORM REMISI -->
+                    <div x-show="remissionFormOpen" class="absolute inset-0 bg-white z-20 p-5 animate-fade-in-up flex flex-col">
                         <div class="flex justify-between items-center mb-4">
-                            <h4 class="font-bold text-gray-800">Berikan Remisi</h4>
+                            <h4 class="font-bold text-gray-800 flex items-center gap-2"><i class="fas fa-check-circle text-green-600"></i> Berikan Remisi</h4>
                             <button @click="remissionFormOpen = false" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
                         </div>
                         <p class="text-sm text-gray-600 mb-4">
-                            Pelanggaran ini akan ditandai <strong>SELESAI</strong>.
+                            Pelanggaran ini akan ditandai <strong>SELESAI</strong>. Poin akan dihapus dari akumulasi siswa, namun catatan tetap ada di arsip.
                         </p>
-                        <form :action="'/violation/remit/' + activeViolation?.id" method="POST">
+                        <form :action="'/violation/remit/' + activeViolation?.id" method="POST" class="flex-grow flex flex-col">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan Remisi (Wajib)</label>
-                            <textarea name="remission_reason" rows="3" required placeholder="Contoh: Siswa telah melakukan kerja bakti pembersihan..." class="w-full border rounded-lg px-3 py-2 text-sm mb-4"></textarea>
-                            <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-bold hover:bg-green-700 shadow-sm">
-                                Konfirmasi Selesai
-                            </button>
+                            <textarea name="remission_reason" rows="3" required placeholder="Contoh: Siswa telah melakukan kerja bakti pembersihan..." class="w-full border rounded-lg px-3 py-2 text-sm mb-4 focus:ring-2 focus:ring-green-500 outline-none"></textarea>
+                            <div class="mt-auto">
+                                <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 shadow-lg shadow-green-100 transition-all">
+                                    Konfirmasi Selesai
+                                </button>
+                            </div>
                         </form>
                     </div>
+
+                    <!-- OVERLAY: KONFIRMASI HAPUS AMAN -->
+                    <div x-show="deleteConfirmOpen" class="absolute inset-0 bg-white z-30 p-6 animate-fade-in-up flex flex-col justify-center">
+                        <div class="text-center mb-6">
+                            <div class="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4 animate-bounce-slow">
+                                <i class="fas fa-trash-alt text-3xl text-red-500"></i>
+                            </div>
+                            <h4 class="font-bold text-gray-900 text-xl">Hapus Permanen?</h4>
+                            <p class="text-sm text-gray-500 mt-2 leading-relaxed">
+                                Tindakan ini <strong>tidak dapat dibatalkan</strong>. Data pelanggaran dan semua foto bukti akan dihapus selamanya dari database.
+                            </p>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6">
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2 text-center">Konfirmasi Keamanan</label>
+                            <p class="text-sm text-gray-600 mb-3 text-center">Ketik kata <span class="font-bold text-red-600 select-none">setuju</span> di bawah ini:</p>
+                            <input type="text" x-model="deleteInput" placeholder="Ketik 'setuju'..." class="w-full border border-gray-300 rounded-lg px-4 py-3 text-center text-lg font-bold text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none placeholder-gray-300 transition-shadow bg-white">
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button @click="deleteConfirmOpen = false" class="flex-1 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+                                Batal
+                            </button>
+                            
+                            <form :action="'/violation/delete/' + activeViolation?.id" method="POST" class="flex-1">
+                                <button type="submit" :disabled="deleteInput.toLowerCase() !== 'setuju'" class="w-full py-3 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 shadow-lg shadow-red-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all transform active:scale-95">
+                                    Hapus Data
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
                     <!-- Keterangan Remisi (Jika Ada) -->
                     <div x-show="activeViolation?.is_remitted" class="bg-green-50 p-4 rounded-lg border border-green-100">
                         <p class="text-xs font-bold text-green-800 uppercase mb-1">Keterangan Remisi</p>
                         <p class="text-sm text-green-900 italic" x-text="activeViolation?.remission_reason"></p>
                     </div>
+
                     <!-- Deskripsi -->
                     <div>
                         <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Kronologi / Deskripsi</h4>
-                        <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line bg-gray-50 p-3 rounded-lg border border-gray-100" x-text="activeViolation?.description"></div>
+                        <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line bg-gray-50 p-4 rounded-xl border border-gray-100 shadow-sm" x-text="activeViolation?.description"></div>
                     </div>
+
                     <!-- Reporter Info -->
                     <div>
                         <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Informasi Tambahan</h4>
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
-                                <i class="fas fa-user"></i>
+                        <div class="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-100">
+                            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-sm font-bold">
+                                <i class="fas fa-user-shield"></i>
                             </div>
                             <div>
                                 <p class="text-xs text-gray-500">Dicatat oleh</p>
@@ -237,23 +288,28 @@
                         </div>
                     </div>
                 </div>
+
                 <!-- Footer Action Buttons -->
                 <div class="p-4 border-t border-gray-100 bg-gray-50 flex gap-2">
-                    <form :action="'/violation/delete/' + activeViolation?.id" method="POST" class="flex-1" onsubmit="return confirm('PERINGATAN KERAS:\n\nData ini akan dihapus PERMANEN dan tidak bisa dikembalikan.\nApakah Anda yakin ingin menghapus data ini?')">
-                        <button type="submit" class="w-full py-2.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-bold transition-colors flex items-center justify-center gap-2">
-                            <i class="fas fa-trash-alt"></i> Hapus
-                        </button>
-                    </form>
+                    
+                    <!-- Tombol Hapus (Trigger Overlay) -->
+                    <button @click="deleteConfirmOpen = true" class="flex-1 py-2.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 text-sm font-bold transition-colors flex items-center justify-center gap-2 hover:shadow-sm">
+                        <i class="fas fa-trash-alt"></i> Hapus
+                    </button>
+
+                    <!-- Tombol Remisi (Hanya jika belum diremisi) -->
                     <button x-show="!activeViolation?.is_remitted" @click="remissionFormOpen = true" class="flex-1 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 text-sm font-bold transition-colors shadow-sm flex items-center justify-center gap-2">
                         <i class="fas fa-check-circle"></i> Remisi
                     </button>
+                    
+                    <!-- Tombol Sudah Remisi (Disabled) -->
                     <button x-show="activeViolation?.is_remitted" disabled class="flex-1 py-2.5 rounded-lg bg-gray-200 text-gray-500 text-sm font-bold cursor-not-allowed flex items-center justify-center gap-2">
                         <i class="fas fa-check-double"></i> Selesai
                     </button>
                 </div>
             </div>
+
         </div>
     </div>
-
 </div>
 {% endblock %}

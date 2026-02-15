@@ -5,116 +5,121 @@
     
     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Pengaturan Sekolah</h1>
-            <p class="text-sm text-gray-500">Kelola profil, anggota, dan aturan pelanggaran.</p>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Pengaturan Sekolah</h1>
+            <p class="text-sm text-gray-500 mt-1">Kelola profil, anggota, dan aturan pelanggaran.</p>
         </div>
     </div>
 
-    <!-- TABS -->
+    <!-- TABS (Scrollable on Mobile) -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-        <div class="flex border-b border-gray-200 overflow-x-auto">
-            <button @click="activeTab = 'sekolah'" :class="activeTab === 'sekolah' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-                <i class="fas fa-school mr-2"></i> Profil Sekolah
-            </button>
-            <button @click="activeTab = 'anggota'" :class="activeTab === 'anggota' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-                <i class="fas fa-users-cog mr-2"></i> Anggota (User)
-            </button>
-            <button @click="activeTab = 'aturan'" :class="activeTab === 'aturan' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-                <i class="fas fa-book mr-2"></i> Pasal & Aturan
-            </button>
-            <button @click="activeTab = 'kategori'" :class="activeTab === 'kategori' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors">
-                <!-- Update Label Tab -->
-                <i class="fas fa-tags mr-2"></i> Kategori
-            </button>
+        <div class="overflow-x-auto no-scrollbar touch-pan-x">
+            <div class="flex border-b border-gray-200 min-w-max">
+                <button @click="activeTab = 'sekolah'" :class="activeTab === 'sekolah' ? 'border-blue-500 text-blue-600 bg-blue-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-all flex items-center gap-2">
+                    <i class="fas fa-school"></i> Profil Sekolah
+                </button>
+                <button @click="activeTab = 'anggota'" :class="activeTab === 'anggota' ? 'border-blue-500 text-blue-600 bg-blue-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-all flex items-center gap-2">
+                    <i class="fas fa-users-cog"></i> Anggota (User)
+                </button>
+                <button @click="activeTab = 'aturan'" :class="activeTab === 'aturan' ? 'border-blue-500 text-blue-600 bg-blue-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-all flex items-center gap-2">
+                    <i class="fas fa-book"></i> Pasal & Aturan
+                </button>
+                <button @click="activeTab = 'kategori'" :class="activeTab === 'kategori' ? 'border-blue-500 text-blue-600 bg-blue-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'" class="whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-all flex items-center gap-2">
+                    <i class="fas fa-tags"></i> Kategori
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- CONTENT: PROFIL SEKOLAH -->
-    <div x-show="activeTab === 'sekolah'" class="space-y-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Informasi Dasar</h2>
-            <form action="{{ url_for('main.settings_update_school') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+    <div x-show="activeTab === 'sekolah'" class="space-y-6" x-transition.opacity>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-5 pb-3 border-b border-gray-100">Informasi Dasar</h2>
+            <form action="{{ url_for('main.settings_update_school') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Sekolah</label>
-                        <input type="text" name="name" value="{{ school.name }}" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Sekolah</label>
+                        <input type="text" name="name" value="{{ school.name }}" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                        <input type="text" name="address" value="{{ school.address or '' }}" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Alamat</label>
+                        <input type="text" name="address" value="{{ school.address or '' }}" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow">
                     </div>
                 </div>
                 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Logo Sekolah</label>
-                    <div class="flex items-center gap-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Logo Sekolah</label>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                         {% if school.logo %}
-                            <img src="{{ url_for('static', filename='uploads/' + school.logo) }}" class="h-16 w-16 object-contain border rounded-lg">
+                            <img src="{{ url_for('static', filename='uploads/' + school.logo) }}" class="h-20 w-20 object-contain border border-gray-200 rounded-lg p-1 bg-gray-50">
                         {% else %}
-                            <div class="h-16 w-16 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                            <div class="h-20 w-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 border border-dashed border-gray-300">
                                 <i class="fas fa-image text-2xl"></i>
                             </div>
                         {% endif %}
-                        <input type="file" name="logo" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <input type="file" name="logo" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-colors">
                     </div>
                 </div>
 
-                <div class="pt-4 text-right">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">Simpan Perubahan</button>
+                <div class="pt-4 flex justify-end">
+                    <button type="submit" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 font-medium shadow-sm transition-all">Simpan Perubahan</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- CONTENT: ANGGOTA (USERS) -->
-    <div x-show="activeTab === 'anggota'" class="space-y-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-semibold text-gray-800">Daftar Anggota / Staff</h2>
-                <!-- Button Trigger Modal Add -->
-                <button @click="$dispatch('open-add-member')" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
-                    <i class="fas fa-user-plus mr-2"></i> Tambah Anggota
+    <div x-show="activeTab === 'anggota'" class="space-y-6" x-transition.opacity>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h2 class="text-lg font-bold text-gray-800">Daftar Anggota / Staff</h2>
+                <button @click="$dispatch('open-add-member')" class="w-full sm:w-auto bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-medium shadow-sm flex items-center justify-center gap-2 transition-colors">
+                    <i class="fas fa-user-plus"></i> Tambah Anggota
                 </button>
             </div>
             
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto border border-gray-200 rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Lengkap</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Username</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Nama Lengkap</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Username</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Role</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
+                    <tbody class="divide-y divide-gray-200 bg-white">
                         {% for member in members %}
-                        <tr x-data="{ editOpen: false }">
+                        <tr x-data="{ editOpen: false }" class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ member.full_name or '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ member.username }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">
                                 {% if member.id == current_user.id %}
-                                    <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">Anda</span>
+                                    <span class="px-2.5 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full font-medium border border-blue-200">Anda</span>
                                 {% else %}
-                                    Staff
+                                    <span class="px-2.5 py-0.5 text-xs bg-gray-100 text-gray-600 rounded-full font-medium border border-gray-200">Staff</span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 text-right text-sm font-medium">
-                                <button @click="editOpen = !editOpen" class="text-indigo-600 hover:text-indigo-900 mr-3">Reset Pass</button>
-                                {% if member.id != current_user.id %}
-                                <form action="{{ url_for('main.settings_delete_member', user_id=member.id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus anggota ini?')">
-                                    <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
-                                </form>
-                                {% endif %}
+                            <td class="px-6 py-4 text-right text-sm font-medium relative">
+                                <div class="flex justify-end gap-3">
+                                    <button @click="editOpen = !editOpen" class="text-indigo-600 hover:text-indigo-900">Reset</button>
+                                    {% if member.id != current_user.id %}
+                                    <form action="{{ url_for('main.settings_delete_member', user_id=member.id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus anggota ini?')">
+                                        <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
+                                    </form>
+                                    {% endif %}
+                                </div>
                                 
-                                <!-- Inline Edit Form (Simple) -->
-                                <div x-show="editOpen" class="absolute right-10 mt-2 w-64 bg-white shadow-lg rounded-lg p-4 border border-gray-200 z-10 text-left">
+                                <!-- Inline Edit Form (Dropdown) -->
+                                <div x-show="editOpen" @click.outside="editOpen = false" class="absolute right-0 mt-2 w-64 bg-white shadow-xl rounded-lg p-4 border border-gray-200 z-20 text-left animate-fade-in-up">
                                     <form action="{{ url_for('main.settings_edit_member') }}" method="POST">
                                         <input type="hidden" name="user_id" value="{{ member.id }}">
-                                        <p class="text-xs font-bold text-gray-500 mb-2">Reset Password untuk {{ member.username }}</p>
-                                        <input type="text" name="username" value="{{ member.username }}" class="w-full text-sm border rounded mb-2 px-2 py-1" placeholder="Username baru">
-                                        <input type="password" name="password" placeholder="Password Baru" class="w-full text-sm border rounded mb-2 px-2 py-1">
-                                        <button type="submit" class="w-full bg-indigo-600 text-white text-xs py-1.5 rounded">Simpan</button>
+                                        <p class="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Reset Akun {{ member.username }}</p>
+                                        <input type="text" name="username" value="{{ member.username }}" class="w-full text-sm border border-gray-300 rounded-md mb-2 px-3 py-2 focus:ring-2 focus:ring-indigo-500" placeholder="Username baru">
+                                        <input type="password" name="password" placeholder="Password Baru" class="w-full text-sm border border-gray-300 rounded-md mb-3 px-3 py-2 focus:ring-2 focus:ring-indigo-500">
+                                        <div class="flex gap-2">
+                                            <button type="button" @click="editOpen = false" class="w-1/2 bg-gray-100 text-gray-700 text-xs py-2 rounded-md hover:bg-gray-200">Batal</button>
+                                            <button type="submit" class="w-1/2 bg-indigo-600 text-white text-xs py-2 rounded-md hover:bg-indigo-700 shadow-sm">Simpan</button>
+                                        </div>
                                     </form>
                                 </div>
                             </td>
@@ -123,104 +128,116 @@
                     </tbody>
                 </table>
             </div>
-            
-            <p class="text-xs text-gray-500 mt-4">* Anggota ini akan muncul di dropdown "Di Input Oleh" pada form pelanggaran.</p>
+            <p class="text-xs text-gray-500 mt-4">* Anggota ini akan muncul di dropdown "Di Input Oleh".</p>
         </div>
     </div>
 
     <!-- CONTENT: PASAL (RULES) -->
-    <div x-show="activeTab === 'aturan'" class="space-y-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Daftar Pasal Pelanggaran</h2>
+    <div x-show="activeTab === 'aturan'" class="space-y-6" x-transition.opacity>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-5 pb-3 border-b border-gray-100">Daftar Pasal Pelanggaran</h2>
             
             <!-- Form Tambah -->
-            <form action="{{ url_for('main.settings_rules') }}" method="POST" class="flex gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
+            <form action="{{ url_for('main.settings_rules') }}" method="POST" class="flex flex-col sm:flex-row gap-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
                 <input type="hidden" name="action" value="add">
-                <input type="text" name="code" placeholder="Kode (Misal: Pasal 1)" required class="w-1/4 px-4 py-2 border rounded-lg text-sm">
-                <input type="text" name="description" placeholder="Isi Pasal / Keterangan" required class="w-full px-4 py-2 border rounded-lg text-sm">
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap">Tambah</button>
+                <input type="text" name="code" placeholder="Kode (Misal: Pasal 1)" required class="w-full sm:w-1/4 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                <input type="text" name="description" placeholder="Isi Pasal / Keterangan" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">Tambah</button>
             </form>
 
-            <ul class="space-y-2">
+            <ul class="space-y-3">
                 {% for rule in rules %}
-                <li class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                    <div>
-                        <span class="font-bold text-gray-700 text-sm">{{ rule.code }}</span>
-                        <span class="text-gray-600 text-sm ml-2">{{ rule.description }}</span>
+                <li class="flex items-start justify-between p-4 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all">
+                    <div class="pr-4">
+                        <span class="inline-block bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded mb-1">{{ rule.code }}</span>
+                        <p class="text-gray-700 text-sm leading-relaxed">{{ rule.description }}</p>
                     </div>
-                    <form action="{{ url_for('main.settings_rules') }}" method="POST">
+                    <form action="{{ url_for('main.settings_rules') }}" method="POST" class="flex-shrink-0">
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="rule_id" value="{{ rule.id }}">
-                        <button type="submit" class="text-red-500 hover:text-red-700" onclick="return confirm('Hapus pasal ini?')">
-                            <i class="fas fa-trash"></i>
+                        <button type="submit" class="text-gray-400 hover:text-red-600 transition-colors p-1" onclick="return confirm('Hapus pasal ini?')">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                     </form>
                 </li>
                 {% else %}
-                <li class="text-center text-gray-400 text-sm py-4">Belum ada pasal.</li>
+                <li class="text-center text-gray-400 text-sm py-8 border-2 border-dashed border-gray-200 rounded-xl">Belum ada pasal yang ditambahkan.</li>
                 {% endfor %}
             </ul>
         </div>
     </div>
 
     <!-- CONTENT: KATEGORI (CATEGORIES) -->
-    <div x-show="activeTab === 'kategori'" class="space-y-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">Kategori Pelanggaran</h2>
+    <div x-show="activeTab === 'kategori'" class="space-y-6" x-transition.opacity>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 sm:p-6">
+            <h2 class="text-lg font-bold text-gray-800 mb-5 pb-3 border-b border-gray-100">Kategori Pelanggaran</h2>
             
-            <form action="{{ url_for('main.settings_categories') }}" method="POST" class="flex gap-4 mb-6 bg-gray-50 p-4 rounded-lg">
+            <form action="{{ url_for('main.settings_categories') }}" method="POST" class="flex flex-col sm:flex-row gap-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
                 <input type="hidden" name="action" value="add">
-                <input type="text" name="name" placeholder="Nama Kategori (Misal: Ringan, Sedang, Berat)" required class="w-full px-4 py-2 border rounded-lg text-sm">
-                <!-- Input Poin disembunyikan dan di-set default 0 -->
+                <input type="text" name="name" placeholder="Nama Kategori (Misal: Ringan, Sedang, Berat)" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
                 <input type="hidden" name="points" value="0">
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap">Tambah</button>
+                <button type="submit" class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">Tambah</button>
             </form>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {% for cat in categories %}
-                <div class="p-4 border rounded-xl flex justify-between items-center bg-white shadow-sm">
-                    <div>
+                <div class="p-4 border border-gray-200 rounded-xl flex justify-between items-center bg-white shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <i class="fas fa-tag"></i>
+                        </div>
                         <p class="font-bold text-gray-800">{{ cat.name }}</p>
-                        <!-- Poin tidak ditampilkan di sini -->
                     </div>
                     <form action="{{ url_for('main.settings_categories') }}" method="POST">
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="cat_id" value="{{ cat.id }}">
-                        <button type="submit" class="text-red-500 hover:text-red-700 bg-red-50 p-2 rounded-full" onclick="return confirm('Hapus kategori ini?')">
-                            <i class="fas fa-times"></i>
+                        <button type="submit" class="text-gray-400 hover:text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors" onclick="return confirm('Hapus kategori ini?')">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                     </form>
                 </div>
                 {% else %}
-                <div class="col-span-full text-center text-gray-400 text-sm">Belum ada kategori.</div>
+                <div class="col-span-full text-center text-gray-400 text-sm py-8 border-2 border-dashed border-gray-200 rounded-xl">Belum ada kategori.</div>
                 {% endfor %}
             </div>
         </div>
     </div>
 
-    <!-- MODAL ADD MEMBER (Alpine) -->
+    <!-- MODAL ADD MEMBER -->
     <div x-data="{ open: false }" 
          @open-add-member.window="open = true" 
          x-show="open" 
-         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" 
-         style="display: none;">
-        <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
-            <button @click="open = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-            <h3 class="text-lg font-bold mb-4">Tambah Anggota Baru</h3>
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity" 
+         style="display: none;" x-cloak>
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative transform transition-all" @click.outside="open = false">
+            <button @click="open = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times text-lg"></i></button>
+            
+            <div class="mb-5">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3 text-green-600 mx-auto">
+                    <i class="fas fa-user-plus text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 text-center">Tambah Anggota Baru</h3>
+            </div>
+
             <form action="{{ url_for('main.settings_add_member') }}" method="POST" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                    <input type="text" name="full_name" required class="w-full border rounded-lg px-3 py-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Nama Lengkap</label>
+                    <input type="text" name="full_name" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Username</label>
-                    <input type="text" name="username" required class="w-full border rounded-lg px-3 py-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Username</label>
+                    <input type="text" name="username" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-green-500 focus:border-green-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Password Default</label>
-                    <input type="text" name="password" value="guru123" required class="w-full border rounded-lg px-3 py-2 bg-gray-50">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">Password Default</label>
+                    <div class="relative">
+                        <input type="text" name="password" value="guru123" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 bg-gray-50 text-gray-500">
+                        <span class="absolute right-3 top-2.5 text-xs text-green-600 font-medium">Default</span>
+                    </div>
                 </div>
-                <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700">Simpan</button>
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 shadow-md transition-transform active:scale-95">Simpan Anggota</button>
+                </div>
             </form>
         </div>
     </div>
