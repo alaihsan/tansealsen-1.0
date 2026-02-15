@@ -10,7 +10,6 @@ from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from functools import wraps
 import time
-from flask import send_from_directory
 
 from my_app.extensions import db
 from my_app.models import User, Student, Violation, Classroom, School, ViolationRule, ViolationCategory, ViolationPhoto
@@ -25,7 +24,7 @@ def super_admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or current_user.role != 'super_admin':
-            abort(403) # Forbidden
+            abort(403)
         return f(*args, **kwargs)
     return decorated_function
 
@@ -55,30 +54,24 @@ def create_school():
         address = request.form.get('address')
         admin_username = request.form.get('admin_username')
         admin_password = request.form.get('admin_password')
-        
         if School.query.filter_by(name=school_name).first():
             flash('Nama sekolah sudah terdaftar.', 'danger')
             return redirect(url_for('main.create_school'))
         if User.query.filter_by(username=admin_username).first():
             flash('Username admin sudah digunakan.', 'danger')
             return redirect(url_for('main.create_school'))
-
         new_school = School(name=school_name, address=address)
         db.session.add(new_school)
         db.session.flush()
-        
         new_user = User(username=admin_username, role='school_admin', school_id=new_school.id, full_name="Administrator")
         new_user.set_password(admin_password)
         db.session.add(new_user)
-        
         default_categories = [('Ringan', 5), ('Sedang', 15), ('Berat', 30)]
         for c_name, c_point in default_categories:
             db.session.add(ViolationCategory(name=c_name, points=c_point, school_id=new_school.id))
-            
         default_rules = [('Pasal 1', 'Ketertiban Umum'), ('Pasal 2', 'Kerapihan Seragam')]
         for r_code, r_desc in default_rules:
             db.session.add(ViolationRule(code=r_code, description=r_desc, school_id=new_school.id))
-        
         db.session.commit()
         flash(f'Sekolah "{school_name}" berhasil dibuat!', 'success')
         return redirect(url_for('main.super_dashboard'))
@@ -111,7 +104,17 @@ def logout():
     logout_user()
     return redirect(url_for('main.login'))
 
-# --- MAIN ROUTES (DASHBOARD & SISWA) ---
+@main.route('/favicon.ico')
+def favicon():
+    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+    static_folder = os.path.join(current_app.root_path, 'static')
+    if current_user.is_authenticated and current_user.school and current_user.school.logo:
+        logo_path = os.path.join(upload_folder, current_user.school.logo)
+        if os.path.exists(logo_path):
+            return send_from_directory(upload_folder, current_user.school.logo, mimetype='image/vnd.microsoft.icon')
+    return send_from_directory(static_folder, 'favicon.svg', mimetype='image/svg+xml')
+
+# --- MAIN ROUTES ---
 
 @main.route("/")
 @main.route("/home")
@@ -122,9 +125,7 @@ def home():
     search = request.args.get('search', '')
     category = request.args.get('category', '')
     date_range = request.args.get('date_range', '')
-    
     query = Violation.query.join(Student).filter(Student.school_id == current_user.school_id)
-    
     if search: query = query.filter(Student.name.contains(search))
     if category: query = query.filter(Violation.kategori_pelanggaran == category)
     if date_range:
@@ -132,14 +133,11 @@ def home():
         if date_range == 'today': query = query.filter(Violation.date_posted >= today.replace(hour=0, minute=0, second=0))
         elif date_range == 'week': query = query.filter(Violation.date_posted >= today - timedelta(days=7))
         elif date_range == 'month': query = query.filter(Violation.date_posted >= today - timedelta(days=30))
-    
     pelanggaran_pagination = query.options(joinedload(Violation.photos)).order_by(Violation.date_posted.desc()).paginate(page=page, per_page=10, error_out=False)
-    
     total_students = Student.query.filter_by(school_id=current_user.school_id).count()
     total_violations = Violation.query.join(Student).filter(Student.school_id == current_user.school_id).count()
     total_classes = Classroom.query.filter_by(school_id=current_user.school_id).count()
     categories = ViolationCategory.query.filter_by(school_id=current_user.school_id).all()
-    
     return render_template('index.html', 
                            total_students=total_students, total_violations=total_violations, total_classes=total_classes,
                            pelanggaran_pagination=pelanggaran_pagination, search_query=search, category_filter=category,
@@ -180,7 +178,6 @@ def delete_class(class_id):
 def view_class(class_id):
     classroom = Classroom.query.filter_by(id=class_id, school_id=current_user.school_id).first_or_404()
     all_classes = Classroom.query.filter(Classroom.id != class_id, Classroom.school_id == current_user.school_id).order_by(Classroom.name).all()
-
     if request.method == 'POST' and 'import_students' in request.form:
         raw_names = request.form.get('student_names')
         if raw_names:
@@ -196,7 +193,6 @@ def view_class(class_id):
             db.session.commit()
             flash(f'Berhasil mengimpor {count} murid.', 'success')
             return redirect(url_for('main.view_class', class_id=class_id))
-
     if request.method == 'POST' and 'mutate_students' in request.form:
         target_class_id = request.form.get('target_class_id')
         selected_student_ids = request.form.getlist('selected_students')
@@ -212,7 +208,6 @@ def view_class(class_id):
             else:
                 flash('Kelas tujuan tidak valid.', 'danger')
         return redirect(url_for('main.view_class', class_id=class_id))
-
     return render_template('detailkelas.html', classroom=classroom, all_classes=all_classes)
 
 @main.route("/api/students/<class_name>")
@@ -231,17 +226,15 @@ def get_students_by_class(class_name):
 def delete_student(student_id):
     student = Student.query.filter_by(id=student_id, school_id=current_user.school_id).first_or_404()
     if student.violations:
-        flash(f'Gagal menghapus siswa {student.name}. Siswa ini memiliki data pelanggaran. Hapus data pelanggarannya terlebih dahulu jika ingin menghapus siswa.', 'danger')
+        flash(f'Gagal menghapus siswa {student.name}. Siswa ini memiliki data pelanggaran.', 'danger')
         return redirect(url_for('main.view_class', class_id=student.classroom_id))
-    
     try:
         db.session.delete(student)
         db.session.commit()
         flash(f'Siswa {student.name} berhasil dihapus.', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Terjadi kesalahan saat menghapus siswa: {str(e)}', 'danger')
-        
+        flash(f'Terjadi kesalahan: {str(e)}', 'danger')
     return redirect(url_for('main.view_class', class_id=student.classroom_id))
 
 @main.route("/add_violation", methods=['GET', 'POST'])
@@ -251,7 +244,6 @@ def add_violation():
     rules = ViolationRule.query.filter_by(school_id=current_user.school_id).all()
     categories = ViolationCategory.query.filter_by(school_id=current_user.school_id).all()
     staff_members = User.query.filter_by(school_id=current_user.school_id).all()
-    
     if request.method == 'POST':
         class_name = request.form.get('kelas')
         student_name = request.form.get('nama_murid')
@@ -261,16 +253,13 @@ def add_violation():
         tanggal_str = request.form.get('tanggal_kejadian')
         jam_str = request.form.get('jam_kejadian')
         di_input_oleh = request.form.get('di_input_oleh')
-        
         selected_category = ViolationCategory.query.get(kategori_id)
         points = selected_category.points if selected_category else 0
         kategori_name = selected_category.name if selected_category else "Umum"
-            
         classroom = Classroom.query.filter_by(name=class_name, school_id=current_user.school_id).first()
         student = None
         if classroom:
             student = Student.query.filter_by(name=student_name, classroom_id=classroom.id, school_id=current_user.school_id).first()
-        
         if student:
             try:
                 date_obj = datetime.strptime(tanggal_str, '%d/%m/%Y')
@@ -281,7 +270,6 @@ def add_violation():
                     date_posted = date_obj 
             except (ValueError, TypeError):
                 date_posted = datetime.utcnow()
-
             violation = Violation(
                 description=description,
                 points=points,
@@ -293,33 +281,26 @@ def add_violation():
             )
             db.session.add(violation)
             db.session.flush()
-
             files = request.files.getlist('bukti_file')
             valid_files = [f for f in files if f.filename != '']
-            
             for file in valid_files[:10]: 
                 upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
                 if not os.path.exists(upload_folder): os.makedirs(upload_folder)
-                
                 fname = secure_filename(file.filename)
                 timestamp = str(int(time.time()))
                 unique_suffix = secrets.token_hex(2)
                 name_without_ext = os.path.splitext(fname)[0]
                 filename = f"{timestamp}_{unique_suffix}_{name_without_ext}.jpg"
                 save_path = os.path.join(upload_folder, filename)
-                
                 success = compress_image(file, save_path)
-                
                 if success:
                     photo = ViolationPhoto(filename=filename, violation_id=violation.id)
                     db.session.add(photo)
-
             db.session.commit()
             flash('Pelanggaran berhasil dicatat!', 'success')
             return redirect(url_for('main.home'))
         else:
             flash(f'Siswa tidak ditemukan.', 'danger')
-
     return render_template('add_violation.html', classes=classes, rules=rules, categories=categories, staff_members=staff_members)
 
 @main.route("/student/<int:student_id>")
@@ -336,7 +317,6 @@ def delete_violation(violation_id):
         Violation.id == violation_id,
         Student.school_id == current_user.school_id
     ).first_or_404()
-    
     student_id = violation.student_id
     db.session.delete(violation)
     db.session.commit()
@@ -350,12 +330,10 @@ def remit_violation(violation_id):
         Violation.id == violation_id,
         Student.school_id == current_user.school_id
     ).first_or_404()
-    
     reason = request.form.get('remission_reason')
     if not reason:
         flash('Keterangan remisi wajib diisi.', 'warning')
         return redirect(url_for('main.student_history', student_id=violation.student_id))
-    
     violation.is_remitted = True
     violation.remission_reason = reason
     violation.remission_date = datetime.utcnow()
@@ -370,16 +348,13 @@ def statistics():
     category_stats = db.session.query(
         Violation.kategori_pelanggaran, func.count(Violation.id)
     ).join(Student).filter(Student.school_id == current_user.school_id).group_by(Violation.kategori_pelanggaran).all()
-    
     pie_labels = [stat[0] for stat in category_stats]
     pie_data = [stat[1] for stat in category_stats]
     if not pie_data:
         pie_labels = ["Belum ada data"]
         pie_data = [0]
-
     today = datetime.utcnow().replace(hour=0, minute=0, second=0)
     tomorrow = today + timedelta(days=1)
-    
     top_today = db.session.query(
         Student,
         func.count(Violation.id).label('count'),
@@ -389,12 +364,10 @@ def statistics():
         Violation.date_posted >= today,
         Violation.date_posted < tomorrow
     ).group_by(Student.id).order_by(func.sum(Violation.points).desc()).limit(5).all()
-    
     trend_range = request.args.get('trend_range', '7d')
     end_date = datetime.utcnow()
     days_map = {'30d': 30, '90d': 90, '180d': 180}
     start_date = end_date - timedelta(days=days_map.get(trend_range, 7))
-    
     daily_stats = db.session.query(
         func.date(Violation.date_posted).label('date'),
         func.count(Violation.id).label('count')
@@ -402,11 +375,9 @@ def statistics():
         Student.school_id == current_user.school_id,
         Violation.date_posted >= start_date
     ).group_by(func.date(Violation.date_posted)).all()
-    
     stats_dict = {str(stat.date): stat.count for stat in daily_stats}
     trend_labels = []
     trend_data = []
-    
     current = start_date
     while current <= end_date:
         d_str = current.strftime('%Y-%m-%d')
@@ -414,9 +385,7 @@ def statistics():
         trend_labels.append(l_str)
         trend_data.append(stats_dict.get(d_str, 0))
         current += timedelta(days=1)
-
-    return render_template(
-        'statistics.html',
+    return render_template('statistics.html',
         pie_data=pie_data, pie_labels=pie_labels,
         top_today=top_today, trend_labels=trend_labels, trend_data=trend_data,
         current_range=trend_range, total_violations_today=sum(item.count for item in top_today) if top_today else 0
@@ -804,22 +773,3 @@ def restore_data():
         flash('Format file harus .zip', 'danger')
         
     return redirect(url_for('main.settings'))
-
-@main.route('/favicon.ico')
-def favicon():
-    """
-    Menyajikan favicon dinamis:
-    1. Jika user login & sekolah punya logo -> Logo Sekolah
-    2. Jika tidak -> Default Favicon
-    """
-    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-    static_folder = os.path.join(current_app.root_path, 'static')
-    
-    if current_user.is_authenticated and current_user.school and current_user.school.logo:
-        # Cek apakah file logo benar-benar ada
-        logo_path = os.path.join(upload_folder, current_user.school.logo)
-        if os.path.exists(logo_path):
-            return send_from_directory(upload_folder, current_user.school.logo, mimetype='image/vnd.microsoft.icon')
-            
-    # Default fallback
-    return send_from_directory(static_folder, 'favicon.svg', mimetype='image/svg+xml')
