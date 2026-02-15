@@ -129,9 +129,9 @@
                 </div>
             </div>
 
-            <!-- TOMBOL PRINT (Diluar area klik modal) -->
+            <!-- TOMBOL PRINT (Fixed: click.stop mencegah modal terbuka) -->
             <div class="absolute bottom-4 right-4 z-20">
-                <a href="{{ url_for('main.print_violation', violation_id=v.id) }}" target="_blank" class="bg-gray-100 hover:bg-gray-200 text-gray-600 p-2 rounded-full shadow-sm transition-colors" title="Cetak Pelanggaran Ini">
+                <a href="{{ url_for('main.print_violation', violation_id=v.id) }}" target="_blank" @click.stop class="bg-gray-100 hover:bg-gray-200 text-gray-600 p-2 rounded-full shadow-sm transition-colors block" title="Cetak Pelanggaran Ini">
                     <i class="fas fa-print"></i>
                 </a>
             </div>

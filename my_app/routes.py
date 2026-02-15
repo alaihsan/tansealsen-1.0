@@ -10,20 +10,18 @@ import time
 
 from my_app.extensions import db
 from my_app.models import User, Student, Violation, Classroom, School, ViolationRule, ViolationCategory, ViolationPhoto
-# IMPORT FUNGSI KOMPRESI
-from my_app.utils import compress_image 
+from my_app.utils import compress_image
 from flask_login import login_user, current_user, logout_user, login_required
 
 main = Blueprint('main', __name__)
 
-# ... (Kode decorator super_admin_required, school_admin_required, super_admin routes TETAP SAMA) ...
-# ... (Langsung ke bagian add_violation untuk mempersingkat, bagian atas tidak berubah) ...
+# --- DECORATOR KHUSUS ---
 
 def super_admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or current_user.role != 'super_admin':
-            abort(403)
+            abort(403) # Forbidden
         return f(*args, **kwargs)
     return decorated_function
 
@@ -35,6 +33,8 @@ def school_admin_required(f):
             return redirect(url_for('main.login'))
         return f(*args, **kwargs)
     return decorated_function
+
+# --- SUPER ADMIN ROUTES ---
 
 @main.route("/super-admin")
 @super_admin_required
@@ -80,6 +80,8 @@ def create_school():
         return redirect(url_for('main.super_dashboard'))
     return render_template('super_admin/create_school.html')
 
+# --- AUTH ROUTES ---
+
 @main.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
@@ -104,6 +106,8 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('main.login'))
+
+# --- MAIN ROUTES ---
 
 @main.route("/")
 @main.route("/home")
@@ -268,24 +272,20 @@ def add_violation():
             db.session.add(violation)
             db.session.flush()
 
-            # Handle Multiple Files dengan KOMPRESI
             files = request.files.getlist('bukti_file')
             valid_files = [f for f in files if f.filename != '']
             
             for file in valid_files[:10]: 
                 upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-                if not os.path.exists(upload_folder):
-                    os.makedirs(upload_folder)  
+                if not os.path.exists(upload_folder): os.makedirs(upload_folder)
                 
                 fname = secure_filename(file.filename)
                 timestamp = str(int(time.time()))
                 unique_suffix = secrets.token_hex(2)
-                # Ubah ekstensi jadi .jpg karena fungsi compress mengubahnya
                 name_without_ext = os.path.splitext(fname)[0]
                 filename = f"{timestamp}_{unique_suffix}_{name_without_ext}.jpg"
                 save_path = os.path.join(upload_folder, filename)
                 
-                # GUNAKAN FUNGSI COMPRESS_IMAGE
                 success = compress_image(file, save_path)
                 
                 if success:
@@ -293,7 +293,7 @@ def add_violation():
                     db.session.add(photo)
 
             db.session.commit()
-            flash('Pelanggaran berhasil dicatat dengan bukti foto (terkompresi)!', 'success')
+            flash('Pelanggaran berhasil dicatat!', 'success')
             return redirect(url_for('main.home'))
         else:
             flash(f'Siswa tidak ditemukan.', 'danger')
@@ -338,7 +338,7 @@ def remit_violation(violation_id):
     violation.remission_reason = reason
     violation.remission_date = datetime.utcnow()
     db.session.commit()
-    flash('Remisi berhasil diberikan. Status pelanggaran kini SELESAI dan poin hangus.', 'success')
+    flash('Remisi berhasil.', 'success')
     return redirect(url_for('main.student_history', student_id=violation.student_id))
 
 @main.route("/statistics")
@@ -396,12 +396,11 @@ def statistics():
     return render_template(
         'statistics.html',
         pie_data=pie_data, pie_labels=pie_labels,
-        top_today=top_today,
-        trend_labels=trend_labels,
-        trend_data=trend_data,
-        current_range=trend_range,
-        total_violations_today=sum(item.count for item in top_today) if top_today else 0
+        top_today=top_today, trend_labels=trend_labels, trend_data=trend_data,
+        current_range=trend_range, total_violations_today=sum(item.count for item in top_today) if top_today else 0
     )
+
+# --- SETTINGS ROUTES ---
 
 @main.route("/settings")
 @school_admin_required
@@ -410,7 +409,6 @@ def settings():
     members = User.query.filter_by(school_id=school.id).all()
     rules = ViolationRule.query.filter_by(school_id=school.id).all()
     categories = ViolationCategory.query.filter_by(school_id=school.id).all()
-    
     return render_template('settings.html', school=school, members=members, rules=rules, categories=categories)
 
 @main.route("/settings/update_school", methods=['POST'])
@@ -418,24 +416,19 @@ def settings():
 def settings_update_school():
     name = request.form.get('name')
     address = request.form.get('address')
-    
     school = current_user.school
     if name: school.name = name
     if address: school.address = address
-    
     if 'logo' in request.files:
         file = request.files['logo']
         if file and file.filename:
             upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
             if not os.path.exists(upload_folder): os.makedirs(upload_folder)
-            
             fname = secure_filename(file.filename)
-            import time
             timestamp = str(int(time.time()))
             filename = f"logo_{school.id}_{timestamp}_{fname}"
             file.save(os.path.join(upload_folder, filename))
             school.logo = filename
-
     db.session.commit()
     flash('Profil sekolah berhasil diperbarui.', 'success')
     return redirect(url_for('main.settings'))
@@ -446,16 +439,14 @@ def settings_add_member():
     username = request.form.get('username')
     password = request.form.get('password')
     full_name = request.form.get('full_name')
-    
     if User.query.filter_by(username=username).first():
         flash('Username sudah digunakan.', 'danger')
         return redirect(url_for('main.settings'))
-        
     new_user = User(username=username, full_name=full_name, role='school_admin', school_id=current_user.school_id)
     new_user.set_password(password)
     db.session.add(new_user)
     db.session.commit()
-    flash('Anggota baru berhasil ditambahkan.', 'success')
+    flash('Anggota berhasil ditambahkan.', 'success')
     return redirect(url_for('main.settings'))
 
 @main.route("/settings/edit_member", methods=['POST'])
@@ -464,7 +455,6 @@ def settings_edit_member():
     user_id = request.form.get('user_id')
     password = request.form.get('password')
     username = request.form.get('username')
-    
     user = User.query.filter_by(id=user_id, school_id=current_user.school_id).first()
     if user:
         if username and username != user.username:
@@ -472,16 +462,10 @@ def settings_edit_member():
                 flash('Username sudah terpakai.', 'danger')
                 return redirect(url_for('main.settings'))
             user.username = username
-            
         if password:
             user.set_password(password)
             flash(f'Password untuk {user.username} berhasil direset.', 'success')
-        else:
-            flash('Data anggota diperbarui.', 'success')
         db.session.commit()
-    else:
-        flash('User tidak ditemukan.', 'danger')
-        
     return redirect(url_for('main.settings'))
 
 @main.route("/settings/delete_member/<int:user_id>", methods=['POST'])
@@ -490,7 +474,6 @@ def settings_delete_member(user_id):
     if user_id == current_user.id:
         flash('Anda tidak bisa menghapus akun sendiri.', 'warning')
         return redirect(url_for('main.settings'))
-        
     user = User.query.filter_by(id=user_id, school_id=current_user.school_id).first()
     if user:
         db.session.delete(user)
@@ -507,12 +490,10 @@ def settings_rules():
         desc = request.form.get('description')
         rule = ViolationRule(code=code, description=desc, school_id=current_user.school_id)
         db.session.add(rule)
-        
     elif action == 'delete':
         rule_id = request.form.get('rule_id')
         rule = ViolationRule.query.filter_by(id=rule_id, school_id=current_user.school_id).first()
         if rule: db.session.delete(rule)
-        
     db.session.commit()
     return redirect(url_for('main.settings'))
 
@@ -525,19 +506,18 @@ def settings_categories():
         points = request.form.get('points')
         cat = ViolationCategory(name=name, points=points, school_id=current_user.school_id)
         db.session.add(cat)
-        
     elif action == 'delete':
         cat_id = request.form.get('cat_id')
         cat = ViolationCategory.query.filter_by(id=cat_id, school_id=current_user.school_id).first()
         if cat: db.session.delete(cat)
-        
     db.session.commit()
     return redirect(url_for('main.settings'))
+
+# --- PRINT ROUTES (YANG HILANG SEBELUMNYA) ---
 
 @main.route("/violation/print/<int:violation_id>")
 @school_admin_required
 def print_violation(violation_id):
-    # Ambil data pelanggaran spesifik
     violation = Violation.query.join(Student).filter(
         Violation.id == violation_id,
         Student.school_id == current_user.school_id
@@ -551,10 +531,8 @@ def print_violation(violation_id):
 @main.route("/class/print/<int:class_id>")
 @school_admin_required
 def print_class_report(class_id):
-    # Ambil data kelas
     classroom = Classroom.query.filter_by(id=class_id, school_id=current_user.school_id).first_or_404()
     
-    # Ambil semua pelanggaran dari siswa di kelas ini
     violations = Violation.query.join(Student).filter(
         Student.classroom_id == class_id,
         Student.school_id == current_user.school_id
