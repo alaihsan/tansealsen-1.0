@@ -1,436 +1,185 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 w-full">
-    
-    <!-- Header & Stats -->
-    <div class="mb-6 sm:mb-8">
-        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Dashboard Kedisiplinan</h1>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
-            <!-- Stat 1: Link ke Manajemen Kelas -->
-            <a href="{{ url_for('main.manage_classes') }}" class="block group">
-                <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 border-l-4 border-blue-500 group-hover:shadow-md transition-shadow">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-blue-100 text-blue-500 mr-4 group-hover:bg-blue-200 transition-colors shrink-0">
-                            <i class="fas fa-users text-lg sm:text-xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-gray-500 font-medium">Total Siswa</p>
-                            <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ total_students }}</p>
-                        </div>
-                        <div class="ml-auto text-gray-300">
-                            <i class="fas fa-chevron-right text-sm"></i>
-                        </div>
-                    </div>
-                </div>
-            </a>
-            
-            <!-- Stat 2: Link ke Statistik -->
-            <a href="{{ url_for('main.statistics') }}" class="block group">
-                <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 border-l-4 border-red-500 group-hover:shadow-md transition-shadow">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-red-100 text-red-500 mr-4 group-hover:bg-red-200 transition-colors shrink-0">
-                            <i class="fas fa-exclamation-triangle text-lg sm:text-xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-gray-500 font-medium">Total Pelanggaran</p>
-                            <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ total_violations }}</p>
-                        </div>
-                        <div class="ml-auto text-gray-300">
-                            <i class="fas fa-chevron-right text-sm"></i>
-                        </div>
-                    </div>
-                </div>
-            </a>
-            
-            <!-- Stat 3: Link ke Manajemen Kelas -->
-            <a href="{{ url_for('main.manage_classes') }}" class="block group">
-                <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 border-l-4 border-green-500 group-hover:shadow-md transition-shadow">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-100 text-green-500 mr-4 group-hover:bg-green-200 transition-colors shrink-0">
-                            <i class="fas fa-school text-lg sm:text-xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-xs sm:text-sm text-gray-500 font-medium">Total Kelas</p>
-                            <p class="text-xl sm:text-2xl font-bold text-gray-900">{{ total_classes }}</p>
-                        </div>
-                        <div class="ml-auto text-gray-300">
-                            <i class="fas fa-chevron-right text-sm"></i>
-                        </div>
-                    </div>
-                </div>
-            </a>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{ 
+    galleryOpen: false, 
+    currentPhotos: [], 
+    currentIndex: 0,
+    openGallery(photos) {
+        if (photos.length > 0) {
+            this.currentPhotos = photos;
+            this.currentIndex = 0;
+            this.galleryOpen = true;
+        }
+    },
+    nextPhoto() {
+        this.currentIndex = (this.currentIndex + 1) % this.currentPhotos.length;
+    },
+    prevPhoto() {
+        this.currentIndex = (this.currentIndex - 1 + this.currentPhotos.length) % this.currentPhotos.length;
+    }
+}">
+
+    <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Dashboard Pelanggaran</h1>
+            <p class="text-sm text-gray-500">Rekap data siswa sekolah {{ current_user.school.name }}</p>
+        </div>
+        <a href="{{ url_for('main.add_violation') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors flex items-center justify-center">
+            <i class="fas fa-plus mr-2"></i> Input Pelanggaran
+        </a>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 bg-blue-100 text-blue-600 rounded-lg mr-4"><i class="fas fa-users text-xl"></i></div>
+                <div><p class="text-sm text-gray-500">Total Siswa</p><p class="text-2xl font-bold text-gray-900">{{ total_students }}</p></div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 bg-red-100 text-red-600 rounded-lg mr-4"><i class="fas fa-exclamation-triangle text-xl"></i></div>
+                <div><p class="text-sm text-gray-500">Total Pelanggaran</p><p class="text-2xl font-bold text-gray-900">{{ total_violations }}</p></div>
+            </div>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div class="flex items-center">
+                <div class="p-3 bg-green-100 text-green-600 rounded-lg mr-4"><i class="fas fa-school text-xl"></i></div>
+                <div><p class="text-sm text-gray-500">Total Kelas</p><p class="text-2xl font-bold text-gray-900">{{ total_classes }}</p></div>
+            </div>
         </div>
     </div>
 
-    <!-- Filters & Actions -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
-        <div class="p-4 sm:p-5 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h2 class="text-lg font-semibold text-gray-800">Daftar Pelanggaran Terbaru</h2>
+    <!-- FILTERS -->
+    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="text" name="search" placeholder="Cari nama siswa..." value="{{ search_query }}" class="border rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500">
             
-            <form action="{{ url_for('main.home') }}" method="GET" class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                <div class="relative w-full sm:w-auto">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <i class="fas fa-search"></i>
-                    </span>
-                    <!-- PERBAIKAN: Gunakan text-base di mobile agar form tidak auto-zoom di iOS -->
-                    <input type="text" name="search" value="{{ search_query }}" placeholder="Cari nama siswa..." 
-                        class="pl-10 pr-4 py-2.5 sm:py-2 border border-gray-300 rounded-lg text-base sm:text-sm focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64">
-                </div>
-                
-                <!-- PERBAIKAN: Gunakan text-base di mobile -->
-                <select name="category" onchange="this.form.submit()" class="w-full sm:w-auto py-2.5 sm:py-2 pl-3 pr-8 border border-gray-300 rounded-lg text-base sm:text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                    <option value="">Semua Kategori</option>
-                    <option value="Ringan" {% if category_filter == 'Ringan' %}selected{% endif %}>Ringan</option>
-                    <option value="Sedang" {% if category_filter == 'Sedang' %}selected{% endif %}>Sedang</option>
-                    <option value="Berat" {% if category_filter == 'Berat' %}selected{% endif %}>Berat</option>
-                </select>
+            <select name="category" class="border rounded-lg px-4 py-2 text-sm bg-white">
+                <option value="">Semua Kategori</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.name }}" {% if category_filter == cat.name %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <select name="date_range" class="border rounded-lg px-4 py-2 text-sm bg-white">
+                <option value="">Semua Waktu</option>
+                <option value="today" {% if date_range_value == 'today' %}selected{% endif %}>Hari Ini</option>
+                <option value="week" {% if date_range_value == 'week' %}selected{% endif %}>7 Hari Terakhir</option>
+                <option value="month" {% if date_range_value == 'month' %}selected{% endif %}>30 Hari Terakhir</option>
+            </select>
+            
+            <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-900">Filter</button>
+        </form>
+    </div>
 
-                <!-- PERBAIKAN: Gunakan text-base di mobile -->
-                <select name="date_range" onchange="this.form.submit()" class="w-full sm:w-auto py-2.5 sm:py-2 pl-3 pr-8 border border-gray-300 rounded-lg text-base sm:text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
-                    <option value="">Semua Waktu</option>
-                    <option value="today" {% if date_range_value == 'today' %}selected{% endif %}>Hari Ini</option>
-                    <option value="week" {% if date_range_value == 'week' %}selected{% endif %}>Minggu Ini</option>
-                    <option value="month" {% if date_range_value == 'month' %}selected{% endif %}>Bulan Ini</option>
-                </select>
-                
-                <a href="{{ url_for('main.add_violation') }}" class="inline-flex justify-center items-center w-full sm:w-auto px-5 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg text-base sm:text-sm font-medium hover:bg-blue-700 transition-colors">
-                    <i class="fas fa-plus mr-2"></i> Input
-                </a>
-            </form>
-        </div>
-
-        <!-- Table (Terkurung rapi oleh overflow-hidden di parent-nya) -->
-        <div class="overflow-x-auto w-full">
+    <!-- TABLE -->
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Siswa</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pelanggaran</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Kategori</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Siswa</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kelas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pelanggaran</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Poin</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bukti</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    {% for p in pelanggaran_pagination.items %}
-                    <tr class="hover:bg-gray-50 transition-colors group">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ p.tanggal_kejadian }}
-                            <div class="text-xs text-gray-400 mt-1">{{ p.date_posted.strftime('%H:%M') }}</div>
+                    {% for violation in pelanggaran_pagination.items %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ violation.tanggal_kejadian }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <a href="{{ url_for('main.student_history', student_id=violation.student.id) }}" class="text-blue-600 hover:underline">
+                                {{ violation.student.name }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ violation.student.classroom.name }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="{{ violation.description }}">
+                            <span class="block font-medium text-gray-700">{{ violation.kategori_pelanggaran }}</span>
+                            {{ violation.description }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-xs mr-3 shrink-0">
-                                    {{ p.student.name[:2] }}
-                                </div>
-                                <div>
-                                    <!-- LINK KE RIWAYAT SISWA -->
-                                    <a href="{{ url_for('main.student_history', student_id=p.student.id) }}" class="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline">
-                                        {{ p.student.name }}
-                                    </a>
-                                    <div class="text-xs text-gray-500">{{ p.student.classroom.name }}</div>
-                                </div>
-                            </div>
+                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if violation.points >= 20 %}bg-red-100 text-red-800{% elif violation.points >= 10 %}bg-yellow-100 text-yellow-800{% else %}bg-green-100 text-green-800{% endif %}">
+                                +{{ violation.points }}
+                            </span>
                         </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">{{ p.description }}</div>
-                            {% if p.di_input_oleh %}
-                            <div class="text-xs text-gray-400 mt-1">
-                                <i class="fas fa-user-edit mr-1"></i> {{ p.di_input_oleh }}
-                            </div>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            {% if p.points <= 10 %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Ringan</span>
-                            {% elif p.points <= 20 %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Sedang</span>
-                            {% else %}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Berat</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            {% if p.bukti_file %}
-                                <button 
-                                    data-evidence="{{ {'url': url_for('static', filename='uploads/' + p.bukti_file),
-                                        'student_name': p.student.name,
-                                        'class_name': p.student.classroom.name,
-                                        'desc': p.description, 
-                                        'date': p.date_posted.strftime('%d %B %Y'), 
-                                        'category': p.kategori_pelanggaran, 
-                                        'reporter': p.di_input_oleh}|tojson|forceescape }}"
-                                    onclick="openEvidenceModal(JSON.parse(this.dataset.evidence))" 
-                                    class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
-                                    <i class="fas fa-image mr-1.5"></i> Lihat
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if violation.photos|length > 0 %}
+                                <!-- PREPARE DATA FOR ALPINE JS -->
+                                <button @click="openGallery([
+                                    {% for photo in violation.photos %}
+                                        '{{ url_for('static', filename='uploads/' + photo.filename) }}'{% if not loop.last %},{% endif %}
+                                    {% endfor %}
+                                ])" class="text-blue-600 hover:text-blue-800 flex items-center gap-1 text-xs font-bold border border-blue-200 px-2 py-1 rounded bg-blue-50">
+                                    <i class="fas fa-images"></i> {{ violation.photos|length }} Foto
                                 </button>
                             {% else %}
-                                <span class="text-gray-300 text-xs italic">Tidak ada</span>
+                                <span class="text-gray-400 text-xs">-</span>
                             {% endif %}
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
-                            <div class="flex flex-col items-center justify-center">
-                                <i class="fas fa-folder-open text-4xl text-gray-300 mb-3"></i>
-                                <p>Belum ada data pelanggaran yang sesuai filter.</p>
-                            </div>
-                        </td>
+                        <td colspan="6" class="px-6 py-10 text-center text-gray-500">Tidak ada data pelanggaran ditemukan.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-
+        
         <!-- Pagination -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-            
-            <!-- MOBILE PAGINATION -->
-            <div class="flex flex-1 justify-between sm:hidden w-full">
+        <div class="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between sm:px-6">
+            {% if pelanggaran_pagination.pages > 1 %}
+            <div class="flex-1 flex justify-between sm:justify-end gap-2">
                 {% if pelanggaran_pagination.has_prev %}
-                    <a href="{{ url_for('main.home', page=pelanggaran_pagination.prev_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        Sebelumnya
-                    </a>
-                {% else %}
-                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed">
-                        Sebelumnya
-                    </span>
+                    <a href="{{ url_for('main.home', page=pelanggaran_pagination.prev_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Previous</a>
                 {% endif %}
-                
                 {% if pelanggaran_pagination.has_next %}
-                    <a href="{{ url_for('main.home', page=pelanggaran_pagination.next_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ml-3">
-                        Selanjutnya
-                    </a>
-                {% else %}
-                     <span class="relative inline-flex items-center px-4 py-2 border border-gray-200 text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed ml-3">
-                        Selanjutnya
-                    </span>
+                    <a href="{{ url_for('main.home', page=pelanggaran_pagination.next_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Next</a>
                 {% endif %}
             </div>
-
-            <!-- DESKTOP PAGINATION -->
-            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                    <p class="text-sm text-gray-700">
-                        Menampilkan <span class="font-medium">{{ pelanggaran_pagination.items|length }}</span> dari <span class="font-medium">{{ pelanggaran_pagination.total }}</span> data
-                    </p>
-                </div>
-                <div>
-                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                        {% if pelanggaran_pagination.has_prev %}
-                            <a href="{{ url_for('main.home', page=pelanggaran_pagination.prev_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <span class="sr-only">Previous</span>
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        {% endif %}
-                        
-                        {% for page_num in pelanggaran_pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-                            {% if page_num %}
-                                {% if pelanggaran_pagination.page == page_num %}
-                                    <span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">
-                                        {{ page_num }}
-                                    </span>
-                                {% else %}
-                                    <a href="{{ url_for('main.home', page=page_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                        {{ page_num }}
-                                    </a>
-                                {% endif %}
-                            {% else %}
-                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if pelanggaran_pagination.has_next %}
-                            <a href="{{ url_for('main.home', page=pelanggaran_pagination.next_num, search=search_query, category=category_filter, date_range=date_range_value) }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                <span class="sr-only">Next</span>
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        {% endif %}
-                    </nav>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
-</div>
 
-<!-- ELEGANT EVIDENCE MODAL -->
-<div id="evidenceModal" class="fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
-    <!-- Backdrop with Blur -->
-    <div class="absolute inset-0 bg-gray-900/90 backdrop-blur-md transition-opacity duration-300 ease-out opacity-0" id="modalBackdrop" onclick="closeEvidenceModal()"></div>
-    
-    <!-- Modal Card (Centered) -->
-    <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
-        <div class="bg-white w-full max-w-4xl h-[80vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row transform scale-95 opacity-0 transition-all duration-300 pointer-events-auto" id="modalContent">
+    <!-- MODAL GALLERY (ALPINE JS) -->
+    <div x-show="galleryOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90" style="display: none;" x-cloak>
+        <!-- Close Button -->
+        <button @click="galleryOpen = false" class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 z-50">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <!-- Main Image Container -->
+        <div class="relative w-full max-w-4xl h-full max-h-[90vh] flex items-center justify-center p-4">
             
-            <!-- Left: Image Area (Dark) -->
-            <div class="md:w-7/12 h-1/2 md:h-full bg-black relative flex items-center justify-center group overflow-hidden">
-                <div class="absolute inset-0 bg-cover bg-center opacity-30 blur-2xl transform scale-110" id="modalBgBlur"></div>
-                <img id="modalImg" src="" alt="Bukti Pelanggaran" class="relative max-h-full max-w-full object-contain z-10 transition-transform duration-500 shadow-2xl">
-                
-                <!-- Zoom Hint -->
-                <div class="absolute bottom-6 right-6 bg-black/40 text-white/80 text-xs px-3 py-1.5 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity border border-white/10 hidden sm:block">
-                    <i class="fas fa-search-plus mr-1"></i> Zoom
-                </div>
-            </div>
+            <!-- Prev Button -->
+            <button @click="prevPhoto" class="absolute left-2 md:-left-12 text-white text-4xl hover:text-gray-300 z-10 p-2" x-show="currentPhotos.length > 1">
+                <i class="fas fa-chevron-left"></i>
+            </button>
 
-            <!-- Right: Details Area -->
-            <div class="md:w-5/12 h-1/2 md:h-full bg-white flex flex-col">
-                <!-- Header -->
-                <div class="px-6 py-6 sm:px-8 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2 sm:mb-3">
-                            <span id="modalCategoryBadge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm">
-                                Kategori
-                            </span>
-                        </div>
-                        <h2 class="text-lg sm:text-xl font-bold text-gray-900 leading-tight">Bukti Pelanggaran</h2>
-                        <div class="flex items-center text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2">
-                            <i class="far fa-calendar-alt mr-2"></i>
-                            <span id="modalDate">Tanggal</span>
-                        </div>
-                    </div>
-                    <button onclick="closeEvidenceModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-red-100 hover:text-red-500 transition-colors shrink-0">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
+            <!-- Image -->
+            <img :src="currentPhotos[currentIndex]" class="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl transition-all duration-300" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-90"
+                 x-transition:enter-end="opacity-100 scale-100">
 
-                <!-- Scrollable Content -->
-                <div class="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
-                    <!-- Student Info Section -->
-                    <div class="mb-5 sm:mb-6 border-b border-gray-50 pb-5 sm:pb-6">
-                        <h4 class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Siswa</h4>
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-3 text-sm shrink-0" id="modalStudentInitials">
-                                --
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-gray-900 text-sm sm:text-base" id="modalStudentName">Nama Siswa</h3>
-                                <p class="text-xs text-gray-500" id="modalClassName">Kelas</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-6 sm:mb-8">
-                        <h4 class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Kronologis Kejadian</h4>
-                        <div class="relative">
-                            <div class="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-full"></div>
-                            <p id="modalDesc" class="text-gray-800 text-xs sm:text-sm leading-relaxed pl-4 sm:pl-5">
-                                Deskripsi kejadian...
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="bg-blue-50 rounded-xl sm:rounded-2xl p-4 sm:p-5 border border-blue-100">
-                        <div class="flex items-center mb-1">
-                            <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-2 text-[10px] sm:text-xs shrink-0">
-                                <i class="fas fa-user-shield"></i>
-                            </div>
-                            <span class="text-[10px] sm:text-xs font-bold text-blue-800 uppercase tracking-wide">Pelapor</span>
-                        </div>
-                        <div id="modalReporter" class="text-xs sm:text-sm font-bold text-gray-900 pl-7 sm:pl-8">Nama</div>
-                    </div>
-                </div>
-
-                <!-- Footer Actions -->
-                <div class="p-4 sm:p-6 lg:p-8 border-t border-gray-100">
-                    <a id="modalDownload" href="#" download class="flex items-center justify-center w-full py-2.5 sm:py-3.5 px-4 sm:px-6 bg-gray-900 text-white rounded-xl text-sm sm:text-base font-semibold hover:bg-black transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
-                        <i class="fas fa-download mr-2"></i> Download Bukti
-                    </a>
-                </div>
+            <!-- Next Button -->
+            <button @click="nextPhoto" class="absolute right-2 md:-right-12 text-white text-4xl hover:text-gray-300 z-10 p-2" x-show="currentPhotos.length > 1">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            
+            <!-- Counter -->
+            <div class="absolute bottom-[-40px] text-white text-sm font-medium">
+                <span x-text="currentIndex + 1"></span> / <span x-text="currentPhotos.length"></span>
             </div>
         </div>
     </div>
+
 </div>
-
-<style>
-    /* Custom Scrollbar */
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 5px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: #cbd5e1;
-        border-radius: 20px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background-color: #94a3b8;
-    }
-</style>
-
-<script>
-    const modal = document.getElementById('evidenceModal');
-    const backdrop = document.getElementById('modalBackdrop');
-    const content = document.getElementById('modalContent');
-    
-    // UI Elements
-    const mImg = document.getElementById('modalImg');
-    const mBg = document.getElementById('modalBgBlur');
-    const mDesc = document.getElementById('modalDesc');
-    const mDate = document.getElementById('modalDate');
-    const mReporter = document.getElementById('modalReporter');
-    const mDownload = document.getElementById('modalDownload');
-    const mBadge = document.getElementById('modalCategoryBadge');
-    
-    // New Elements for Index
-    const mStudentName = document.getElementById('modalStudentName');
-    const mClassName = document.getElementById('modalClassName');
-    const mInitials = document.getElementById('modalStudentInitials');
-
-    function openEvidenceModal(data) {
-        // Populate Data
-        mImg.src = data.url;
-        mBg.style.backgroundImage = `url('${data.url}')`;
-        mDesc.textContent = data.desc;
-        mDate.textContent = data.date;
-        mReporter.textContent = data.reporter || "Admin";
-        mDownload.href = data.url;
-        
-        // Populate Student Info
-        if(mStudentName) mStudentName.textContent = data.student_name;
-        if(mClassName) mClassName.textContent = "Kelas " + data.class_name;
-        if(mInitials && data.student_name) mInitials.textContent = data.student_name.substring(0,2).toUpperCase();
-
-        // Styling Badge
-        mBadge.textContent = data.category || "Umum";
-        if (data.category === 'Ringan') {
-            mBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm bg-green-50 text-green-700 border-green-200";
-        } else if (data.category === 'Sedang') {
-            mBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm bg-yellow-50 text-yellow-700 border-yellow-200";
-        } else {
-            mBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm bg-red-50 text-red-700 border-red-200";
-        }
-
-        // Show Animation
-        modal.classList.remove('hidden');
-        requestAnimationFrame(() => {
-            backdrop.classList.remove('opacity-0');
-            content.classList.remove('scale-95', 'opacity-0');
-            content.classList.add('scale-100', 'opacity-100');
-        });
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeEvidenceModal() {
-        backdrop.classList.add('opacity-0');
-        content.classList.remove('scale-100', 'opacity-100');
-        content.classList.add('scale-95', 'opacity-0');
-        
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            document.body.style.overflow = '';
-            mImg.src = '';
-        }, 300);
-    }
-
-    // Keyboard support
-    document.addEventListener('keydown', function(event) {
-        if (event.key === "Escape" && !modal.classList.contains('hidden')) {
-            closeEvidenceModal();
-        }
-    });
-</script>
 {% endblock %}

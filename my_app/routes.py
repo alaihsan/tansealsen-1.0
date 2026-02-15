@@ -6,9 +6,10 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from functools import wraps
+import time
 
 from my_app.extensions import db
-from my_app.models import User, Student, Violation, Classroom, School
+from my_app.models import User, Student, Violation, Classroom, School, ViolationRule, ViolationCategory, ViolationPhoto
 from flask_login import login_user, current_user, logout_user, login_required
 
 main = Blueprint('main', __name__)
@@ -66,12 +67,26 @@ def create_school():
         db.session.flush() # Generate ID
         
         # Buat User Admin Sekolah
-        new_user = User(username=admin_username, role='school_admin', school_id=new_school.id)
+        new_user = User(username=admin_username, role='school_admin', school_id=new_school.id, full_name="Administrator")
         new_user.set_password(admin_password)
         db.session.add(new_user)
         
+        # Seed Default Data (Agar sekolah baru tidak kosong melompong)
+        default_categories = [
+            ('Ringan', 5), ('Sedang', 15), ('Berat', 30)
+        ]
+        for c_name, c_point in default_categories:
+            db.session.add(ViolationCategory(name=c_name, points=c_point, school_id=new_school.id))
+            
+        default_rules = [
+            ('Pasal 1', 'Ketertiban Umum'),
+            ('Pasal 2', 'Kerapihan Seragam')
+        ]
+        for r_code, r_desc in default_rules:
+            db.session.add(ViolationRule(code=r_code, description=r_desc, school_id=new_school.id))
+        
         db.session.commit()
-        flash(f'Sekolah "{school_name}" dan Admin "{admin_username}" berhasil dibuat!', 'success')
+        flash(f'Sekolah "{school_name}" berhasil dibuat!', 'success')
         return redirect(url_for('main.super_dashboard'))
         
     return render_template('super_admin/create_school.html')
@@ -132,12 +147,7 @@ def home():
     
     # Apply category filter
     if category:
-        if category == 'Ringan':
-            query = query.filter(Violation.points <= 10)
-        elif category == 'Sedang':
-            query = query.filter(Violation.points.between(11, 20))
-        elif category == 'Berat':
-            query = query.filter(Violation.points > 20)
+        query = query.filter(Violation.kategori_pelanggaran == category)
     
     # Apply date filter
     if date_range:
@@ -149,7 +159,8 @@ def home():
         elif date_range == 'month':
             query = query.filter(Violation.date_posted >= today - timedelta(days=30))
     
-    pelanggaran_pagination = query.order_by(Violation.date_posted.desc()).paginate(
+    # Eager load photos untuk efisiensi
+    pelanggaran_pagination = query.options(joinedload(Violation.photos)).order_by(Violation.date_posted.desc()).paginate(
         page=page, per_page=10, error_out=False)
     
     # Dashboard Stats (Isolated)
@@ -158,6 +169,9 @@ def home():
     total_violations = Violation.query.join(Student).filter(Student.school_id == current_user.school_id).count()
     total_classes = Classroom.query.filter_by(school_id=current_user.school_id).count()
     
+    # Kirim daftar kategori untuk filter dropdown di dashboard
+    categories = ViolationCategory.query.filter_by(school_id=current_user.school_id).all()
+    
     return render_template('index.html', 
                            total_students=total_students, 
                            total_violations=total_violations,
@@ -165,7 +179,8 @@ def home():
                            pelanggaran_pagination=pelanggaran_pagination,
                            search_query=search,
                            category_filter=category,
-                           date_range_value=date_range)
+                           date_range_value=date_range,
+                           categories=categories)
 
 @main.route("/classes", methods=['GET', 'POST'])
 @school_admin_required
@@ -276,25 +291,26 @@ def get_students_by_class(class_name):
 @main.route("/add_violation", methods=['GET', 'POST'])
 @school_admin_required
 def add_violation():
-    # Hanya ambil kelas sekolah ini
+    # Hanya ambil data sekolah ini
     classes = Classroom.query.filter_by(school_id=current_user.school_id).order_by(Classroom.name).all()
+    rules = ViolationRule.query.filter_by(school_id=current_user.school_id).all()
+    categories = ViolationCategory.query.filter_by(school_id=current_user.school_id).all()
+    staff_members = User.query.filter_by(school_id=current_user.school_id).all()
     
     if request.method == 'POST':
-        # Logic simpan sama, tapi pastikan validasi sekolah
         class_name = request.form.get('kelas')
         student_name = request.form.get('nama_murid')
         description = request.form.get('deskripsi')
-        # ... (ambil field lain seperti biasa) ...
         pasal = request.form.get('pasal')
-        kategori = request.form.get('kategori_pelanggaran')
+        kategori_id = request.form.get('kategori_id')
         tanggal_str = request.form.get('tanggal_kejadian')
+        jam_str = request.form.get('jam_kejadian') # Ambil input jam
         di_input_oleh = request.form.get('di_input_oleh')
         
-        # Calculate points
-        points = 0
-        if kategori == 'Ringan': points = 5
-        elif kategori == 'Sedang': points = 15
-        elif kategori == 'Berat': points = 30
+        # Cari kategori untuk dapat poin
+        selected_category = ViolationCategory.query.get(kategori_id)
+        points = selected_category.points if selected_category else 0
+        kategori_name = selected_category.name if selected_category else "Umum"
             
         # Cari Siswa dengan validasi Sekolah
         classroom = Classroom.query.filter_by(name=class_name, school_id=current_user.school_id).first()
@@ -303,43 +319,61 @@ def add_violation():
             student = Student.query.filter_by(name=student_name, classroom_id=classroom.id, school_id=current_user.school_id).first()
         
         if student:
-            # Handle Upload File ... (Logic upload file sama seperti sebelumnya)
-            filename = None
-            if 'bukti_file' in request.files:
-                file = request.files['bukti_file']
-                if file and file.filename:
-                    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
-                    if not os.path.exists(upload_folder):
-                        os.makedirs(upload_folder)  
-                    fname = secure_filename(file.filename)
-                    import time
-                    timestamp = str(int(time.time()))
-                    filename = f"{timestamp}_{fname}"
-                    file.save(os.path.join(upload_folder, filename))
-
             try:
-                date_posted = datetime.strptime(tanggal_str, '%d/%m/%Y')
+                # GABUNGKAN TANGGAL DAN JAM
+                date_obj = datetime.strptime(tanggal_str, '%d/%m/%Y')
+                if jam_str:
+                    time_obj = datetime.strptime(jam_str, '%H:%M').time()
+                    date_posted = datetime.combine(date_obj.date(), time_obj)
+                else:
+                    date_posted = date_obj # Fallback jika jam kosong (walaupun required)
             except (ValueError, TypeError):
                 date_posted = datetime.utcnow()
 
+            # 1. Buat Object Pelanggaran
             violation = Violation(
                 description=description,
                 points=points,
                 date_posted=date_posted,
                 student_id=student.id,
                 pasal=pasal,
-                kategori_pelanggaran=kategori,
-                di_input_oleh=di_input_oleh,
-                bukti_file=filename
+                kategori_pelanggaran=kategori_name,
+                di_input_oleh=di_input_oleh
             )
             db.session.add(violation)
+            db.session.flush() # Ambil ID violation sebelum commit
+
+            # 2. Handle Multiple Files (Maks 10)
+            files = request.files.getlist('bukti_file')
+            
+            # Filter hanya file yang ada namanya
+            valid_files = [f for f in files if f.filename != '']
+            
+            # Ambil maksimal 10
+            for file in valid_files[:10]: 
+                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+                if not os.path.exists(upload_folder):
+                    os.makedirs(upload_folder)  
+                fname = secure_filename(file.filename)
+                import time
+                timestamp = str(int(time.time()))
+                # Tambahkan random string kecil untuk menghindari tabrakan nama di detik yang sama
+                unique_suffix = secrets.token_hex(2)
+                filename = f"{timestamp}_{unique_suffix}_{fname}"
+                
+                file.save(os.path.join(upload_folder, filename))
+                
+                # Simpan ke tabel foto
+                photo = ViolationPhoto(filename=filename, violation_id=violation.id)
+                db.session.add(photo)
+
             db.session.commit()
-            flash('Pelanggaran berhasil dicatat!', 'success')
+            flash('Pelanggaran berhasil dicatat dengan waktu yang spesifik!', 'success')
             return redirect(url_for('main.home'))
         else:
             flash(f'Siswa tidak ditemukan di database sekolah ini.', 'danger')
 
-    return render_template('add_violation.html', form_data={}, classes=classes)
+    return render_template('add_violation.html', classes=classes, rules=rules, categories=categories, staff_members=staff_members)
 
 @main.route("/student/<int:student_id>")
 @school_admin_required
@@ -355,11 +389,17 @@ def statistics():
     # Filter Violation join Student filter by School ID
     base_query = Violation.query.join(Student).filter(Student.school_id == current_user.school_id)
     
-    # 1. Pie Chart Data
-    cat_ringan = base_query.filter(Violation.kategori_pelanggaran == 'Ringan').count()
-    cat_sedang = base_query.filter(Violation.kategori_pelanggaran == 'Sedang').count()
-    cat_berat = base_query.filter(Violation.kategori_pelanggaran == 'Berat').count()
-    pie_data = [cat_ringan, cat_sedang, cat_berat]
+    # 1. Pie Chart Data (Dinamis berdasarkan kategori DB)
+    category_stats = db.session.query(
+        Violation.kategori_pelanggaran, func.count(Violation.id)
+    ).join(Student).filter(Student.school_id == current_user.school_id).group_by(Violation.kategori_pelanggaran).all()
+    
+    pie_labels = [stat[0] for stat in category_stats]
+    pie_data = [stat[1] for stat in category_stats]
+    
+    if not pie_data:
+        pie_labels = ["Belum ada data"]
+        pie_data = [0]
     
     # 2. Top 5 Hari Ini (Filtered by School)
     today = datetime.utcnow().replace(hour=0, minute=0, second=0)
@@ -406,9 +446,145 @@ def statistics():
     return render_template(
         'statistics.html',
         pie_data=pie_data,
+        pie_labels=pie_labels,
         top_today=top_today,
         trend_labels=trend_labels,
         trend_data=trend_data,
         current_range=trend_range,
         total_violations_today=sum(item.count for item in top_today) if top_today else 0
     )
+
+# --- MENU PENGATURAN (SETTINGS) ---
+
+@main.route("/settings")
+@school_admin_required
+def settings():
+    # Ambil data untuk semua tab
+    school = current_user.school
+    members = User.query.filter_by(school_id=school.id).all()
+    rules = ViolationRule.query.filter_by(school_id=school.id).all()
+    categories = ViolationCategory.query.filter_by(school_id=school.id).all()
+    
+    return render_template('settings.html', school=school, members=members, rules=rules, categories=categories)
+
+@main.route("/settings/update_school", methods=['POST'])
+@school_admin_required
+def settings_update_school():
+    name = request.form.get('name')
+    address = request.form.get('address')
+    
+    school = current_user.school
+    if name: school.name = name
+    if address: school.address = address
+    
+    # Handle Logo Upload
+    if 'logo' in request.files:
+        file = request.files['logo']
+        if file and file.filename:
+            upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+            if not os.path.exists(upload_folder): os.makedirs(upload_folder)
+            
+            fname = secure_filename(file.filename)
+            import time
+            timestamp = str(int(time.time()))
+            filename = f"logo_{school.id}_{timestamp}_{fname}"
+            file.save(os.path.join(upload_folder, filename))
+            school.logo = filename
+
+    db.session.commit()
+    flash('Profil sekolah berhasil diperbarui.', 'success')
+    return redirect(url_for('main.settings'))
+
+@main.route("/settings/add_member", methods=['POST'])
+@school_admin_required
+def settings_add_member():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    full_name = request.form.get('full_name')
+    
+    if User.query.filter_by(username=username).first():
+        flash('Username sudah digunakan.', 'danger')
+        return redirect(url_for('main.settings'))
+        
+    new_user = User(username=username, full_name=full_name, role='school_admin', school_id=current_user.school_id)
+    new_user.set_password(password)
+    db.session.add(new_user)
+    db.session.commit()
+    flash('Anggota baru berhasil ditambahkan.', 'success')
+    return redirect(url_for('main.settings'))
+
+@main.route("/settings/edit_member", methods=['POST'])
+@school_admin_required
+def settings_edit_member():
+    user_id = request.form.get('user_id')
+    password = request.form.get('password')
+    username = request.form.get('username') # Jika ingin ganti username
+    
+    user = User.query.filter_by(id=user_id, school_id=current_user.school_id).first()
+    if user:
+        if username and username != user.username:
+            if User.query.filter_by(username=username).first():
+                flash('Username sudah terpakai.', 'danger')
+                return redirect(url_for('main.settings'))
+            user.username = username
+            
+        if password:
+            user.set_password(password)
+            flash(f'Password untuk {user.username} berhasil direset.', 'success')
+        else:
+            flash('Data anggota diperbarui.', 'success')
+        db.session.commit()
+    else:
+        flash('User tidak ditemukan.', 'danger')
+        
+    return redirect(url_for('main.settings'))
+
+@main.route("/settings/delete_member/<int:user_id>", methods=['POST'])
+@school_admin_required
+def settings_delete_member(user_id):
+    if user_id == current_user.id:
+        flash('Anda tidak bisa menghapus akun sendiri.', 'warning')
+        return redirect(url_for('main.settings'))
+        
+    user = User.query.filter_by(id=user_id, school_id=current_user.school_id).first()
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        flash('Anggota berhasil dihapus.', 'success')
+    return redirect(url_for('main.settings'))
+
+@main.route("/settings/rules", methods=['POST'])
+@school_admin_required
+def settings_rules():
+    action = request.form.get('action')
+    if action == 'add':
+        code = request.form.get('code')
+        desc = request.form.get('description')
+        rule = ViolationRule(code=code, description=desc, school_id=current_user.school_id)
+        db.session.add(rule)
+        
+    elif action == 'delete':
+        rule_id = request.form.get('rule_id')
+        rule = ViolationRule.query.filter_by(id=rule_id, school_id=current_user.school_id).first()
+        if rule: db.session.delete(rule)
+        
+    db.session.commit()
+    return redirect(url_for('main.settings'))
+
+@main.route("/settings/categories", methods=['POST'])
+@school_admin_required
+def settings_categories():
+    action = request.form.get('action')
+    if action == 'add':
+        name = request.form.get('name')
+        points = request.form.get('points')
+        cat = ViolationCategory(name=name, points=points, school_id=current_user.school_id)
+        db.session.add(cat)
+        
+    elif action == 'delete':
+        cat_id = request.form.get('cat_id')
+        cat = ViolationCategory.query.filter_by(id=cat_id, school_id=current_user.school_id).first()
+        if cat: db.session.delete(cat)
+        
+    db.session.commit()
+    return redirect(url_for('main.settings'))

@@ -9,12 +9,14 @@ class School(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False, unique=True)
     address = db.Column(db.String(255), nullable=True)
+    logo = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relasi
     users = db.relationship('User', backref='school', lazy=True)
     classrooms = db.relationship('Classroom', backref='school', lazy=True)
     students = db.relationship('Student', backref='school', lazy=True)
+    rules = db.relationship('ViolationRule', backref='school', lazy=True)
+    categories = db.relationship('ViolationCategory', backref='school', lazy=True)
 
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
@@ -22,11 +24,9 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    full_name = db.Column(db.String(150), nullable=True)
     
-    # Role: 'super_admin' (Pemilik App) atau 'school_admin' (Pihak Sekolah)
     role = db.Column(db.String(20), default='school_admin', nullable=False)
-    
-    # User milik sekolah mana? (Nullable untuk Super Admin)
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'), nullable=True)
     
     def set_password(self, password):
@@ -43,11 +43,8 @@ class Classroom(db.Model):
     __tablename__ = 'classrooms'
     
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False) # Tidak unique global, tapi unique per sekolah (logic di routes)
-    
-    # Link ke Sekolah
+    name = db.Column(db.String(50), nullable=False)
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'), nullable=False)
-    
     students = db.relationship('Student', backref='classroom', lazy=True)
 
 class Student(db.Model):
@@ -55,16 +52,28 @@ class Student(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    nis = db.Column(db.String(20), nullable=False) # NIS unique per sekolah, bukan global
+    nis = db.Column(db.String(20), nullable=False)
     
     classroom_id = db.Column(db.Integer, db.ForeignKey('classrooms.id'), index=True)
     rombel = db.Column(db.String(50)) 
     poin = db.Column(db.Integer, default=100)
     
-    # Link ke Sekolah (Untuk query cepat tanpa join classroom)
     school_id = db.Column(db.Integer, db.ForeignKey('schools.id'), nullable=False, index=True)
-    
     violations = db.relationship('Violation', backref='student', lazy=True)
+
+class ViolationRule(db.Model):
+    __tablename__ = 'violation_rules'
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.String(500), nullable=False)
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'), nullable=False)
+
+class ViolationCategory(db.Model):
+    __tablename__ = 'violation_categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'), nullable=False)
 
 class Violation(db.Model):
     __tablename__ = 'violations'
@@ -79,14 +88,25 @@ class Violation(db.Model):
     pasal = db.Column(db.String(255), nullable=True)
     kategori_pelanggaran = db.Column(db.String(50), nullable=True, index=True)
     di_input_oleh = db.Column(db.String(100), nullable=True)
-    bukti_file = db.Column(db.String(255), nullable=True)
+    
+    photos = db.relationship('ViolationPhoto', backref='violation', lazy=True, cascade="all, delete-orphan")
 
     @property
     def tanggal_kejadian(self):
         if self.date_posted:
-            return self.date_posted.strftime('%d/%m/%Y')
+            # Tampilkan jam jika bukan 00:00:00
+            if self.date_posted.hour == 0 and self.date_posted.minute == 0:
+                return self.date_posted.strftime('%d/%m/%Y')
+            return self.date_posted.strftime('%d/%m/%Y %H:%M')
         return "-"
 
     @property
     def tanggal_dicatat(self):
         return self.date_posted
+
+class ViolationPhoto(db.Model):
+    __tablename__ = 'violation_photos'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), nullable=False)
+    violation_id = db.Column(db.Integer, db.ForeignKey('violations.id'), nullable=False)
