@@ -4,237 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Tanse App</title>
-    
-    <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- FontAwesome (CDN) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- GSAP Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            width: 100%;
-            overflow: hidden; /* Mencegah scrollbar */
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Container Utama Full Screen */
-        .login-wrapper {
-            height: 100vh;
-            width: 100vw;
-            position: relative;
-            /* Background Gradient Gelap Mewah */
-            background: radial-gradient(circle at top left, #0f172a, #000000);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Efek Kaca (Glassmorphism) */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Elemen Bulat Bercahaya (Blobs) */
-        .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(50px); /* Blur sedikit dikurangi agar bentuk lebih tegas saat bergerak cepat */
-            z-index: 0;
-            opacity: 0.6;
-        }
-        
-        .login-content {
-            z-index: 10;
-            position: relative;
-            width: 100%;
-            max-width: 400px; /* Ukuran kartu sedikit lebih ramping */
-            padding: 1rem;
-        }
-
-        /* Override warna autofill browser */
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus, 
-        input:-webkit-autofill:active{
-            -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
-            -webkit-text-fill-color: white !important;
-            transition: background-color 5000s ease-in-out 0s;
-        }
-        
-        /* Animasi Shimmer pada Button */
-        @keyframes shimmer {
-            100% {
-                transform: translateX(100%);
-            }
-        }
-        .animate-shimmer {
-            animation: shimmer 2s infinite;
-        }
+        body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
 
-<div class="login-wrapper">
-    
-    <!-- Elemen Background Animasi (GSAP Targets) -->
-    <!-- Warna dibuat lebih vibrant agar terlihat jelas saat bergerak cepat -->
-    <div class="blob bg-purple-700 w-96 h-96 top-0 left-0 mix-blend-screen animate-blob-1"></div>
-    <div class="blob bg-blue-700 w-[30rem] h-[30rem] bottom-0 right-0 mix-blend-screen animate-blob-2"></div>
-    <div class="blob bg-pink-600 w-72 h-72 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 mix-blend-screen animate-blob-3"></div>
-
-    <div class="login-content">
-        <div class="glass-card rounded-3xl p-8 border-t border-white/10 relative overflow-hidden">
-            
-            <!-- Dekorasi tambahan di dalam kartu -->
-            <div class="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
-
-            <!-- Header Logo -->
-            <div class="text-center mb-8 relative">
-                <div class="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-700 mb-4 shadow-xl shadow-blue-900/40 ring-1 ring-white/20 transform rotate-3 hover:rotate-0 transition-transform duration-500">
-                    <i class="fas fa-shield-alt text-4xl text-white drop-shadow-md"></i>
-                </div>
-                <h2 class="text-3xl font-extrabold text-white tracking-tight mb-1">Tanse Alsen 22</h2>
-                <p class="text-blue-200/70 text-sm font-medium tracking-wide uppercase">Portal Kedisiplinan Siswa</p>
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden border border-white/50">
+        <!-- Header -->
+        <div class="bg-white p-8 pb-6 text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl mb-4 shadow-sm">
+                <i class="fas fa-shield-alt text-3xl"></i>
             </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Selamat Datang</h1>
+            <p class="text-gray-500 text-sm mt-1">Silakan masuk untuk mengakses sistem</p>
+        </div>
 
-            <!-- Flash Messages -->
+        <!-- Form -->
+        <div class="p-8 pt-0">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    <div class="mb-6 space-y-2">
-                        {% for category, message in messages %}
-                            <div class="p-3 rounded-xl text-sm flex items-center backdrop-blur-md {{ 'bg-green-500/20 text-green-200 border border-green-500/30' if category == 'success' else 'bg-red-500/20 text-red-200 border border-red-500/30' }}">
-                                <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }} mr-2"></i>
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    </div>
+                    {% for category, message in messages %}
+                        <div class="mb-5 p-3 rounded-lg text-sm font-medium flex items-center gap-2 {{ 'bg-red-50 text-red-600 border border-red-100' if category == 'danger' else 'bg-green-50 text-green-600 border border-green-100' }}">
+                            <i class="fas {{ 'fa-exclamation-circle' if category == 'danger' else 'fa-check-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
                 {% endif %}
             {% endwith %}
 
-            <!-- Form Login -->
             <form method="POST" action="{{ url_for('main.login') }}" class="space-y-5">
-                
-                <div class="space-y-2">
-                    <label class="text-[10px] font-bold text-blue-300/80 uppercase tracking-widest ml-1">Username</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fas fa-user text-slate-500 group-focus-within:text-blue-400 transition-colors duration-300"></i>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5 ml-1">Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user text-gray-400"></i>
                         </div>
-                        <input type="text" name="username" required
-                               class="w-full pl-11 pr-4 py-3.5 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-slate-900/90 transition-all duration-300 shadow-inner"
-                               placeholder="NIP / Username">
+                        <input type="text" name="username" required 
+                            class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all sm:text-sm bg-gray-50 focus:bg-white" 
+                            placeholder="Masukkan username Anda">
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <label class="text-[10px] font-bold text-blue-300/80 uppercase tracking-widest ml-1">Password</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <i class="fas fa-lock text-slate-500 group-focus-within:text-blue-400 transition-colors duration-300"></i>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5 ml-1">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock text-gray-400"></i>
                         </div>
-                        <input type="password" name="password" required
-                               class="w-full pl-11 pr-4 py-3.5 bg-slate-900/60 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-slate-900/90 transition-all duration-300 shadow-inner"
-                               placeholder="Kata Sandi">
+                        <input type="password" name="password" required 
+                            class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all sm:text-sm bg-gray-50 focus:bg-white" 
+                            placeholder="Masukkan password">
                     </div>
                 </div>
 
-                <button type="submit" 
-                        class="w-full py-4 px-4 mt-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-900/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 flex items-center justify-center group overflow-hidden relative">
-                    <span class="relative z-10 tracking-wider">MASUK</span>
-                    <i class="fas fa-arrow-right ml-2 relative z-10 group-hover:translate-x-1 transition-transform"></i>
-                    <!-- Efek Shimmer -->
-                    <div class="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
-                </button>
+                <div class="pt-2">
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors transform hover:scale-[1.02] active:scale-[0.98]">
+                        Masuk Sekarang <i class="fas fa-arrow-right ml-2 mt-0.5"></i>
+                    </button>
+                </div>
             </form>
-            
-            <div class="mt-8 text-center">
-                <p class="text-[10px] text-slate-500">
-                    &copy; 2026 Tanse App from tim IT. <br>Hanya untuk personel Tanse.
-                </p>
-            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-50 px-8 py-4 border-t border-gray-100 text-center">
+            <p class="text-xs text-gray-400 font-medium">&copy; 2026 Tanse App Multi-School System</p>
         </div>
     </div>
-</div>
-
-<!-- Script Animasi GSAP -->
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // 1. Animasi Background Blobs (LEBIH CEPAT)
-        // Durasi dikurangi drastis dari 10-15s menjadi 4-8s
-        
-        gsap.to(".animate-blob-1", {
-            x: "random(-100, 100)", // Jarak gerak diperlebar
-            y: "random(-50, 50)",
-            scale: "random(0.8, 1.4)",
-            duration: "random(4, 7)", // LEBIH CEPAT
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut"
-        });
-        
-        gsap.to(".animate-blob-2", {
-            x: "random(-80, 80)",
-            y: "random(-60, 60)",
-            scale: "random(0.8, 1.2)",
-            duration: "random(5, 8)", // LEBIH CEPAT
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-            delay: 1
-        });
-
-        gsap.to(".animate-blob-3", {
-            x: "random(-60, 60)",
-            y: "random(-60, 60)",
-            rotation: "random(0, 360)",
-            duration: "random(3, 6)", // SANGAT CEPAT (Pusat)
-            repeat: -1,
-            yoyo: true,
-            ease: "sine.inOut",
-            delay: 0.5
-        });
-
-        // 2. Animasi Masuk Kartu Login
-        gsap.from(".glass-card", {
-            y: 50,
-            scale: 0.95,
-            opacity: 0,
-            duration: 1,
-            ease: "back.out(1.7)",
-            delay: 0.2
-        });
-
-        // 3. Animasi Elemen Form
-        gsap.from("form > div, form > button", {
-            x: -20,
-            opacity: 0,
-            duration: 0.6,
-            stagger: 0.1,
-            ease: "power2.out",
-            delay: 0.6
-        });
-        
-        // 4. Animasi Logo
-        gsap.from(".text-center i", {
-            scale: 0,
-            rotation: -180,
-            duration: 1,
-            ease: "elastic.out(1, 0.5)",
-            delay: 0.4
-        });
-    });
-</script>
 
 </body>
 </html>

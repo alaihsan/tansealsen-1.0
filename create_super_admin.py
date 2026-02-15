@@ -1,12 +1,12 @@
 from my_app.app import app
 from my_app.extensions import db
-from my_app.models import User, School, ViolationCategory, ViolationRule, ViolationPhoto
+from my_app.models import User, School, ViolationCategory, ViolationRule, ViolationPhoto, Violation
 
 # Script RESET DATABASE dengan struktur baru
 with app.app_context():
     print("⏳ Menghapus database lama...")
     db.drop_all()
-    print("⏳ Membuat tabel baru (termasuk ViolationPhoto)...")
+    print("⏳ Membuat tabel baru (termasuk Kolom Remisi)...")
     db.create_all()
 
     # 1. Super Admin
@@ -34,4 +34,4 @@ with app.app_context():
         db.session.add(ViolationRule(code=c, description=d, school_id=sekolah.id))
 
     db.session.commit()
-    print("✅ SETUP BERHASIL! TABEL FOTO SUDAH DITAMBAHKAN.")
+    print("✅ SETUP BERHASIL! FITUR REMISI & HAPUS BERFUNGSI.")

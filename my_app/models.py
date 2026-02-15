@@ -91,10 +91,14 @@ class Violation(db.Model):
     
     photos = db.relationship('ViolationPhoto', backref='violation', lazy=True, cascade="all, delete-orphan")
 
+    # --- KOLOM BARU UNTUK REMISI ---
+    is_remitted = db.Column(db.Boolean, default=False) # Status Remisi
+    remission_reason = db.Column(db.String(255), nullable=True) # Alasan Remisi
+    remission_date = db.Column(db.DateTime, nullable=True) # Kapan diremisi
+
     @property
     def tanggal_kejadian(self):
         if self.date_posted:
-            # Tampilkan jam jika bukan 00:00:00
             if self.date_posted.hour == 0 and self.date_posted.minute == 0:
                 return self.date_posted.strftime('%d/%m/%Y')
             return self.date_posted.strftime('%d/%m/%Y %H:%M')
